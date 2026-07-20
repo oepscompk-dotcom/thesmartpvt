@@ -8,7 +8,7 @@ import { apiLoadById, apiSave } from "@/lib/api";
 async function loadProfileApi<T>(model: string, id: string, defaultVal: T): Promise<T> {
   try {
     const result = await apiLoadById(model, id);
-    if (result?.data) return JSON.parse(result.data);
+    if (result) return result as T;
   } catch {}
   return defaultVal;
 }

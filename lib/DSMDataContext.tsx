@@ -142,14 +142,14 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
           apiLoad("dso", fId),
           apiLoad("dsoAttendance", fId),
         ]);
-        setActivations(Array.isArray(actRes) ? actRes : actRes?.data ?? []);
-        setTargets(Array.isArray(tgtRes) ? tgtRes : tgtRes?.data ?? []);
-        setWallet(Array.isArray(wltRes) ? wltRes : wltRes?.data ?? []);
-        setNotifications(Array.isArray(notifRes) ? notifRes : notifRes?.data ?? []);
-        setReportSubmissions(Array.isArray(reportRes) ? reportRes : reportRes?.data ?? []);
-        setAllFranchiseSims(Array.isArray(simRes) ? simRes : simRes?.data ?? []);
-        setDSOs(Array.isArray(dsoRes) ? dsoRes : dsoRes?.data ?? []);
-        setAttendance(Array.isArray(attRes) ? attRes : attRes?.data ?? []);
+        setActivations(actRes);
+        setTargets(tgtRes);
+        setWallet(wltRes);
+        setNotifications(notifRes);
+        setReportSubmissions(reportRes);
+        setAllFranchiseSims(simRes);
+        setDSOs(dsoRes);
+        setAttendance(attRes);
       } catch {}
     };
     loadAll();
@@ -157,15 +157,14 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
 
   const dsmLogin = async (id: string, password: string): Promise<boolean> => {
     try {
-      const res = await apiLoadById("dsm", id);
-      const user = res?.data;
+      const user = await apiLoadById("dsm", id);
       if (user && (user.id === id || user.username === id) && user.password === password && user.status === "Active") {
         const newAuth = { dsmId: user.id, dsmName: user.name, franchiseId: user.franchiseId, loggedIn: true };
         setAuth(newAuth);
         await apiSave("franchiseData", { id: "dsm-auth", data: JSON.stringify(newAuth) });
         return true;
       }
-    } catch {}
+    } catch (e) { console.error("DSM login error:", e); }
     return false;
   };
 

@@ -34,11 +34,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const res = await apiLoad("franchiseData");
-        if (res.data) {
-          const stored = res.data.authUser;
-          if (stored) {
-            setUser(stored);
+        const stored = await apiLoadById("franchiseData", "authUser");
+        if (stored && stored.data) {
+          const parsed = JSON.parse(stored.data);
+          if (parsed && parsed.email) {
+            setUser(parsed);
           }
         }
       } catch {
@@ -57,14 +57,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: "super-admin",
       };
       setUser(userData);
-      await apiSave("franchiseData", { authUser: userData });
+      await apiSave("franchiseData", { id: "authUser", data: JSON.stringify(userData) });
       return true;
     }
 
     if (email.toUpperCase().startsWith("COMP-")) {
       try {
-        const res = await apiLoad("franchise");
-        const companies = res.data || [];
+        const companies = await apiLoad("company");
         const company = companies.find(
           (c: any) =>
             c.id.toUpperCase() === email.toUpperCase() &&
@@ -79,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             companyId: company.id,
           };
           setUser(userData);
-          await apiSave("franchiseData", { authUser: userData });
+          await apiSave("franchiseData", { id: "authUser", data: JSON.stringify(userData) });
           return true;
         }
       } catch {

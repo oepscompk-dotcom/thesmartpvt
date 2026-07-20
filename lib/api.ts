@@ -7,20 +7,26 @@ async function request(method: string, body?: any) {
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(BASE, opts);
-  return res.json();
+  const json = await res.json();
+  if (json && json.error) throw new Error(json.error);
+  return json;
 }
 
-export async function apiLoad(model: string, franchiseId?: string) {
+export async function apiLoad(model: string, franchiseId?: string): Promise<any[]> {
   const params = new URLSearchParams({ model });
   if (franchiseId) params.set("franchiseId", franchiseId);
   const res = await fetch(`${BASE}?${params}`);
-  return res.json();
+  const json = await res.json();
+  if (json && json.error) return [];
+  return Array.isArray(json) ? json : [];
 }
 
-export async function apiLoadById(model: string, id: string) {
+export async function apiLoadById(model: string, id: string): Promise<any | null> {
   const params = new URLSearchParams({ model, id });
   const res = await fetch(`${BASE}?${params}`);
-  return res.json();
+  const json = await res.json();
+  if (json && json.error) return null;
+  return json || null;
 }
 
 export async function apiSave(model: string, data: any) {

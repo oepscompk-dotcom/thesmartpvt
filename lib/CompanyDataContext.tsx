@@ -45,8 +45,8 @@ interface CompanyDataContextType {
   auth: CompanyAuth;
   hydrated: boolean;
   loading: boolean;
-  login: (id: string, password: string) => boolean;
-  logout: () => void;
+  login: (id: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   franchises: CompanyFranchiseSummary[];
   detailMap: Record<string, CompanyFranchiseDetail>;
   totalSIMs: number; totalDevices: number; totalStaff: number;
@@ -67,11 +67,11 @@ export function CompanyDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const res = await apiLoad("franchiseData");
-        if (res.data?.authUser) {
-          const u = res.data.authUser;
-          if (u.role === "company" && u.companyId) {
-            setAuth({ companyId: u.companyId, companyName: u.name, loggedIn: true });
+        const stored = await apiLoadById("franchiseData", "company-auth");
+        if (stored && stored.data) {
+          const parsed = JSON.parse(stored.data);
+          if (parsed.companyId) {
+            setAuth({ companyId: parsed.companyId, companyName: parsed.companyName || "", loggedIn: true });
           }
         }
       } catch {}
@@ -86,8 +86,7 @@ export function CompanyDataProvider({ children }: { children: ReactNode }) {
     setLoading(true);
 
     try {
-      const franchiseRes = await apiLoad("franchise");
-      const allFranchises = franchiseRes.data || [];
+      const allFranchises = await apiLoad("franchise");
       const companyFranchises = allFranchises.filter((f: any) => f.companyId === auth.companyId);
 
       const summaries: CompanyFranchiseSummary[] = [];
@@ -98,30 +97,30 @@ export function CompanyDataProvider({ children }: { children: ReactNode }) {
         const today = new Date().toISOString().split("T")[0];
 
         const [dsmsRes, dsosRes, simsRes, devicesRes, equipmentRes, payrollRes, expensesRes, accountsRes, walletRes, issueRes, attendanceRes] = await Promise.all([
-          apiLoadById("franchise-dsms", fid),
-          apiLoadById("franchise-dso", fid),
-          apiLoadById("franchise-sims", fid),
-          apiLoadById("franchise-devices", fid),
-          apiLoadById("franchise-equipment", fid),
-          apiLoadById("franchise-payroll", fid),
-          apiLoadById("franchise-expenses", fid),
-          apiLoadById("franchise-accounts", fid),
-          apiLoadById("franchise-wallet", fid),
-          apiLoadById("franchise-issue-records", fid),
-          apiLoadById("franchise-attendance", fid),
+          apiLoad("dsm", fid),
+          apiLoad("dso", fid),
+          apiLoad("sim", fid),
+          apiLoad("device", fid),
+          apiLoad("equipment", fid),
+          apiLoad("payrollRecord", fid),
+          apiLoad("expense", fid),
+          apiLoad("accountEntry", fid),
+          apiLoad("walletTransaction", fid),
+          apiLoad("simIssueRecord", fid),
+          apiLoad("attendanceRecord", fid),
         ]);
 
-        const dsms: any[] = dsmsRes.data || [];
-        const dsos: any[] = dsosRes.data || [];
-        const simsList: any[] = simsRes.data || [];
-        const devicesList: any[] = devicesRes.data || [];
-        const equipmentList: any[] = equipmentRes.data || [];
-        const payrollList: any[] = payrollRes.data || [];
-        const expensesList: any[] = expensesRes.data || [];
-        const accountsList: any[] = accountsRes.data || [];
-        const walletList: any[] = walletRes.data || [];
-        const issueRecords: any[] = issueRes.data || [];
-        const attendanceList: any[] = attendanceRes.data || [];
+        const dsms: any[] = Array.isArray(dsmsRes) ? dsmsRes : [];
+        const dsos: any[] = Array.isArray(dsosRes) ? dsosRes : [];
+        const simsList: any[] = Array.isArray(simsRes) ? simsRes : [];
+        const devicesList: any[] = Array.isArray(devicesRes) ? devicesRes : [];
+        const equipmentList: any[] = Array.isArray(equipmentRes) ? equipmentRes : [];
+        const payrollList: any[] = Array.isArray(payrollRes) ? payrollRes : [];
+        const expensesList: any[] = Array.isArray(expensesRes) ? expensesRes : [];
+        const accountsList: any[] = Array.isArray(accountsRes) ? accountsRes : [];
+        const walletList: any[] = Array.isArray(walletRes) ? walletRes : [];
+        const issueRecords: any[] = Array.isArray(issueRes) ? issueRes : [];
+        const attendanceList: any[] = Array.isArray(attendanceRes) ? attendanceRes : [];
 
         const newSims = simsList.filter((s: any) => s.type === "new" || !s.type).length;
         const hlrSims = simsList.filter((s: any) => s.type === "hlr").length;
@@ -204,9 +203,9 @@ export function CompanyDataProvider({ children }: { children: ReactNode }) {
     loadCompanyData();
   }, [auth.companyId, mounted]);
 
-  const login = (id: string, password: string): boolean => {
-    apiLoad("franchise").then((res) => {
-      const companies = res.data || [];
+  const login = async (id: string, password: string): Promise<boolean> => {
+    try {
+      const companies = await apiLoad("company");
       const company = companies.find(
         (c: any) =>
           c.id.toUpperCase() === id.toUpperCase() &&
@@ -215,16 +214,17 @@ export function CompanyDataProvider({ children }: { children: ReactNode }) {
       );
       if (company) {
         setAuth({ companyId: company.id, companyName: company.name, loggedIn: true });
-        apiSave("franchiseData", { authUser: { email: company.id, name: company.name, role: "company" as const, companyId: company.id } });
+        await apiSave("franchiseData", { id: "company-auth", data: JSON.stringify({ companyId: company.id, companyName: company.name }) });
+        return true;
       }
-    });
-    return true;
+    } catch (e) { console.error("Company login error:", e); }
+    return false;
   };
 
   const logout = async () => {
     setAuth({ companyId: "", companyName: "", loggedIn: false });
     try {
-      await apiDelete("franchiseData", "auth");
+      await apiUpdate("franchiseData", "company-auth", { data: "" });
     } catch {}
   };
 

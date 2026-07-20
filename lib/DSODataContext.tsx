@@ -127,7 +127,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       setLeaveRequests(loadedLeaves || []);
       setWarnings(loadedWarnings || []);
       setWallet(loadedWallet || []);
-      setTargets(loadedTargets || defaultTargets);
+      setTargets((loadedTargets.length > 0 ? loadedTargets[0] : defaultTargets) as DSOTarget);
       setNotifications(loadedNotifications || []);
       setAllFranchiseSims(loadedSims || []);
     };
@@ -135,18 +135,23 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   }, [fid, mounted]);
 
   const dsoLogin = async (id: string, password: string): Promise<boolean> => {
-    const dsoRecord = await apiLoadById("dso", id);
-    if (dsoRecord && dsoRecord.password === password && dsoRecord.status === "Active") {
-      const franchise = await apiLoadById("franchise", dsoRecord.franchiseId);
-      if (franchise) {
-        setAuth({ dsoId: dsoRecord.id, dsoName: dsoRecord.name, franchiseId: franchise.id, loggedIn: true });
+    try {
+      const dsoRecord = await apiLoadById("dso", id);
+      if (dsoRecord && dsoRecord.password === password && dsoRecord.status === "Active") {
+        const newAuth = { dsoId: dsoRecord.id, dsoName: dsoRecord.name, franchiseId: dsoRecord.franchiseId, loggedIn: true };
+        setAuth(newAuth);
+        await apiSave("franchiseData", { id: "dso-auth", data: JSON.stringify(newAuth) });
         return true;
       }
-    }
+    } catch (e) { console.error("DSO login error:", e); }
     return false;
   };
 
-  const dsoLogout = () => { setAuth({ dsoId: "", dsoName: "", franchiseId: "", loggedIn: false }); };
+  const dsoLogout = async () => {
+    const empty = { dsoId: "", dsoName: "", franchiseId: "", loggedIn: false };
+    setAuth(empty);
+    try { await apiUpdate("franchiseData", "dso-auth", { data: "" }); } catch {}
+  };
 
   const addActivation = async (a: Activation) => {
     await apiSave("dsoActivation", a);

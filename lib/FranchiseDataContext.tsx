@@ -329,14 +329,16 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   }, [fid, mounted]);
 
   const login = async (id: string, password: string): Promise<boolean> => {
-    const franchises = await apiLoad("franchise");
-    const franchise = franchises.find((f: any) => f.id.toUpperCase() === id.toUpperCase() && f.password === password && f.status === "Active");
-    if (franchise) {
-      const newAuth = { franchiseId: franchise.id, franchiseName: franchise.name, loggedIn: true };
-      setAuth(newAuth);
-      await apiSave("franchiseData", { id: "auth", data: JSON.stringify(newAuth) });
-      return true;
-    }
+    try {
+      const franchises = await apiLoad("franchise");
+      const franchise = franchises.find((f: any) => f.id.toUpperCase() === id.toUpperCase() && f.password === password && f.status === "Active");
+      if (franchise) {
+        const newAuth = { franchiseId: franchise.id, franchiseName: franchise.name, loggedIn: true };
+        setAuth(newAuth);
+        await apiSave("franchiseData", { id: "auth", data: JSON.stringify(newAuth) });
+        return true;
+      }
+    } catch (e) { console.error("Franchise login error:", e); }
     return false;
   };
 

@@ -11,7 +11,7 @@ async function loadEquipmentIssueRecords(franchiseId?: string) {
   if (typeof window === "undefined") return [];
   try {
     const result = await apiLoad("equipmentIssueRecord", franchiseId);
-    return Array.isArray(result) ? result : result?.data ? (typeof result.data === 'string' ? JSON.parse(result.data) : result.data) : [];
+    return Array.isArray(result) ? result : [];
   } catch {}
   return [];
 }

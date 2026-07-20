@@ -35,7 +35,7 @@ export default function DSOSimStockPage() {
     (async () => {
       try {
         const result = await apiLoad("sim", auth.franchiseId);
-        const allSims: SIM[] = Array.isArray(result) ? result : result?.data ? (typeof result.data === 'string' ? JSON.parse(result.data) : result.data) : [];
+        const allSims: SIM[] = Array.isArray(result) ? result : [];
         const mySims = allSims.filter((s) => s.issuedToId === auth.dsoId && s.status === "Issued");
         setSims(allSims);
         setIssuedSims(mySims);

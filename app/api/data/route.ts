@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 function getModel(name: string) {
-  const { prisma } = require("@/lib/prisma");
+  const { PrismaClient } = require("@prisma/client");
+  const g = globalThis as any;
+  if (!g.__prisma) g.__prisma = new PrismaClient();
+  const prisma = g.__prisma;
+
   const map: Record<string, any> = {
     company: prisma.company,
     franchise: prisma.franchise,
@@ -52,7 +56,6 @@ function getModel(name: string) {
   return model;
 }
 
-// GET /api/data?model=xxx&franchiseId=xxx
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -79,7 +82,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/data  { model, data }
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -101,7 +103,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT /api/data  { model, id, data } or { model, ids[], data }
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
@@ -124,7 +125,6 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE /api/data  { model, id } or { model, ids[] }
 export async function DELETE(req: NextRequest) {
   try {
     const body = await req.json();
