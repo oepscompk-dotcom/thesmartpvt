@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+const JSON_FIELDS = [
+  "newSimLimits", "hlrSimLimits", "dailyTargets", "monthlyTargets",
+  "documents", "agreements", "guarantor", "attendanceSettings", "permissions",
+];
+
 function getModel(name: string) {
   const map: Record<string, any> = {
     company: prisma.company,
@@ -52,6 +57,31 @@ function getModel(name: string) {
   return model;
 }
 
+function serializeData(data: Record<string, any>) {
+  const out = { ...data };
+  for (const key of JSON_FIELDS) {
+    if (out[key] !== undefined && out[key] !== null && typeof out[key] === "object") {
+      out[key] = JSON.stringify(out[key]);
+    }
+  }
+  return out;
+}
+
+function deserializeRecord(record: any) {
+  if (!record) return record;
+  const out = { ...record };
+  for (const key of JSON_FIELDS) {
+    if (out[key] && typeof out[key] === "string") {
+      try { out[key] = JSON.parse(out[key]); } catch {}
+    }
+  }
+  return out;
+}
+
+function deserializeRecords(records: any[]) {
+  return records.map(deserializeRecord);
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -65,14 +95,14 @@ export async function GET(req: NextRequest) {
 
     if (id) {
       const record = await model.findUnique({ where: { id } });
-      return NextResponse.json(record || null);
+      return NextResponse.json(deserializeRecord(record));
     }
 
     const where: any = {};
     if (franchiseId) where.franchiseId = franchiseId;
 
     const records = await model.findMany({ where, orderBy: { id: "asc" } });
-    return NextResponse.json(records);
+    return NextResponse.json(deserializeRecords(records));
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -88,16 +118,17 @@ export async function POST(req: NextRequest) {
     const model = getModel(modelName);
 
     if (Array.isArray(data)) {
-      const records = await model.createMany({ data, skipDuplicates: true });
+      const records = await model.createMany({ data: data.map(serializeData), skipDuplicates: true });
       return NextResponse.json({ count: records.count });
     }
 
+    const serialized = serializeData(data);
     const record = await model.upsert({
       where: { id: data.id },
-      update: data,
-      create: data,
+      update: serialized,
+      create: serialized,
     });
-    return NextResponse.json(record);
+    return NextResponse.json(deserializeRecord(record));
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -118,8 +149,9 @@ export async function PUT(req: NextRequest) {
     }
 
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-    const record = await model.update({ where: { id }, data });
-    return NextResponse.json(record);
+    const serialized = serializeData(data);
+    const record = await model.update({ where: { id }, data: serialized });
+    return NextResponse.json(deserializeRecord(record));
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
