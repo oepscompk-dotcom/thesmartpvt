@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-function getModel(name: string) {
+function getPrisma() {
   const { PrismaClient } = require("@prisma/client");
   const g = globalThis as any;
   if (!g.__prisma) g.__prisma = new PrismaClient();
-  const prisma = g.__prisma;
+  return g.__prisma;
+}
+
+function getModel(name: string) {
+  const prisma = getPrisma();
 
   const map: Record<string, any> = {
     company: prisma.company,
