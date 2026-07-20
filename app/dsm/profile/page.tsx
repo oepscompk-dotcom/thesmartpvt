@@ -3,10 +3,14 @@
 import { useState, useEffect } from "react";
 import { useDSMData } from "@/lib/DSMDataContext";
 import { User, Mail, Phone, Lock, Save, Smartphone, Building, Shield, ArrowLeft, LogOut } from "lucide-react";
+import { apiLoadById, apiSave } from "@/lib/api";
 
-function loadProfile<T>(key: string, defaultVal: T): T {
-  if (typeof window === "undefined") return defaultVal;
-  try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : defaultVal; } catch { return defaultVal; }
+async function loadProfileApi<T>(model: string, id: string, defaultVal: T): Promise<T> {
+  try {
+    const result = await apiLoadById(model, id);
+    if (result?.data) return JSON.parse(result.data);
+  } catch {}
+  return defaultVal;
 }
 
 export default function ProfilePage() {
@@ -22,9 +26,10 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setName(auth.dsmName);
-    const profile = loadProfile<{ email?: string; phone?: string }>("dsm-profile", {});
-    setEmail(profile.email || "");
-    setPhone(profile.phone || "");
+    loadProfileApi<{ email?: string; phone?: string }>("franchiseData", "dsm-profile", {}).then((profile) => {
+      setEmail(profile.email || "");
+      setPhone(profile.phone || "");
+    });
   }, [auth.dsmName]);
 
   const handleSaveProfile = () => {
@@ -33,11 +38,11 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) return;
-    const passwords = loadProfile<{ current?: string }>("dsm-passwords", {});
+    const passwords = await loadProfileApi<{ current?: string }>("franchiseData", "dsm-passwords", {});
     passwords.current = newPassword;
-    try { localStorage.setItem("dsm-passwords", JSON.stringify(passwords)); } catch {}
+    try { await apiSave("franchiseData", { id: "dsm-passwords", data: JSON.stringify(passwords) }); } catch {}
     setPasswordSaved(true);
     setCurrentPassword("");
     setNewPassword("");

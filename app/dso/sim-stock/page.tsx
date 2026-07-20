@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useDSOData } from "@/lib/DSODataContext";
 import { Smartphone, Search, Filter, Package, CheckCircle, Clock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { apiLoad } from "@/lib/api";
 
 interface SIM {
   id: string;
@@ -21,16 +22,6 @@ interface SIM {
 
 const NETWORKS = ["All", "Telenor", "Jazz", "Ufone", "Zong"];
 
-function loadFromStorage<T>(key: string, defaultVal: T): T {
-  if (typeof window === "undefined") return defaultVal;
-  try {
-    const s = localStorage.getItem(key);
-    return s ? JSON.parse(s) : defaultVal;
-  } catch {
-    return defaultVal;
-  }
-}
-
 export default function DSOSimStockPage() {
   const { auth } = useDSOData();
   const [sims, setSims] = useState<SIM[]>([]);
@@ -41,11 +32,19 @@ export default function DSOSimStockPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const allSims = loadFromStorage<SIM[]>(`franchise-${auth.franchiseId}-sims`, []);
-    const mySims = allSims.filter((s) => s.issuedToId === auth.dsoId && s.status === "Issued");
-    setSims(allSims);
-    setIssuedSims(mySims);
-    setLoading(false);
+    (async () => {
+      try {
+        const result = await apiLoad("sim", auth.franchiseId);
+        const allSims: SIM[] = Array.isArray(result) ? result : result?.data ? (typeof result.data === 'string' ? JSON.parse(result.data) : result.data) : [];
+        const mySims = allSims.filter((s) => s.issuedToId === auth.dsoId && s.status === "Issued");
+        setSims(allSims);
+        setIssuedSims(mySims);
+      } catch {
+        setSims([]);
+        setIssuedSims([]);
+      }
+      setLoading(false);
+    })();
   }, [auth.dsoId, auth.franchiseId]);
 
   const totalIssued = issuedSims.length;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useCompanyData } from "@/lib/CompanyDataContext";
 import { Building2, User, Mail, Phone, MapPin, Lock, Save, RefreshCw, Image, Camera } from "lucide-react";
+import { apiLoad, apiSave } from "@/lib/api";
 
 export default function CompanySettingsPage() {
   const { auth } = useCompanyData();
@@ -31,24 +32,24 @@ export default function CompanySettingsPage() {
 
   useEffect(() => {
     if (auth.companyId) {
-      let companies: any[] = [];
-      try {
-        const stored = localStorage.getItem("smart-erp-companies");
-        if (stored) companies = JSON.parse(stored);
-      } catch {}
-      const company = companies.find((c) => c.id === auth.companyId);
-      if (company) {
-        setProfile({
-          companyName: company.name,
-          ownerName: company.owner,
-          email: company.email,
-          phone: company.mobile,
-          address: company.address,
-          city: company.city,
-          province: company.province,
-          logo: company.logo || "",
-        });
-      }
+      (async () => {
+        try {
+          const companies = await apiLoad("company");
+          const company = (companies || []).find((c: any) => c.id === auth.companyId);
+          if (company) {
+            setProfile({
+              companyName: company.name,
+              ownerName: company.owner,
+              email: company.email,
+              phone: company.mobile,
+              address: company.address,
+              city: company.city,
+              province: company.province,
+              logo: company.logo || "",
+            });
+          }
+        } catch {}
+      })();
     }
   }, [auth.companyId]);
 
@@ -58,19 +59,19 @@ export default function CompanySettingsPage() {
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    let companies: any[] = [];
     try {
-      const stored = localStorage.getItem("smart-erp-companies");
-      if (stored) companies = JSON.parse(stored);
+      await apiSave("company", {
+        id: auth.companyId,
+        name: profile.companyName,
+        owner: profile.ownerName,
+        email: profile.email,
+        mobile: profile.phone,
+        address: profile.address,
+        city: profile.city,
+        province: profile.province,
+        logo: profile.logo,
+      });
     } catch {}
-    
-    const updated = companies.map((c) => 
-      c.id === auth.companyId 
-        ? { ...c, name: profile.companyName, owner: profile.ownerName, email: profile.email, mobile: profile.phone, address: profile.address, city: profile.city, province: profile.province, logo: profile.logo }
-        : c
-    );
-    
-    localStorage.setItem("smart-erp-companies", JSON.stringify(updated));
     
     setSaving(false);
     setSaved(true);

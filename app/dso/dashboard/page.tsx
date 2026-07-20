@@ -14,6 +14,7 @@ import {
   CheckCircle2, FileText, Star, X, BookOpen, Search, Filter
 } from "lucide-react";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiLoadById } from "@/lib/api";
 
 export default function DSODashboardPage() {
   const { activations, attendance, wallet, targets, device, notifications, settings, auth, hydrated, sims } = useDSOData();
@@ -24,21 +25,24 @@ export default function DSODashboardPage() {
 
   const [mySalary, setMySalary] = useState<Record<string, number>>({});
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("smart-erp-franchise-dso");
-      if (raw) {
-        const list = JSON.parse(raw);
-        const me = list.find((d: any) => d.id === auth.dsoId);
-        if (me) {
-          const fields = ["salary","fuelAllowance","mobileAllowance","dailyAllowance","residenceAllowance",
-            "newSimCommission","mnpCommission","replacementCommission","bynCommission","hikeCommission",
-            "otherCommission","targetBonus","bonus","advanceSalary","loanDeduction","otherDeduction"];
-          const obj: Record<string, number> = {};
-          fields.forEach((f) => { obj[f] = me[f] || 0; });
-          setMySalary(obj);
+    (async () => {
+      try {
+        const authData = await apiLoadById("franchiseData", "dso-auth");
+        if (authData?.data) {
+          const parsed = JSON.parse(authData.data);
+          const list = Array.isArray(parsed) ? parsed : [parsed];
+          const me = list.find((d: any) => d.id === auth.dsoId);
+          if (me) {
+            const fields = ["salary","fuelAllowance","mobileAllowance","dailyAllowance","residenceAllowance",
+              "newSimCommission","mnpCommission","replacementCommission","bynCommission","hikeCommission",
+              "otherCommission","targetBonus","bonus","advanceSalary","loanDeduction","otherDeduction"];
+            const obj: Record<string, number> = {};
+            fields.forEach((f) => { obj[f] = me[f] || 0; });
+            setMySalary(obj);
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    })();
   }, [auth.dsoId]);
 
   const simStock = useMemo(() => {

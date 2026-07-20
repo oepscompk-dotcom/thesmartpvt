@@ -10,6 +10,7 @@ import {
   Wifi, Layers, Clock, UserCheck, Banknote, RefreshCw, Cpu, Filter,
   FileText, Settings, AlertTriangle, CheckCircle, XCircle, Printer, Download
 } from "lucide-react";
+import { apiLoad } from "@/lib/api";
 
 export default function CompanyDashboardPage() {
   const { franchises, detailMap, totalSIMs, totalDevices, totalStaff, totalRevenue, todayActivations, attendanceRate, totalPayroll, totalExpenses, totalIncome, loading, refreshData, auth } = useCompanyData();
@@ -47,14 +48,13 @@ export default function CompanyDashboardPage() {
   const [companyProfile, setCompanyProfile] = useState({ companyName: "", ownerName: "", email: "", phone: "", address: "", city: "", province: "" });
   useEffect(() => {
     if (!auth.companyId) return;
-    try {
-      const stored = localStorage.getItem("smart-erp-companies");
-      if (stored) {
-        const companies = JSON.parse(stored);
-        const c = companies.find((x: any) => x.id === auth.companyId);
+    (async () => {
+      try {
+        const companies = await apiLoad("company");
+        const c = (companies || []).find((x: any) => x.id === auth.companyId);
         if (c) setCompanyProfile({ companyName: c.name || "", ownerName: c.owner || "", email: c.email || "", phone: c.mobile || "", address: c.address || "", city: c.city || "", province: c.province || "" });
-      }
-    } catch {}
+      } catch {}
+    })();
   }, [auth.companyId]);
 
   useEffect(() => {

@@ -6,14 +6,9 @@ import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTrian
 import { useFranchiseData, AttendanceRecord } from "@/lib/FranchiseDataContext";
 import Link from "next/link";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiLoadById } from "@/lib/api";
 
-function getAttendanceSettings() {
-  try {
-    const stored = localStorage.getItem("franchise-attendance-settings");
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return { workStart: "09:00", workEnd: "18:00", lateAfter: "10:00", requiredHours: 8, finePerDay: 1000, bonusPerSale: 500 };
-}
+const defaultAttendanceSettings = { workStart: "09:00", workEnd: "18:00", lateAfter: "10:00", requiredHours: 8, finePerDay: 1000, bonusPerSale: 500 };
 
 function calcWorkingHours(checkIn: string, checkOut: string): number {
   if (!checkIn || !checkOut) return 0;
@@ -24,7 +19,16 @@ function calcWorkingHours(checkIn: string, checkOut: string): number {
 
 export default function FranchiseAttendancePage() {
   const { auth, attendance, dsms, dso, addAttendance } = useFranchiseData();
-  const settings = getAttendanceSettings();
+  const [settings, setSettings] = useState(defaultAttendanceSettings);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const s = await apiLoadById("franchiseData", "attendance-settings-" + auth.franchiseId);
+        if (s?.data) setSettings(JSON.parse(s.data));
+      } catch {}
+    })();
+  }, [auth?.franchiseId]);
 
   const [tab, setTab] = useState<"overview" | "dso" | "dsm" | "settings">("overview");
   const [search, setSearch] = useState("");

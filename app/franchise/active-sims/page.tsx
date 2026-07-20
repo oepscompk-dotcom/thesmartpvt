@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, Filter, Smartphone, CheckCircle, Clock, Package, Upload, Download, X, FileSpreadsheet, AlertCircle, FileDown, Eye, Pencil, Trash2, Calendar, CheckSquare } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
+import { apiLoad, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 
 interface Activation { id: string; type: string; simNumber: string; status: string; bvsStatus: string; fcaStatus: string; ifcaStatus: string; dsoId: string; retailerId: string; createdAt: string; franchiseId: string; }
 
@@ -19,18 +20,17 @@ interface ImportRow {
   matchedSimNumber?: string;
 }
 
-function loadActivations(franchiseId: string): Activation[] {
-  if (typeof window === "undefined" || !franchiseId) return [];
-  const results: Activation[] = [];
+async function loadActivations(franchiseId: string): Promise<Activation[]> {
+  if (!franchiseId) return [];
   try {
-    const dsoKey = `franchise-${franchiseId}-dso-activations`;
-    const dsmKey = `franchise-${franchiseId}-dsm-activations`;
-    for (const key of [dsoKey, dsmKey]) {
-      const data = JSON.parse(localStorage.getItem(key) || "[]");
-      if (Array.isArray(data)) results.push(...data);
-    }
-  } catch {}
-  return results;
+    const [dsoActivations, dsmActivations] = await Promise.all([
+      apiLoad("dsoActivation", franchiseId),
+      apiLoad("dsmActivation", franchiseId),
+    ]);
+    return [...(dsoActivations || []), ...(dsmActivations || [])];
+  } catch {
+    return [];
+  }
 }
 
 interface ImportVerification {
@@ -41,17 +41,24 @@ interface ImportVerification {
   verifiedAt: string;
 }
 
-function loadImportVerifications(): Record<string, ImportVerification> {
-  if (typeof window === "undefined") return {};
+async function loadImportVerifications(): Promise<Record<string, ImportVerification>> {
   try {
-    const stored = localStorage.getItem("franchise-sim-verifications");
-    if (stored) return JSON.parse(stored);
+    const data = await apiLoad("franchiseSimVerification");
+    if (Array.isArray(data)) {
+      const result: Record<string, ImportVerification> = {};
+      for (const item of data) {
+        if (item.simNumber) result[item.simNumber] = item;
+      }
+      return result;
+    }
   } catch {}
   return {};
 }
 
-function saveImportVerifications(data: Record<string, ImportVerification>) {
-  try { localStorage.setItem("franchise-sim-verifications", JSON.stringify(data)); } catch {}
+async function saveImportVerifications(data: Record<string, ImportVerification>) {
+  for (const verification of Object.values(data)) {
+    try { await apiSave("franchiseSimVerification", verification); } catch {}
+  }
 }
 
 function parseCSV(text: string): ImportRow[] {
@@ -151,9 +158,9 @@ export default function ActiveSIMsPage() {
   const [bulkEditActive, setBulkEditActive] = useState(false);
   const [pageMounted, setPageMounted] = useState(false);
 
-  const refreshActivations = () => {
+  const refreshActivations = async () => {
     if (auth?.franchiseId) {
-      setAllActivations(loadActivations(auth.franchiseId));
+      setAllActivations(await loadActivations(auth.franchiseId));
     }
   };
 
@@ -163,16 +170,16 @@ export default function ActiveSIMsPage() {
 
   useEffect(() => {
     if (auth?.franchiseId) {
-      setAllActivations(loadActivations(auth.franchiseId));
+      loadActivations(auth.franchiseId).then(setAllActivations);
     }
   }, [auth?.franchiseId, pageMounted]);
 
   useEffect(() => {
-    setImportVerifications(loadImportVerifications());
+    loadImportVerifications().then(setImportVerifications);
   }, []);
 
   useEffect(() => {
-    const refresh = () => { refreshActivations(); setImportVerifications(loadImportVerifications()); };
+    const refresh = async () => { await refreshActivations(); setImportVerifications(await loadImportVerifications()); };
     const onVisibility = () => { if (document.visibilityState === "visible") refresh(); };
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", onVisibility);
@@ -332,14 +339,14 @@ export default function ActiveSIMsPage() {
     reader.readAsText(file);
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     const matchedRows = importRows.filter((r) => r.matched);
     if (matchedRows.length === 0) { setImportError("No matching SIMs found."); return; }
-    const verifications = loadImportVerifications();
+    const verifications = await loadImportVerifications();
     let updatedCount = 0;
-    matchedRows.forEach((row) => {
+    for (const row of matchedRows) {
       const simNum = row.matchedSimNumber || row.simNumber;
-      if (!simNum) return;
+      if (!simNum) continue;
       verifications[simNum] = {
         simNumber: simNum,
         bvs: row.bvs === "1" ? "1" : "0",
@@ -348,8 +355,8 @@ export default function ActiveSIMsPage() {
         verifiedAt: new Date().toISOString(),
       };
       updatedCount++;
-    });
-    saveImportVerifications(verifications);
+    }
+    await saveImportVerifications(verifications);
     setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA updated.`);
     setImportRows([]); setImportFile(null);
     setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 2000);
@@ -688,42 +695,46 @@ export default function ActiveSIMsPage() {
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
               <button onClick={() => { setEditSIM(null); setBulkEditActive(false); }} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={() => {
+              <button onClick={async () => {
                 try {
                   if (auth?.franchiseId) {
-                    const stored = localStorage.getItem(`franchise-${auth.franchiseId}-sims`);
-                    if (stored) {
-                      const allSims = JSON.parse(stored);
-                      const updated = allSims.map((s: any) => (bulkEditActive ? selectedIds.includes(s.id) : s.id === editSIM.id) ? {
-                        ...s,
-                        network: editForm.network || s.network,
+                    const targets = bulkEditActive
+                      ? selectedIds.map((id) => {
+                          const sim = allActivations.find((a) => a.simNumber === id) || sims.find((s) => s.id === id);
+                          return sim;
+                        }).filter(Boolean)
+                      : [editSIM];
+                    for (const sim of targets) {
+                      if (!sim) continue;
+                      const updatedSim = {
+                        ...sim,
+                        network: editForm.network || sim.network,
                         ...(editForm.status ? { status: editForm.status } : {}),
-                        deviceId: editForm.deviceId || s.deviceId,
-                        iccid: editForm.iccid || s.iccid,
-                      } : s);
-                      localStorage.setItem(`franchise-${auth.franchiseId}-sims`, JSON.stringify(updated));
+                        deviceId: editForm.deviceId || sim.deviceId,
+                        iccid: editForm.iccid || sim.iccid,
+                      };
+                      await apiUpdate("sim", sim.id, updatedSim);
                     }
                   }
                 } catch {}
                 try {
                   if (auth?.franchiseId) {
-                    const vk = "franchise-sim-verifications";
-                    const stored = localStorage.getItem(vk);
-                    const verifications = stored ? JSON.parse(stored) : {};
-                    const targets = bulkEditActive ? selectedIds.map((id) => { const sim = allActivations.find((a) => a.simNumber === id) || sims.find((s) => s.id === id); return sim?.simNumber; }).filter(Boolean) : [editSIM.simNumber];
-                    targets.forEach((simNum) => {
-                      if (!simNum) return;
-                      const existing = verifications[simNum] || {};
-                      verifications[simNum] = {
+                    const existingVerifications = await loadImportVerifications();
+                    const targets = bulkEditActive
+                      ? selectedIds.map((id) => { const sim = allActivations.find((a) => a.simNumber === id) || sims.find((s) => s.id === id); return sim?.simNumber; }).filter(Boolean)
+                      : [editSIM.simNumber];
+                    for (const simNum of targets) {
+                      if (!simNum) continue;
+                      const existing = existingVerifications[simNum] || {};
+                      await apiSave("franchiseSimVerification", {
                         ...existing,
                         simNumber: simNum,
                         bvs: editForm.bvs || existing.bvs || "0",
                         fca: editForm.fca || existing.fca || "0",
                         ifca: editForm.ifca || existing.ifca || "0",
                         verifiedAt: new Date().toISOString(),
-                      };
-                    });
-                    localStorage.setItem(vk, JSON.stringify(verifications));
+                      });
+                    }
                   }
                 } catch {}
                 setEditSIM(null); setBulkEditActive(false); setSelectedIds([]); window.location.reload();
@@ -748,8 +759,16 @@ export default function ActiveSIMsPage() {
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
               <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={() => {
-                try { if (auth?.franchiseId) { const stored = localStorage.getItem(`franchise-${auth.franchiseId}-sims`); if (stored) { const allSims = JSON.parse(stored); const updated = deleteConfirm._bulk ? allSims.filter((s: any) => !selectedIds.includes(s.id)) : allSims.filter((s: any) => s.id !== deleteConfirm.id); localStorage.setItem(`franchise-${auth.franchiseId}-sims`, JSON.stringify(updated)); } } } catch {}
+              <button onClick={async () => {
+                try {
+                  if (deleteConfirm._bulk) {
+                    for (const id of selectedIds) {
+                      await apiDelete("sim", id);
+                    }
+                  } else {
+                    await apiDelete("sim", deleteConfirm.id);
+                  }
+                } catch {}
                 setDeleteConfirm(null); setSelectedIds([]); window.location.reload();
               }} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 flex items-center justify-center gap-2"><Trash2 size={14} /> {deleteConfirm._bulk ? `Delete ${deleteConfirm.count}` : "Delete"}</button>
             </div>

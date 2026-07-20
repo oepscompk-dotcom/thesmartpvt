@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { Settings as SettingsIcon, Save, Building2, Upload, Clock, Timer, AlertTriangle, Award } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
+import { apiLoadById, apiSave } from "@/lib/api";
 
 const defaultAttendanceSettings = {
   workStart: "09:00", workEnd: "18:00", lateAfter: "10:00",
@@ -11,18 +12,25 @@ const defaultAttendanceSettings = {
 };
 
 export default function FranchiseSettingsPage() {
-  const { settings, updateSettings } = useFranchiseData();
+  const { settings, updateSettings, auth } = useFranchiseData();
   const [form, setForm] = useState(settings);
   const [saved, setSaved] = useState(false);
   const [attSettings, setAttSettings] = useState(defaultAttendanceSettings);
 
   useEffect(() => {
-    try { const s = localStorage.getItem("franchise-attendance-settings"); if (s) setAttSettings(JSON.parse(s)); } catch {}
-  }, []);
+    (async () => {
+      try {
+        const s = await apiLoadById("franchiseData", "attendance-settings-" + auth.franchiseId);
+        if (s?.data) setAttSettings(JSON.parse(s.data));
+      } catch {}
+    })();
+  }, [auth?.franchiseId]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     updateSettings(form);
-    localStorage.setItem("franchise-attendance-settings", JSON.stringify(attSettings));
+    try {
+      await apiSave("franchiseData", { id: "attendance-settings-" + auth.franchiseId, data: JSON.stringify(attSettings) });
+    } catch {}
     setSaved(true); setTimeout(() => setSaved(false), 2000);
   };
 

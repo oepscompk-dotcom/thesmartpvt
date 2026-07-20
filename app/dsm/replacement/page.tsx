@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDSMData } from "@/lib/DSMDataContext";
+import { apiLoad, apiUpdate } from "@/lib/api";
 import { Repeat, User, Phone, MessageSquare, CheckCircle2, Tag, ArrowLeft, ChevronRight, Signal } from "lucide-react";
 
 interface SIMStock {
@@ -15,11 +16,6 @@ interface SIMStock {
   retailerId?: string;
   type?: "new" | "hlr";
   issuedToId?: string;
-}
-
-function loadFromStorage<T>(key: string, defaultVal: T): T {
-  if (typeof window === "undefined") return defaultVal;
-  try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : defaultVal; } catch { return defaultVal; }
 }
 
 export default function SIMReplacement() {
@@ -50,11 +46,14 @@ export default function SIMReplacement() {
   const reasons = ["Lost", "Damaged", "Stolen"];
 
   useEffect(() => {
-    setMounted(true);
-    if (!auth.franchiseId) return;
-    const allSims = loadFromStorage<SIMStock[]>(`franchise-${auth.franchiseId}-sims`, []);
-    const mySims = allSims.filter((s) => s.issuedToId === auth.dsmId && s.status === "Issued" && s.type === "hlr");
-    setSimStockList(mySims);
+    const load = async () => {
+      setMounted(true);
+      if (!auth.franchiseId) return;
+      const allSims = await apiLoad("sim", auth.franchiseId);
+      const mySims = (allSims || []).filter((s: SIMStock) => s.issuedToId === auth.dsmId && s.status === "Issued" && s.type === "hlr");
+      setSimStockList(mySims);
+    };
+    load();
   }, [auth.dsmId, auth.franchiseId]);
 
   const handleSimSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -79,38 +78,35 @@ export default function SIMReplacement() {
     }
   };
 
-  const updateFranchiseSIMStatus = (simNumber: string, newStatus: string) => {
+  const updateFranchiseSIMStatus = async (simNumber: string, newStatus: string) => {
     try {
       if (!auth.franchiseId) return;
-      const stored = localStorage.getItem(`franchise-${auth.franchiseId}-sims`);
-      if (stored) {
-        const sims = JSON.parse(stored);
-        const updated = sims.map((s: any) => s.simNumber === simNumber ? { ...s, status: newStatus } : s);
-        localStorage.setItem(`franchise-${auth.franchiseId}-sims`, JSON.stringify(updated));
+      const allSims = await apiLoad("sim", auth.franchiseId);
+      const sim = (allSims || []).find((s: any) => s.simNumber === simNumber);
+      if (sim) {
+        await apiUpdate("sim", sim.id, { ...sim, status: newStatus });
       }
     } catch {}
   };
 
-  const isSIMInPipeline = (simNumber: string): boolean => {
+  const isSIMInPipeline = async (simNumber: string): Promise<boolean> => {
     try {
       if (!auth.franchiseId) return false;
-      const dsoKey = `franchise-${auth.franchiseId}-dso-activations`;
-      const dsmKey = `franchise-${auth.franchiseId}-dsm-activations`;
-      for (const key of [dsoKey, dsmKey]) {
-        const stored = localStorage.getItem(key);
-        if (stored) {
-          const acts = JSON.parse(stored);
-          if (Array.isArray(acts)) {
-            const found = acts.find((a: any) => a.simNumber === simNumber && a.status !== "Completed" && a.status !== "Rejected");
-            if (found) return true;
-          }
+      const [dsoActs, dsmActs] = await Promise.all([
+        apiLoad("dsoActivation", auth.franchiseId),
+        apiLoad("dsmActivation", auth.franchiseId),
+      ]);
+      for (const acts of [dsoActs || [], dsmActs || []]) {
+        if (Array.isArray(acts)) {
+          const found = acts.find((a: any) => a.simNumber === simNumber && a.status !== "Completed" && a.status !== "Rejected");
+          if (found) return true;
         }
       }
     } catch {}
     return false;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const num = Math.floor(10000 + Math.random() * 90000);
     const id = `ACT-2026-${num}`;
@@ -118,7 +114,7 @@ export default function SIMReplacement() {
     const customerName = form.customerName.trim() || "XXXXX";
     const customerCNIC = form.customerCNIC.trim() || "XXXXX-YYYYYYY-X";
     const contactNumber = form.contactNumber.trim() || "03XX-XXXXXXX";
-    if (isSIMInPipeline(form.simNumber || "")) {
+    if (await isSIMInPipeline(form.simNumber || "")) {
       alert("This SIM is already in a verification pipeline (BVS/FCA/IFCA). Cannot submit until the current process is completed.");
       return;
     }
@@ -140,16 +136,13 @@ export default function SIMReplacement() {
       dsoId: "",
       franchiseId: auth.franchiseId,
     });
-    updateFranchiseSIMStatus(form.simNumber || "", "Activated");
+    await updateFranchiseSIMStatus(form.simNumber || "", "Activated");
     setActivatingId(id);
     setSelectedSimId("");
     try {
       if (auth.franchiseId) {
-        const stored = localStorage.getItem(`franchise-${auth.franchiseId}-sims`);
-        if (stored) {
-          const sims = JSON.parse(stored);
-          setSimStockList(sims.filter((s: any) => s.issuedToId === auth.dsmId && s.status === "Issued" && s.type === "hlr"));
-        }
+        const allSims = await apiLoad("sim", auth.franchiseId);
+        setSimStockList((allSims || []).filter((s: any) => s.issuedToId === auth.dsmId && s.status === "Issued" && s.type === "hlr"));
       }
     } catch {}
     setShowSuccess(true);

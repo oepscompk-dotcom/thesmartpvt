@@ -1,16 +1,17 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Wrench, Clock, CheckCircle, Filter } from "lucide-react";
 import { useDSMData } from "@/lib/DSMDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiLoad } from "@/lib/api";
 
-function loadEquipmentIssueRecords() {
+async function loadEquipmentIssueRecords(franchiseId?: string) {
   if (typeof window === "undefined") return [];
   try {
-    const stored = localStorage.getItem("franchise-equipment-issue-records");
-    if (stored) return JSON.parse(stored);
+    const result = await apiLoad("equipmentIssueRecord", franchiseId);
+    return Array.isArray(result) ? result : result?.data ? (typeof result.data === 'string' ? JSON.parse(result.data) : result.data) : [];
   } catch {}
   return [];
 }
@@ -20,7 +21,10 @@ export default function DSMFieldEquipmentPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  const allRecords = useMemo(() => loadEquipmentIssueRecords(), []);
+  const [allRecords, setAllRecords] = useState<any[]>([]);
+  useEffect(() => {
+    loadEquipmentIssueRecords(auth.franchiseId).then(setAllRecords);
+  }, [auth.franchiseId]);
   const myRecords = useMemo(() => {
     return allRecords.filter((r: any) => r.personId === auth.dsmId);
   }, [allRecords, auth.dsmId]);

@@ -11,6 +11,7 @@ import {
   ChevronDown, ChevronUp, RefreshCw, FileDown, Printer, Eye, Layers,
   FileSpreadsheet, FileText
 } from "lucide-react";
+import { apiLoad } from "@/lib/api";
 
 type Tab = "overview" | "sims" | "devices" | "staff" | "financial" | "activations";
 type ViewMode = "table" | "grid";
@@ -153,14 +154,13 @@ export default function CompanyReportsPage() {
   const [companyProfile, setCompanyProfile] = useState({ companyName: "", ownerName: "", email: "", phone: "", address: "", city: "", province: "" });
   useEffect(() => {
     if (!auth.companyId) return;
-    try {
-      const stored = localStorage.getItem("smart-erp-companies");
-      if (stored) {
-        const companies = JSON.parse(stored);
-        const c = companies.find((x: any) => x.id === auth.companyId);
+    (async () => {
+      try {
+        const companies = await apiLoad("company");
+        const c = (companies || []).find((x: any) => x.id === auth.companyId);
         if (c) setCompanyProfile({ companyName: c.name || "", ownerName: c.owner || "", email: c.email || "", phone: c.mobile || "", address: c.address || "", city: c.city || "", province: c.province || "" });
-      }
-    } catch {}
+      } catch {}
+    })();
   }, [auth.companyId]);
 
   if (loading) {

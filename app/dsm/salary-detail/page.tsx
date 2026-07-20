@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useDSMData } from "@/lib/DSMDataContext";
+import { apiLoadById } from "@/lib/api";
 import {
   DollarSign, Calendar, Smartphone, ArrowRightLeft, Repeat, Hash,
   TrendingUp, TrendingDown, Wallet, AlertTriangle, CheckCircle2,
@@ -21,21 +22,24 @@ export default function DSMSalaryDetailPage() {
   const dsmId = auth.dsmId || "DSM-NRWP-001";
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("smart-erp-franchise-dsm");
-      if (raw) {
-        const list = JSON.parse(raw);
-        const me = list.find((d: any) => d.id === dsmId);
-        if (me) {
-          const fields = ["salary","fuelAllowance","mobileAllowance","dailyAllowance","residenceAllowance",
-            "newSimCommission","mnpCommission","replacementCommission","bynCommission","hikeCommission",
-            "otherCommission","targetBonus","bonus","advanceSalary","loanDeduction","otherDeduction"];
-          const obj: Record<string, number> = {};
-          fields.forEach((f) => { obj[f] = me[f] || 0; });
-          setSalaryData(obj);
+    (async () => {
+      try {
+        const authData = await apiLoadById("franchiseData", "dsm-auth");
+        if (authData?.data) {
+          const parsed = JSON.parse(authData.data);
+          const list = Array.isArray(parsed) ? parsed : [parsed];
+          const me = list.find((d: any) => d.id === dsmId);
+          if (me) {
+            const fields = ["salary","fuelAllowance","mobileAllowance","dailyAllowance","residenceAllowance",
+              "newSimCommission","mnpCommission","replacementCommission","bynCommission","hikeCommission",
+              "otherCommission","targetBonus","bonus","advanceSalary","loanDeduction","otherDeduction"];
+            const obj: Record<string, number> = {};
+            fields.forEach((f) => { obj[f] = me[f] || 0; });
+            setSalaryData(obj);
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    })();
   }, [dsmId]);
 
   const allMonths = useMemo(() => {

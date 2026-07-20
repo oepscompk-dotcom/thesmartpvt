@@ -6,11 +6,14 @@ import { CalendarCheck, CheckCircle2, XCircle, Clock, MapPin, Plus, X, ArrowLeft
 import { useDSOData } from "@/lib/DSODataContext";
 import Link from "next/link";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiLoadById } from "@/lib/api";
 
-function getAttendanceSettings() {
+async function getAttendanceSettings(franchiseId?: string) {
   try {
-    const stored = localStorage.getItem("franchise-attendance-settings");
-    if (stored) return JSON.parse(stored);
+    if (franchiseId) {
+      const settings = await apiLoadById("franchiseData", "attendance-settings-" + franchiseId);
+      if (settings?.data) return JSON.parse(settings.data);
+    }
   } catch {}
   return { workStart: "09:00", workEnd: "18:00", lateAfter: "10:00", requiredHours: 8, finePerDay: 1000, bonusPerSale: 500 };
 }
@@ -29,7 +32,10 @@ function timeToMinutes(t: string): number {
 
 export default function DSOAttendancePage() {
   const { attendance, addAttendance, updateAttendance, leaveRequests, addLeaveRequest, warnings, auth } = useDSOData();
-  const settings = getAttendanceSettings();
+  const [settings, setSettings] = useState<{ workStart: string; workEnd: string; lateAfter: string; requiredHours: number; finePerDay: number; bonusPerSale: number }>({ workStart: "09:00", workEnd: "18:00", lateAfter: "10:00", requiredHours: 8, finePerDay: 1000, bonusPerSale: 500 });
+  useEffect(() => {
+    getAttendanceSettings(auth.franchiseId).then(setSettings);
+  }, [auth.franchiseId]);
 
   const [tab, setTab] = useState<"list" | "leave" | "warnings">("list");
   const [search, setSearch] = useState("");

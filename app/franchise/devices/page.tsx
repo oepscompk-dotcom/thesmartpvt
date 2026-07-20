@@ -1,17 +1,18 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Smartphone, Plus, Edit, Trash2, X, Save, Search, Filter, CheckSquare, Square, Eye, RotateCcw, Package, ArrowUpCircle, ArrowDownCircle, Calendar, ChevronDown, ChevronRight, Fingerprint, ShieldCheck, Send, UserCheck, History, User, BadgeCheck } from "lucide-react";
 import { useFranchiseData, Device, DeviceIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiLoad } from "@/lib/api";
 
 type Tab = "all" | "available" | "issued" | "returned" | "history";
 type View = "list" | "details";
 
 interface SIMRecord { id: string; network: string; simNumber: string; iccid: string; deviceId: string; status: string; receiveDate: string; franchiseId: string; type: "new" | "hlr"; }
 
-function loadSims(franchiseId: string): SIMRecord[] { if (typeof window === "undefined") return []; try { const s = localStorage.getItem(`franchise-${franchiseId}-sims`); return s ? JSON.parse(s) : []; } catch { return []; } }
+async function loadSims(franchiseId: string): Promise<SIMRecord[]> { try { return (await apiLoad("sim", franchiseId)) || []; } catch { return []; } }
 
 function getNextDeviceRecordSubId(records: DeviceIssueRecord[], baseRetailerId: string): string {
   const matching = records.filter((r) => r.baseRetailerId === baseRetailerId);
@@ -62,7 +63,11 @@ export default function DevicesPage() {
   const [receiveDate, setReceiveDate] = useState(new Date().toISOString().split("T")[0]);
   const [deviceNum, setDeviceNum] = useState("");
 
-  const allSims = useMemo(() => loadSims(auth.franchiseId), [auth.franchiseId]);
+  const [allSims, setAllSims] = useState<SIMRecord[]>([]);
+
+  useEffect(() => {
+    loadSims(auth.franchiseId).then(setAllSims);
+  }, [auth.franchiseId]);
 
   const filtered = useMemo(() => {
     let list = devices;

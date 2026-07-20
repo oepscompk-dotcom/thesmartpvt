@@ -6,6 +6,7 @@ import { useDSMData } from "@/lib/DSMDataContext";
 import { useState, useEffect } from "react";
 import { Smartphone, Search, Filter, Package, CheckCircle, Clock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { apiLoad } from "@/lib/api";
 
 interface Sim {
   id: string;
@@ -29,18 +30,17 @@ export default function DSMSimStockPage() {
   const [networkFilter, setNetworkFilter] = useState("All");
 
   useEffect(() => {
-    const mounted = setTimeout(() => {
+    (async () => {
       try {
-        const allSims: Sim[] = JSON.parse(localStorage.getItem(`franchise-${auth.franchiseId}-sims`) || "[]");
+        const result = await apiLoad("sim", auth.franchiseId);
+        const allSims: Sim[] = Array.isArray(result) ? result : result?.data ? (typeof result.data === 'string' ? JSON.parse(result.data) : result.data) : [];
         const mySims = allSims.filter((s) => s.issuedToId === auth.dsmId && s.status === "Issued");
         setSims(mySims);
       } catch {
         setSims([]);
       }
       setLoading(false);
-    }, 500);
-
-    return () => clearTimeout(mounted);
+    })();
   }, [auth.dsmId, auth.franchiseId]);
 
   const filteredSims = sims.filter((sim) => {

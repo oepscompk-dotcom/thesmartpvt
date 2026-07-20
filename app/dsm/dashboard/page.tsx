@@ -13,6 +13,7 @@ import {
   CheckCircle2, FileText, Star, X, BookOpen, Search, Users
 } from "lucide-react";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiLoadById } from "@/lib/api";
 
 export default function DSMDashboardPage() {
   const { activations, dsos, targets, wallet, notifications, attendance, settings, auth, hydrated, markNotificationRead, totalSales, sims } = useDSMData();
@@ -26,21 +27,24 @@ export default function DSMDashboardPage() {
 
   const [mySalary, setMySalary] = useState<Record<string, number>>({});
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("smart-erp-franchise-dsm");
-      if (raw) {
-        const list = JSON.parse(raw);
-        const me = list.find((d: any) => d.id === dsmId);
-        if (me) {
-          const fields = ["salary","fuelAllowance","mobileAllowance","dailyAllowance","residenceAllowance",
-            "newSimCommission","mnpCommission","replacementCommission","bynCommission","hikeCommission",
-            "otherCommission","targetBonus","bonus","advanceSalary","loanDeduction","otherDeduction"];
-          const obj: Record<string, number> = {};
-          fields.forEach((f) => { obj[f] = me[f] || 0; });
-          setMySalary(obj);
+    (async () => {
+      try {
+        const authData = await apiLoadById("franchiseData", "dsm-auth");
+        if (authData?.data) {
+          const parsed = JSON.parse(authData.data);
+          const list = Array.isArray(parsed) ? parsed : [parsed];
+          const me = list.find((d: any) => d.id === dsmId);
+          if (me) {
+            const fields = ["salary","fuelAllowance","mobileAllowance","dailyAllowance","residenceAllowance",
+              "newSimCommission","mnpCommission","replacementCommission","bynCommission","hikeCommission",
+              "otherCommission","targetBonus","bonus","advanceSalary","loanDeduction","otherDeduction"];
+            const obj: Record<string, number> = {};
+            fields.forEach((f) => { obj[f] = me[f] || 0; });
+            setMySalary(obj);
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    })();
   }, [dsmId]);
 
   const simStock = useMemo(() => {

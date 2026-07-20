@@ -6,11 +6,14 @@ import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTrian
 import { useDSMData } from "@/lib/DSMDataContext";
 import Link from "next/link";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiLoadById } from "@/lib/api";
 
-function getAttendanceSettings() {
+async function getAttendanceSettings(franchiseId?: string) {
   try {
-    const stored = localStorage.getItem("franchise-attendance-settings");
-    if (stored) return JSON.parse(stored);
+    if (franchiseId) {
+      const settings = await apiLoadById("franchiseData", "attendance-settings-" + franchiseId);
+      if (settings?.data) return JSON.parse(settings.data);
+    }
   } catch {}
   return { workStart: "09:00", workEnd: "18:00", lateAfter: "10:00", requiredHours: 8, finePerDay: 1000, bonusPerSale: 500 };
 }
@@ -30,7 +33,10 @@ function calcWorkingHours(checkIn: string, checkOut: string): number {
 
 export default function DSMDsoAttendancePage() {
   const { dsos, attendance, auth, hydrated, leaveRequests, warnings, reviewLeaveRequest } = useDSMData();
-  const settings = getAttendanceSettings();
+  const [settings, setSettings] = useState<{ workStart: string; workEnd: string; lateAfter: string; requiredHours: number; finePerDay: number; bonusPerSale: number }>({ workStart: "09:00", workEnd: "18:00", lateAfter: "10:00", requiredHours: 8, finePerDay: 1000, bonusPerSale: 500 });
+  useEffect(() => {
+    getAttendanceSettings(auth.franchiseId).then(setSettings);
+  }, [auth.franchiseId]);
   const [tab, setTab] = useState<"attendance" | "leave" | "warnings">("attendance");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -66,14 +72,13 @@ export default function DSMDsoAttendancePage() {
       else if (a.status === "Late") late++;
       totalHours += a.hoursWorked || 0;
     });
-    const settings = getAttendanceSettings();
     todayRecords.forEach((a) => {
       const h = a.hoursWorked || 0;
       if (h > 0 && h < settings.requiredHours) totalFine += settings.finePerDay;
       if (h >= settings.requiredHours) totalBonus += settings.bonusPerSale;
     });
     return { present, absent, late, totalHours: totalHours.toFixed(1), totalFine, totalBonus, total: count };
-  }, [attendance, selectedDate]);
+  }, [attendance, selectedDate, settings]);
 
   if (!hydrated) return null;
 
