@@ -1,16 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   images: {
     unoptimized: true,
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
-  },
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push('@prisma/client');
-    }
-    return config;
   },
 }
 

@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-function getModel(name: string) {
+async function getPrisma() {
+  const { PrismaClient } = await import("@prisma/client");
+  const g = globalThis as any;
+  if (!g.__prisma) g.__prisma = new PrismaClient();
+  return g.__prisma;
+}
+
+async function getModel(name: string) {
+  const prisma = await getPrisma();
   const map: Record<string, any> = {
     company: prisma.company,
     franchise: prisma.franchise,
@@ -61,7 +68,7 @@ export async function GET(req: NextRequest) {
 
     if (!modelName) return NextResponse.json({ error: "model required" }, { status: 400 });
 
-    const model = getModel(modelName);
+    const model = await getModel(modelName);
 
     if (id) {
       const record = await model.findUnique({ where: { id } });
@@ -85,7 +92,7 @@ export async function POST(req: NextRequest) {
 
     if (!modelName || !data) return NextResponse.json({ error: "model and data required" }, { status: 400 });
 
-    const model = getModel(modelName);
+    const model = await getModel(modelName);
 
     if (Array.isArray(data)) {
       const records = await model.createMany({ data, skipDuplicates: true });
@@ -110,7 +117,7 @@ export async function PUT(req: NextRequest) {
 
     if (!modelName || !data) return NextResponse.json({ error: "model and data required" }, { status: 400 });
 
-    const model = getModel(modelName);
+    const model = await getModel(modelName);
 
     if (ids && Array.isArray(ids)) {
       const results = await Promise.all(ids.map((i: string) => model.update({ where: { id: i }, data })));
@@ -132,7 +139,7 @@ export async function DELETE(req: NextRequest) {
 
     if (!modelName) return NextResponse.json({ error: "model required" }, { status: 400 });
 
-    const model = getModel(modelName);
+    const model = await getModel(modelName);
 
     if (ids && Array.isArray(ids)) {
       const results = await Promise.all(ids.map((i: string) => model.delete({ where: { id: i } })));
