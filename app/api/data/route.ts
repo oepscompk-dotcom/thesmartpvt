@@ -1,54 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const MODEL_MAP: Record<string, any> = {
-  company: prisma.company,
-  franchise: prisma.franchise,
-  employee: prisma.employee,
-  payment: prisma.payment,
-  subscription: prisma.subscription,
-  cmsPage: prisma.cMSPage,
-  adminNotification: prisma.adminNotification,
-  auditLog: prisma.auditLog,
-  adminSettings: prisma.adminSettings,
-  user: prisma.user,
-  dsm: prisma.dSM,
-  dso: prisma.dSO,
-  device: prisma.device,
-  sim: prisma.sIM,
-  simIssueRecord: prisma.sIMIssueRecord,
-  equipment: prisma.equipment,
-  equipmentItemName: prisma.equipmentItemName,
-  equipmentIssueRecord: prisma.equipmentIssueRecord,
-  deviceIssueRecord: prisma.deviceIssueRecord,
-  attendanceRecord: prisma.attendanceRecord,
-  target: prisma.target,
-  walletTransaction: prisma.walletTransaction,
-  payrollRecord: prisma.payrollRecord,
-  expense: prisma.expense,
-  accountEntry: prisma.accountEntry,
-  franchiseNotification: prisma.franchiseNotification,
-  bankAccount: prisma.bankAccount,
-  franchiseSimVerification: prisma.franchiseSimVerification,
-  dsoActivation: prisma.dSOActivation,
-  dsoAttendance: prisma.dSOAttendance,
-  leaveRequest: prisma.leaveRequest,
-  attendanceWarning: prisma.attendanceWarning,
-  dsoWalletEntry: prisma.dSOWalletEntry,
-  dsoTargetEntry: prisma.dSOTargetEntry,
-  dsoNotification: prisma.dSONotification,
-  dsmActivation: prisma.dSMActivation,
-  dsmTargetEntry: prisma.dSMTargetEntry,
-  dsmWalletEntry: prisma.dSMWalletEntry,
-  dsmNotification: prisma.dSMNotification,
-  dsmReportSubmission: prisma.dSMReportSubmission,
-  franchiseData: prisma.franchiseData,
-};
-
 function getModel(name: string) {
-  const model = MODEL_MAP[name];
+  const { prisma } = require("@/lib/prisma");
+  const map: Record<string, any> = {
+    company: prisma.company,
+    franchise: prisma.franchise,
+    employee: prisma.employee,
+    payment: prisma.payment,
+    subscription: prisma.subscription,
+    cmsPage: prisma.cMSPage,
+    adminNotification: prisma.adminNotification,
+    auditLog: prisma.auditLog,
+    adminSettings: prisma.adminSettings,
+    user: prisma.user,
+    dsm: prisma.dSM,
+    dso: prisma.dSO,
+    device: prisma.device,
+    sim: prisma.sIM,
+    simIssueRecord: prisma.sIMIssueRecord,
+    equipment: prisma.equipment,
+    equipmentItemName: prisma.equipmentItemName,
+    equipmentIssueRecord: prisma.equipmentIssueRecord,
+    deviceIssueRecord: prisma.deviceIssueRecord,
+    attendanceRecord: prisma.attendanceRecord,
+    target: prisma.target,
+    walletTransaction: prisma.walletTransaction,
+    payrollRecord: prisma.payrollRecord,
+    expense: prisma.expense,
+    accountEntry: prisma.accountEntry,
+    franchiseNotification: prisma.franchiseNotification,
+    bankAccount: prisma.bankAccount,
+    franchiseSimVerification: prisma.franchiseSimVerification,
+    dsoActivation: prisma.dSOActivation,
+    dsoAttendance: prisma.dSOAttendance,
+    leaveRequest: prisma.leaveRequest,
+    attendanceWarning: prisma.attendanceWarning,
+    dsoWalletEntry: prisma.dSOWalletEntry,
+    dsoTargetEntry: prisma.dSOTargetEntry,
+    dsoNotification: prisma.dSONotification,
+    dsmActivation: prisma.dSMActivation,
+    dsmTargetEntry: prisma.dSMTargetEntry,
+    dsmWalletEntry: prisma.dSMWalletEntry,
+    dsmNotification: prisma.dSMNotification,
+    dsmReportSubmission: prisma.dSMReportSubmission,
+    franchiseData: prisma.franchiseData,
+  };
+  const model = map[name];
   if (!model) throw new Error(`Unknown model: ${name}`);
   return model;
 }
@@ -80,23 +79,21 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/data  { model, data, franchiseId? }
+// POST /api/data  { model, data }
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { model: modelName, data, franchiseId } = body;
+    const { model: modelName, data } = body;
 
     if (!modelName || !data) return NextResponse.json({ error: "model and data required" }, { status: 400 });
 
     const model = getModel(modelName);
 
-    // Bulk create
     if (Array.isArray(data)) {
       const records = await model.createMany({ data });
       return NextResponse.json({ count: records.count });
     }
 
-    // Single create
     const record = await model.create({ data });
     return NextResponse.json(record);
   } catch (error: any) {
@@ -114,13 +111,11 @@ export async function PUT(req: NextRequest) {
 
     const model = getModel(modelName);
 
-    // Bulk update
     if (ids && Array.isArray(ids)) {
       const results = await Promise.all(ids.map((i: string) => model.update({ where: { id: i }, data })));
       return NextResponse.json({ count: results.length });
     }
 
-    // Single update
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     const record = await model.update({ where: { id }, data });
     return NextResponse.json(record);
@@ -139,13 +134,11 @@ export async function DELETE(req: NextRequest) {
 
     const model = getModel(modelName);
 
-    // Bulk delete
     if (ids && Array.isArray(ids)) {
       const results = await Promise.all(ids.map((i: string) => model.delete({ where: { id: i } })));
       return NextResponse.json({ count: results.length });
     }
 
-    // Single delete
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     await model.delete({ where: { id } });
     return NextResponse.json({ success: true });
