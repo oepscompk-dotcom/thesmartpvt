@@ -586,6 +586,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addFranchise = async (f: Franchise) => {
     await apiSave("franchise", f);
     setFranchises((prev) => [...prev, f]);
+    if (f.companyId) {
+      await apiUpdate("company", f.companyId, { franchiseCount: { increment: 1 } });
+      setCompanies((prev) => prev.map((c) => c.id === f.companyId ? { ...c, franchiseCount: c.franchiseCount + 1 } : c));
+    }
     await addAuditLog({ time: now(), user: "Super Admin", action: "Franchise Added", detail: `New franchise ${f.id} - ${f.name}`, type: "update" });
   };
 
@@ -596,8 +600,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteFranchise = async (id: string) => {
+    const franchise = franchises.find((f) => f.id === id);
     await apiDelete("franchise", id);
     setFranchises((prev) => prev.filter((item) => item.id !== id));
+    if (franchise?.companyId) {
+      await apiUpdate("company", franchise.companyId, { franchiseCount: { decrement: 1 } });
+      setCompanies((prev) => prev.map((c) => c.id === franchise.companyId ? { ...c, franchiseCount: Math.max(0, c.franchiseCount - 1) } : c));
+    }
     await addAuditLog({ time: now(), user: "Super Admin", action: "Franchise Deleted", detail: `Deleted franchise ${id}`, type: "update" });
   };
 
@@ -614,8 +623,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteCompany = async (id: string) => {
+    const companyFranchises = franchises.filter((f) => f.companyId === id);
     await apiDelete("company", id);
     setCompanies((prev) => prev.filter((item) => item.id !== id));
+    if (companyFranchises.length > 0) {
+      await Promise.all(companyFranchises.map((f) => apiUpdate("franchise", f.id, { companyId: "" })));
+      setFranchises((prev) => prev.map((f) => (f.companyId === id ? { ...f, companyId: "" } : f)));
+    }
     await addAuditLog({ time: now(), user: "Super Admin", action: "Company Deleted", detail: `Deleted company ${id}`, type: "update" });
   };
 
