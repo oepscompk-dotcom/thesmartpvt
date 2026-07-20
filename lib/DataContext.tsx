@@ -520,7 +520,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const [franchises, companies, employees, payments, subscriptions, cmsPages, notifications, auditLogs, settingsRecord] = await Promise.all([
+        const [companiesData, franchisesData, employees, payments, subscriptions, cmsPages, notifications, auditLogs, settingsRecord] = await Promise.all([
           apiLoad("company"),
           apiLoad("franchise"),
           apiLoad("employee"),
@@ -532,8 +532,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
           apiLoadById("adminSettings", "admin-settings"),
         ]);
 
-        if (Array.isArray(franchises) && franchises.length) setFranchises(franchises);
-        if (Array.isArray(companies) && companies.length) setCompanies(companies);
+        if (Array.isArray(franchisesData) && franchisesData.length) setFranchises(franchisesData);
+        if (Array.isArray(companiesData) && companiesData.length) setCompanies(companiesData);
         if (Array.isArray(payments) && payments.length) setPayments(payments);
         if (Array.isArray(subscriptions) && subscriptions.length) setSubscriptions(subscriptions);
         if (Array.isArray(cmsPages) && cmsPages.length) setCMSPages(cmsPages);

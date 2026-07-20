@@ -92,11 +92,15 @@ export async function POST(req: NextRequest) {
     const model = getModel(modelName);
 
     if (Array.isArray(data)) {
-      const records = await model.createMany({ data });
+      const records = await model.createMany({ data, skipDuplicates: true });
       return NextResponse.json({ count: records.count });
     }
 
-    const record = await model.create({ data });
+    const record = await model.upsert({
+      where: { id: data.id },
+      update: data,
+      create: data,
+    });
     return NextResponse.json(record);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
