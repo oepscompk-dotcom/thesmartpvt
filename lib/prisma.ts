@@ -1,18 +1,7 @@
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as any;
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-async function createPrismaClient() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const adapter = new PrismaPg(pool);
-  return new PrismaClient({ adapter });
-}
+export const prisma = globalForPrisma.prisma || new PrismaClient();
 
-export async function getPrisma() {
-  if (!globalForPrisma.__prisma) {
-    globalForPrisma.__prisma = await createPrismaClient();
-  }
-  return globalForPrisma.__prisma;
-}
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
