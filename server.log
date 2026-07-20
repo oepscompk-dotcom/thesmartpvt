@@ -1,0 +1,158 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 3.1s
+ ○ Compiling /admin/cms ...
+ ✓ Compiled /admin/cms in 2.3s (559 modules)
+ GET /admin/cms 200 in 6162ms
+ ✓ Compiled in 3.9s (293 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 1276ms (665 modules)
+ GET / 200 in 1681ms
+ ✓ Compiled /admin/dashboard in 397ms (679 modules)
+ GET /admin/dashboard 200 in 484ms
+ ✓ Compiled /admin/franchises in 361ms (689 modules)
+ GET /admin/franchises 200 in 486ms
+ ✓ Compiled /admin/employees in 417ms (699 modules)
+ GET /admin/employees 200 in 511ms
+ ✓ Compiled /admin/subscriptions in 289ms (707 modules)
+ GET /admin/subscriptions 200 in 371ms
+ ○ Compiling /admin/payments ...
+ ✓ Compiled /admin/payments in 519ms (717 modules)
+ GET /admin/payments 200 in 611ms
+ ○ Compiling /admin/reports ...
+ ✓ Compiled /admin/reports in 942ms (727 modules)
+ GET /admin/reports 200 in 1076ms
+ GET /admin/cms 200 in 58ms
+ ○ Compiling /admin/settings ...
+ ✓ Compiled /admin/settings in 1981ms (739 modules)
+ GET /admin/settings 200 in 2345ms
+ GET / 200 in 2277ms
+ ○ Compiling /admin/notifications ...
+ ✓ Compiled /admin/notifications in 1664ms (749 modules)
+ GET /admin/notifications 200 in 1822ms
+ ○ Compiling /admin/audit-logs ...
+ ✓ Compiled /admin/audit-logs in 745ms (757 modules)
+ GET /admin/audit-logs 200 in 919ms
+ GET /admin/dashboard 200 in 182ms
+ ✓ Compiled in 863ms (755 modules)
+ ✓ Compiled in 475ms (755 modules)
+ ○ Compiling /franchise-admin ...
+ ✓ Compiled /franchise-admin in 2.5s (751 modules)
+ GET /franchise-admin 200 in 3005ms
+ ⨯ Error: Cannot find module './845.js'
+Require stack:
+- C:\Users\PCP\Downloads\thesmartpvt\.next\server\webpack-runtime.js
+- C:\Users\PCP\Downloads\thesmartpvt\.next\server\app\franchise-admin\page.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\require.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\load-components.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\build\utils.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1500:15)
+    at C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1116:12)
+    at Module._load (node:internal/modules/cjs/loader:1285:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1600:12)
+    at mod.require (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:153:16)
+    at __webpack_require__.f.require (C:\Users\PCP\Downloads\thesmartpvt\.next\server\webpack-runtime.js:198:28)
+    at C:\Users\PCP\Downloads\thesmartpvt\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\PCP\Downloads\thesmartpvt\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\PCP\Downloads\thesmartpvt\.next\server\webpack-runtime.js:162:22)
+    at C:\Users\PCP\Downloads\thesmartpvt\.next\server\app\admin\settings\page.js:1:6947
+    at Object.<anonymous> (C:\Users\PCP\Downloads\thesmartpvt\.next\server\app\admin\settings\page.js:1:6996)
+    at Module._compile (node:internal/modules/cjs/loader:1854:14)
+    at Object..js (node:internal/modules/cjs/loader:1985:10)
+    at Module.load (node:internal/modules/cjs/loader:1577:32)
+    at Module._load (node:internal/modules/cjs/loader:1379:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1600:12)
+    at mod.require (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:153:16)
+    at requirePage (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\PCP\Downloads\thesmartpvt\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\.next\\server\\app\\franchise-admin\\page.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\PCP\\Downloads\\thesmartpvt\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/admin/settings'
+}
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.1s (981 modules)
+ GET /admin/settings 500 in 2828ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/css/app/layout.css?v=1782334451435 404 in 3070ms
+ GET /_next/static/chunks/main-app.js?v=1782334451435 404 in 3178ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 3152ms
+ GET /_next/static/chunks/app/layout.js 404 in 3133ms
+ GET /_next/static/css/app/layout.css?v=1782334457406 404 in 42ms
+ GET / 200 in 123ms
+ GET /_next/static/css/app/layout.css?v=1782334459306 404 in 51ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 97ms
+ GET /_next/static/chunks/app/layout.js 404 in 86ms
+ GET /_next/static/chunks/app/page.js 404 in 87ms
+ GET /_next/static/chunks/main-app.js?v=1782334459306 404 in 91ms
+ GET /admin/settings 200 in 81ms
+ GET /_next/static/css/app/layout.css?v=1782334461936 404 in 39ms
+ GET /_next/static/chunks/main-app.js?v=1782334461936 404 in 105ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 103ms
+ GET /_next/static/chunks/app/layout.js 404 in 101ms
+ GET /_next/static/chunks/app/admin/settings/page.js 404 in 103ms
+ GET /_next/static/chunks/app/admin/layout.js 404 in 98ms
+ GET /admin/settings 200 in 77ms
+ GET /_next/static/css/app/layout.css?v=1782334463799 404 in 43ms
+ GET /_next/static/chunks/app/admin/layout.js 404 in 71ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 70ms
+ GET /_next/static/chunks/main-app.js?v=1782334463799 404 in 73ms
+ GET /_next/static/chunks/app/admin/settings/page.js 404 in 72ms
+ GET /_next/static/chunks/app/layout.js 404 in 69ms
+ GET /admin/settings 200 in 62ms
+ GET /_next/static/css/app/layout.css?v=1782334471332 404 in 53ms
+ GET /_next/static/chunks/main-app.js?v=1782334471332 404 in 78ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 78ms
+ GET /_next/static/chunks/app/admin/settings/page.js 404 in 78ms
+ GET /_next/static/chunks/app/admin/layout.js 404 in 78ms
+ GET /_next/static/chunks/app/layout.js 404 in 76ms
+ GET / 200 in 61ms
+ GET /_next/static/css/app/layout.css?v=1782334472825 404 in 40ms
+ GET /_next/static/chunks/main-app.js?v=1782334472825 404 in 61ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 62ms
+ GET /_next/static/chunks/app/page.js 404 in 61ms
+ GET /_next/static/chunks/app/layout.js 404 in 56ms
+[?25h
+
+C:\Users\PCP\Downloads\thesmartpvt>

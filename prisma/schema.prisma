@@ -1,0 +1,746 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ADMIN / SUPER-ADMIN ====================
+
+model Company {
+  id             String   @id
+  name           String
+  owner          String
+  email          String
+  mobile         String
+  address        String
+  city           String
+  province       String
+  status         String
+  password       String
+  franchiseCount Int
+  createdAt      String
+  agreementStart String?
+  agreementEnd   String?
+}
+
+model Franchise {
+  id             String @id
+  name           String
+  owner          String
+  cnic           String
+  mobile         String
+  email          String
+  province       String
+  city           String
+  package        String
+  status         String
+  agreementStart String
+  agreementEnd   String
+  dsm            Int
+  dso            Int
+  password       String
+  companyId      String
+  network        String
+}
+
+model Employee {
+  id          String @id
+  name        String
+  role        String
+  franchise   String
+  status      String
+  joining     String
+  attendance  Int
+  performance Int
+  mobile      String
+  email       String
+}
+
+model Payment {
+  id        String @id
+  franchise String
+  amount    String
+  method    String
+  date      String
+  status    String
+  package   String
+}
+
+model Subscription {
+  id         String @id
+  name       String
+  price      String
+  period     String
+  features   String
+  franchises Int
+  color      String
+  popular    Boolean
+}
+
+model CMSPage {
+  id      String @id
+  title   String
+  status  String
+  updated String
+  content String
+}
+
+model AdminNotification {
+  id      String @id
+  title   String
+  message String
+  type    String
+  time    String
+  read    Boolean
+}
+
+model AuditLog {
+  id     String @id
+  time   String
+  user   String
+  action String
+  detail String
+  type   String
+}
+
+model AdminSettings {
+  id               String @id @default("admin-settings")
+  companyName      String
+  email            String
+  phone            String
+  address          String
+  smsApiKey        String
+  whatsappApiKey   String
+  paymentGatewayKey String
+  adminName        String
+  adminEmail       String
+  adminMobile      String
+  logo             String
+  headerLogo       String
+  footerLogo       String
+  favicon          String
+  header           String
+  footer           String
+  homepage         String
+}
+
+// ==================== AUTH ====================
+
+model User {
+  id       String @id
+  email    String
+  name     String
+  role     String
+  companyId String?
+}
+
+// ==================== FRANCHISE ====================
+
+model FranchiseData {
+  id   String @id @default("franchise-settings")
+  data String
+}
+
+model DSM {
+  id                  String  @id
+  name                String
+  fatherName          String
+  cnic                String
+  mobile              String
+  email               String
+  address             String
+  joiningDate         String
+  salary              Float
+  commission          Float
+  username            String
+  password            String
+  status              String
+  photo               String
+  franchiseId         String
+  retailerId          String
+  employeeCode        String?
+  dob                 String?
+  gender              String?
+  maritalStatus       String?
+  bloodGroup          String?
+  nationality         String?
+  whatsapp            String?
+  emergencyContact    String?
+  emergencyContactPerson String?
+  emergencyRelationship  String?
+  province            String?
+  city                String?
+  area                String?
+  postalCode          String?
+  employmentType      String?
+  department          String?
+  designation         String?
+  reportingManager    String?
+  deviceBrand         String?
+  deviceModel         String?
+  registeredMobile    String?
+  otpNumber           String?
+  deviceStatus        String?
+  newSimLimits        String?
+  hlrSimLimits        String?
+  dailyTargets        String?
+  monthlyTargets      String?
+  fuelAllowance       Float?
+  mobileAllowance     Float?
+  dailyAllowance      Float?
+  residenceAllowance  Float?
+  commissionType      String?
+  newSimCommission    Float?
+  mnpCommission       Float?
+  replacementCommission Float?
+  bynCommission       Float?
+  hikeCommission      Float?
+  otherCommission     Float?
+  newSimBvs           Float?
+  newSimFca           Float?
+  newSimIfca          Float?
+  mnpBvs              Float?
+  mnpFca              Float?
+  mnpIfca             Float?
+  replacementBvs      Float?
+  replacementFca      Float?
+  replacementIfca     Float?
+  bynBvs              Float?
+  bynFca              Float?
+  bynIfca             Float?
+  targetBonus         Float?
+  advanceSalary       Float?
+  loanDeduction       Float?
+  otherDeduction      Float?
+  bonus               Float?
+  bankName            String?
+  accountTitle        String?
+  accountNumber       String?
+  iban                String?
+  easypaisaNumber     String?
+  jazzcashNumber      String?
+  documents           String?
+  agreements          String?
+  guarantor           String?
+  attendanceSettings  String?
+  permissions         String?
+}
+
+model DSO {
+  id                  String  @id
+  name                String
+  fatherName          String
+  cnic                String
+  mobile              String
+  address             String
+  assignedDSM         String
+  joiningDate         String
+  salary              Float
+  commission          Float
+  username            String
+  password            String
+  status              String
+  photo               String
+  franchiseId         String
+  retailerId          String
+  employeeCode        String?
+  dob                 String?
+  gender              String?
+  maritalStatus       String?
+  bloodGroup          String?
+  nationality         String?
+  whatsapp            String?
+  email               String?
+  emergencyContact    String?
+  emergencyContactPerson String?
+  emergencyRelationship  String?
+  province            String?
+  city                String?
+  area                String?
+  postalCode          String?
+  employmentType      String?
+  department          String?
+  designation         String?
+  assignedFranchise   String?
+  reportingManager    String?
+  deviceBrand         String?
+  deviceModel         String?
+  registeredMobile    String?
+  otpNumber           String?
+  deviceStatus        String?
+  newSimLimits        String?
+  hlrSimLimits        String?
+  dailyTargets        String?
+  monthlyTargets      String?
+  fuelAllowance       Float?
+  mobileAllowance     Float?
+  dailyAllowance      Float?
+  residenceAllowance  Float?
+  commissionType      String?
+  newSimCommission    Float?
+  mnpCommission       Float?
+  replacementCommission Float?
+  bynCommission       Float?
+  hikeCommission      Float?
+  otherCommission     Float?
+  newSimBvs           Float?
+  newSimFca           Float?
+  newSimIfca          Float?
+  mnpBvs              Float?
+  mnpFca              Float?
+  mnpIfca             Float?
+  replacementBvs      Float?
+  replacementFca      Float?
+  replacementIfca     Float?
+  bynBvs              Float?
+  bynFca              Float?
+  bynIfca             Float?
+  targetBonus         Float?
+  advanceSalary       Float?
+  loanDeduction       Float?
+  otherDeduction      Float?
+  bonus               Float?
+  bankName            String?
+  accountTitle        String?
+  accountNumber       String?
+  iban                String?
+  easypaisaNumber     String?
+  jazzcashNumber      String?
+  documents           String?
+  agreements          String?
+  guarantor           String?
+  attendanceSettings  String?
+  permissions         String?
+}
+
+model Device {
+  id                 String @id
+  bvsNumber          String
+  imei               String
+  brand              String
+  model              String
+  purchaseDate       String
+  status             String
+  assignedDSO        String
+  retailerId         String
+  franchiseId        String
+  issueDate          String
+  returnDate         String
+  originalRetailerId String
+}
+
+model SIM {
+  id               String  @id
+  network          String
+  simNumber        String
+  iccid            String
+  deviceId         String
+  status           String
+  receiveDate      String
+  franchiseId      String
+  type             String
+  issuedToId       String?
+  issuedToName     String?
+  issuedToRole     String?
+  statusDate       String?
+  statusChangedFrom String?
+}
+
+model SIMIssueRecord {
+  id           String @id
+  simIds       String
+  issuedTo     String
+  issuedToRole String
+  issuedById   String
+  retailerId   String
+  franchiseId  String
+  issueDate    String
+  returnDate   String
+  status       String
+  notes        String
+}
+
+model Equipment {
+  id          String   @id
+  name        String
+  price       Float
+  condition   String
+  assignedTo  String
+  issueDate   String
+  returnDate  String
+  status      String
+  franchiseId String
+  category    String?
+  quantity    Int?
+}
+
+model EquipmentItemName {
+  id          String @id
+  name        String
+  category    String
+  franchiseId String
+}
+
+model EquipmentIssueRecord {
+  id            String @id
+  equipmentId   String
+  equipmentName String
+  personId      String
+  personName    String
+  personRole    String
+  issueDate     String
+  returnDate    String
+  status        String
+  notes         String
+  franchiseId   String
+}
+
+model DeviceIssueRecord {
+  id              String @id
+  deviceId        String
+  assignedToId    String
+  assignedToName  String
+  assignedToRole  String
+  retailerId      String
+  baseRetailerId  String
+  issueDate       String
+  returnDate      String
+  status          String
+  notes           String
+  franchiseId     String
+}
+
+model AttendanceRecord {
+  id          String @id
+  employeeId  String
+  employeeName String
+  role        String
+  date        String
+  checkIn     String
+  checkOut    String
+  gps         String
+  selfie      String
+  status      String
+  franchiseId String
+}
+
+model Target {
+  id             String @id
+  employeeId     String
+  employeeName   String
+  role           String
+  period         String
+  dailyTarget    Int
+  monthlyTarget  Int
+  achieved       Int
+  franchiseId    String
+  dsoId          String?
+  month          String?
+  deviceTarget   Int?
+  deviceAchieved Int?
+  simTarget      Int?
+  simAchieved    Int?
+}
+
+model WalletTransaction {
+  id          String  @id
+  type        String
+  amount      Float
+  balance     Float?
+  remarks     String?
+  note        String?
+  date        String
+  franchiseId String
+}
+
+model PayrollRecord {
+  id                    String  @id
+  employeeId            String
+  employeeName          String
+  role                  String
+  month                 String
+  salary                Float?
+  bonus                 Float?
+  commission            Float?
+  deduction             Float?
+  net                   Float?
+  basicSalary           Float?
+  allowances            Float?
+  deductions            Float?
+  netPay                Float?
+  fuelAllowance         Float?
+  mobileAllowance       Float?
+  dailyAllowance        Float?
+  residenceAllowance    Float?
+  newSimCount           Int?
+  newSimRate            Float?
+  newSimCommission      Float?
+  newSimBvsRate         Float?
+  newSimBvsCommission   Float?
+  newSimFcaRate         Float?
+  newSimFcaCommission   Float?
+  newSimIfcaRate        Float?
+  newSimIfcaCommission  Float?
+  mnpCount              Int?
+  mnpRate               Float?
+  mnpCommission         Float?
+  mnpBvsRate            Float?
+  mnpBvsCommission      Float?
+  mnpFcaRate            Float?
+  mnpFcaCommission      Float?
+  mnpIfcaRate           Float?
+  mnpIfcaCommission     Float?
+  replacementCount      Int?
+  replacementRate       Float?
+  replacementCommission Float?
+  replacementBvsRate    Float?
+  replacementBvsCommission Float?
+  replacementFcaRate    Float?
+  replacementFcaCommission Float?
+  replacementIfcaRate   Float?
+  replacementIfcaCommission Float?
+  bynCount              Int?
+  bynRate               Float?
+  bynCommission         Float?
+  bynBvsRate            Float?
+  bynBvsCommission      Float?
+  bynFcaRate            Float?
+  bynFcaCommission      Float?
+  bynIfcaRate           Float?
+  bynIfcaCommission     Float?
+  hikeCommission        Float?
+  otherCommission       Float?
+  targetBonus           Float?
+  performanceBonus      Float?
+  advanceSalary         Float?
+  loanDeduction         Float?
+  otherDeduction        Float?
+  totalAllowances       Float?
+  totalCommission       Float?
+  totalDeductions       Float?
+  status                String?
+  paid                  Boolean?
+  paidDate              String?
+  franchiseId           String
+}
+
+model Expense {
+  id          String  @id
+  type        String?
+  category    String?
+  amount      Float
+  date        String
+  description String?
+  note        String?
+  approvedBy  String?
+  franchiseId String
+}
+
+model AccountEntry {
+  id          String @id
+  type        String
+  category    String
+  amount      Float
+  date        String
+  description String
+  franchiseId String
+}
+
+model FranchiseNotification {
+  id          String  @id
+  title       String?
+  message     String
+  type        String
+  time        String
+  read        Boolean
+  franchiseId String
+  date        String?
+  recipient   String?
+}
+
+model BankAccount {
+  id            String @id
+  name          String
+  type          String
+  accountNumber String
+  balance       Float
+  status        String
+  franchiseId   String
+}
+
+model FranchiseSimVerification {
+  id         String @id @default("default")
+  simNumber  String
+  bvs        String
+  fca        String
+  ifca       String
+  verifiedAt String
+}
+
+// ==================== DSO ====================
+
+model DSOActivation {
+  id          String @id
+  type        String
+  simId       String
+  simNumber   String
+  network     String
+  iccid       String
+  deviceId    String
+  customerName   String
+  customerCNIC   String
+  customerMobile String
+  retailerId     String
+  status      String
+  bvsStatus   String
+  bvsDate     String
+  bvsNotes    String
+  fcaStatus   String
+  fcaDate     String
+  fcaNotes    String
+  ifcaStatus  String
+  ifcaDate    String
+  ifcaNotes   String
+  progress    Int
+  createdAt   String
+  dsoId       String
+  franchiseId String
+}
+
+model DSOAttendance {
+  id          String  @id
+  dsoId       String
+  date        String
+  checkIn     String
+  checkOut    String
+  gps         String
+  selfie      String
+  status      String
+  franchiseId String
+  workingHours Float?
+  bonus       Float?
+  fine        Float?
+}
+
+model LeaveRequest {
+  id          String @id
+  dsoId       String
+  dsoName     String
+  date        String
+  reason      String
+  status      String
+  reviewedBy  String
+  reviewedAt  String
+  franchiseId String
+}
+
+model AttendanceWarning {
+  id          String  @id
+  dsoId       String
+  date        String
+  type        String
+  message     String
+  fineAmount  Float
+  franchiseId String
+}
+
+model DSOWalletEntry {
+  id          String  @id
+  type        String
+  amount      Float
+  balance     Float
+  note        String
+  date        String
+  franchiseId String
+}
+
+model DSOTargetEntry {
+  id                   String @id
+  month                String
+  newSIM               Int
+  newSIMAchieved       Int
+  mnp                  Int
+  mnpAchieved          Int
+  replacement          Int
+  replacementAchieved  Int
+  byn                  Int
+  bynAchieved          Int
+  franchiseId          String
+}
+
+model DSONotification {
+  id      String @id
+  title   String
+  message String
+  type    String
+  time    String
+  read    Boolean
+}
+
+// ==================== DSM ====================
+
+model DSMActivation {
+  id            String @id
+  type          String
+  simNumber     String
+  network       String
+  customerName  String
+  customerCNIC  String
+  contactNumber String
+  status        String
+  bvsStatus     String
+  fcaStatus     String
+  ifcaStatus    String
+  progress      Int
+  createdAt     String
+  dsmId         String
+  dsoId         String
+  franchiseId   String
+  bvsDate       String?
+  bvsNotes      String?
+  fcaDate       String?
+  fcaNotes      String?
+  ifcaDate      String?
+  ifcaNotes     String?
+}
+
+model DSMTargetEntry {
+  id              String @id
+  dsoId           String
+  dsoName         String
+  type            String
+  daily           Int
+  monthly         Int
+  dailyAchieved   Int
+  monthlyAchieved Int
+  month           String
+}
+
+model DSMWalletEntry {
+  id      String @id
+  type    String
+  amount  Float
+  balance Float
+  note    String
+  date    String
+}
+
+model DSMNotification {
+  id      String @id
+  title   String
+  message String
+  type    String
+  time    String
+  read    Boolean
+}
+
+model DSMReportSubmission {
+  id      String @id
+  type    String
+  date    String
+  content String
+  status  String
+}
