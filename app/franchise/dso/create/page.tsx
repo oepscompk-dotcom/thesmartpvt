@@ -157,21 +157,25 @@ export default function DSOCreatePage() {
     return missing;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const missing = validate();
     if (missing.length > 0) {
       setStep(missing[0].step);
       return;
     }
-    if (isEditMode && editId) {
-      updateDSO(editId, form);
-    } else {
-      addDSO(form);
+    try {
+      if (isEditMode && editId) {
+        await updateDSO(editId, form);
+      } else {
+        await addDSO(form);
+      }
+      setSaved(true);
+      setForm(getFreshDefaults());
+      setStep(0);
+      setTimeout(() => router.push("/franchise/dso"), 1200);
+    } catch (err: any) {
+      alert("Failed to save: " + err.message);
     }
-    setSaved(true);
-    setForm(getFreshDefaults());
-    setStep(0);
-    setTimeout(() => router.push("/franchise/dso"), 1200);
   };
 
   const errorFields = new Set(errors.map((e) => e.field));

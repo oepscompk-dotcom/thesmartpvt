@@ -157,21 +157,25 @@ export default function DSMCreatePage() {
     return missing;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const missing = validate();
     if (missing.length > 0) {
       setStep(missing[0].step);
       return;
     }
-    if (isEditMode && editId) {
-      updateDSM(editId, form);
-    } else {
-      addDSM(form);
+    try {
+      if (isEditMode && editId) {
+        await updateDSM(editId, form);
+      } else {
+        await addDSM(form);
+      }
+      setSaved(true);
+      setForm(getFreshDefaults());
+      setStep(0);
+      setTimeout(() => router.push("/franchise/dsm"), 1200);
+    } catch (err: any) {
+      alert("Failed to save: " + err.message);
     }
-    setSaved(true);
-    setForm(getFreshDefaults());
-    setStep(0);
-    setTimeout(() => router.push("/franchise/dsm"), 1200);
   };
 
   const errorFields = new Set(errors.map((e) => e.field));
