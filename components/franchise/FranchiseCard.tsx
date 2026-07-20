@@ -7,6 +7,18 @@ interface FranchiseCardProps {
   onVerified: (franchiseId: string) => void;
 }
 
+interface Franchise {
+  id: string;
+  name: string;
+  status: string;
+  companyId?: string;
+}
+
+interface Company {
+  id: string;
+  name: string;
+}
+
 export default function FranchiseCard({ onVerified }: FranchiseCardProps) {
   const [step, setStep] = useState<"select" | "verify">("select");
   const [franchiseId, setFranchiseId] = useState("");
@@ -14,36 +26,44 @@ export default function FranchiseCard({ onVerified }: FranchiseCardProps) {
   const [verifiedName, setVerifiedName] = useState("");
   const [verifiedCompany, setVerifiedCompany] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const id = franchiseId.trim().toUpperCase();
     if (!id) return;
 
-    let franchises: { id: string; name: string; status: string; companyId?: string }[] = [];
-    let companies: { id: string; name: string }[] = [];
-    try {
-      const stored = localStorage.getItem("smart-erp-franchises");
-      if (stored) franchises = JSON.parse(stored);
-      const compStored = localStorage.getItem("smart-erp-companies");
-      if (compStored) companies = JSON.parse(compStored);
-    } catch {}
-
-    const found = franchises.find((f) => f.id.toUpperCase() === id.toUpperCase());
-    if (!found) {
-      setError("Franchise not found. Please check the ID.");
-      return;
-    }
-    if (found.status !== "Active") {
-      setError(`Franchise is ${found.status}. Contact admin.`);
-      return;
-    }
-
-    const company = found.companyId ? companies.find((c) => c.id === found.companyId) : null;
+    setLoading(true);
     setError("");
-    setVerifiedId(id);
-    setVerifiedName(found.name);
-    setVerifiedCompany(company ? company.name : "");
-    setStep("verify");
+
+    try {
+      const res = await fetch("/api/data?model=franchise");
+      if (!res.ok) throw new Error("Failed to load franchises");
+
+      const franchises: { id: string; name: string; status: string; companyId?: string }[] = await res.json();
+
+      const companiesRes = await fetch("/api/data?model=company");
+      const companies: { id: string; name: string }[] = companiesRes.ok ? await companiesRes.json() : [];
+
+      const found = franchises.find((f) => f.id.toUpperCase() === id.toUpperCase());
+      if (!found) {
+        setError("Franchise not found. Please check the ID.");
+        return;
+      }
+      if (found.status !== "Active") {
+        setError(`Franchise is ${found.status}. Contact admin.`);
+        return;
+      }
+
+      const company = found.companyId ? companies.find((c) => c.id === found.companyId) : null;
+      setVerifiedId(id);
+      setVerifiedName(found.name);
+      setVerifiedCompany(company ? company.name : "");
+      setStep("verify");
+    } catch (err) {
+      setError("Failed to verify franchise. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleContinue = () => {
@@ -74,6 +94,7 @@ export default function FranchiseCard({ onVerified }: FranchiseCardProps) {
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="e.g. NRWP-1217"
               className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-center text-lg font-mono tracking-widest placeholder:text-white/25 placeholder:tracking-normal focus:outline-none focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10 transition-all mb-4"
+              disabled={loading}
             />
 
             {error && (
@@ -85,15 +106,15 @@ export default function FranchiseCard({ onVerified }: FranchiseCardProps) {
 
             <button
               onClick={handleSubmit}
-              disabled={!franchiseId.trim()}
+              disabled={!franchiseId.trim() || loading}
               className="w-full py-3.5 bg-gradient-to-r from-brand-gold to-brand-gold-dark text-brand-navy font-bold rounded-xl hover:shadow-[0_0_25px_rgba(200,169,81,0.3)] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continue
+              {loading ? "Verifying..." : "Continue"}
             </button>
 
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <span className="text-white/20 text-xs">Examples:</span>
-              {["NRWP-1217", "LHR-1005", "KHI-2201"].map((id) => (
+              {["FRN-001", "NRWP-1217", "LHR-1005", "KHI-2201"].map((id) => (
                 <button
                   key={id}
                   onClick={() => { setFranchiseId(id); }}
