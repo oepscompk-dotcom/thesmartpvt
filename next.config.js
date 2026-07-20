@@ -5,6 +5,7 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    serverComponentsExternalPackages: ['@prisma/client'],
   },
 }
 

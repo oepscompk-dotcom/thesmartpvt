@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-function getPrisma() {
-  const { PrismaClient } = require("@prisma/client");
-  const g = globalThis as any;
-  if (!g.__prisma) g.__prisma = new PrismaClient();
-  return g.__prisma;
-}
-
 function getModel(name: string) {
-  const prisma = getPrisma();
-
   const map: Record<string, any> = {
     company: prisma.company,
     franchise: prisma.franchise,
