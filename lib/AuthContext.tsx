@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setUser(null);
     try {
-      await apiDelete("franchiseData", "auth");
+      await apiDelete("franchiseData", "authUser");
     } catch {
       // silently fail
     }
