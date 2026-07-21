@@ -213,23 +213,27 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateActivation = async (id: string, updates: Partial<DSMActivation>) => {
+    let fullUpdate: DSMActivation | null = null;
     setActivations((prev) => {
       return prev.map((a) => {
         if (a.id !== id) return a;
-        const updated = { ...a, ...updates };
+        const merged = { ...a, ...updates };
         let progress = 0;
-        if (updated.bvsStatus === "Completed") progress += 33;
-        if (updated.fcaStatus === "Completed") progress += 33;
-        if (updated.ifcaStatus === "Completed") progress += 34;
-        updated.progress = progress;
-        if (progress === 100) updated.status = "Completed";
-        else if (updated.bvsStatus === "Completed" && updated.fcaStatus !== "Completed") updated.status = "Pending FCA";
-        else if (updated.fcaStatus === "Completed" && updated.ifcaStatus !== "Completed") updated.status = "Pending IFCA";
-        else if (updated.bvsStatus !== "Completed") updated.status = "Pending BVS";
-        apiUpdate("dsmActivation", id, updated);
-        return updated;
+        if (merged.bvsStatus === "Completed") progress += 33;
+        if (merged.fcaStatus === "Completed") progress += 33;
+        if (merged.ifcaStatus === "Completed") progress += 34;
+        merged.progress = progress;
+        if (progress === 100) merged.status = "Completed";
+        else if (merged.bvsStatus === "Completed" && merged.fcaStatus !== "Completed") merged.status = "Pending FCA";
+        else if (merged.fcaStatus === "Completed" && merged.ifcaStatus !== "Completed") merged.status = "Pending IFCA";
+        else if (merged.bvsStatus !== "Completed") merged.status = "Pending BVS";
+        fullUpdate = merged;
+        return merged;
       });
     });
+    if (fullUpdate) {
+      try { await apiUpdate("dsmActivation", id, fullUpdate); } catch (e) { console.error("updateActivation failed:", e); }
+    }
   };
 
   const deleteActivation = async (id: string) => {

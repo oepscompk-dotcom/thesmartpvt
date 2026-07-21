@@ -192,11 +192,11 @@ export default function NewSIMActivationPage() {
 
   const handleVerifyStep = async (a: any) => {
     const now = new Date().toISOString();
-    if (a.status === "Pending BVS" || (a.bvsStatus !== "Completed" && a.fcaStatus !== "Completed" && a.ifcaStatus !== "Completed")) {
+    if (a.bvsStatus !== "Completed") {
       await updateActivation(a.id, { bvsStatus: "Completed", bvsDate: now });
-    } else if (a.status === "Pending FCA" || (a.bvsStatus === "Completed" && a.fcaStatus !== "Completed")) {
+    } else if (a.fcaStatus !== "Completed") {
       await updateActivation(a.id, { fcaStatus: "Completed", fcaDate: now });
-    } else if (a.status === "Pending IFCA" || (a.fcaStatus === "Completed" && a.ifcaStatus !== "Completed")) {
+    } else if (a.ifcaStatus !== "Completed") {
       await updateActivation(a.id, { ifcaStatus: "Completed", ifcaDate: now });
     }
   };

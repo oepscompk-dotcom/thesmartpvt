@@ -175,22 +175,26 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateActivation = async (id: string, updates: Partial<Activation>) => {
+    let fullUpdate: Activation | null = null;
     setActivations((prev) => {
       const existing = prev.find((a) => a.id === id);
       if (!existing) return prev;
-      const updated = { ...existing, ...updates };
+      const merged = { ...existing, ...updates };
       let progress = 0;
-      if (updated.bvsStatus === "Completed") progress += 33;
-      if (updated.fcaStatus === "Completed") progress += 33;
-      if (updated.ifcaStatus === "Completed") progress += 34;
-      updated.progress = progress;
-      if (progress === 100) updated.status = "Completed";
-      else if (updated.ifcaStatus === "Pending" && updated.fcaStatus === "Completed") updated.status = "Pending IFCA";
-      else if (updated.fcaStatus === "Pending" && updated.bvsStatus === "Completed") updated.status = "Pending FCA";
-      else if (updated.bvsStatus === "Pending") updated.status = "Pending BVS";
-      apiUpdate("dsoActivation", id, updated);
-      return prev.map((a) => (a.id === id ? updated : a));
+      if (merged.bvsStatus === "Completed") progress += 33;
+      if (merged.fcaStatus === "Completed") progress += 33;
+      if (merged.ifcaStatus === "Completed") progress += 34;
+      merged.progress = progress;
+      if (progress === 100) merged.status = "Completed";
+      else if (merged.bvsStatus === "Completed" && merged.fcaStatus !== "Completed") merged.status = "Pending FCA";
+      else if (merged.fcaStatus === "Completed" && merged.ifcaStatus !== "Completed") merged.status = "Pending IFCA";
+      else if (merged.bvsStatus !== "Completed") merged.status = "Pending BVS";
+      fullUpdate = merged;
+      return prev.map((a) => (a.id === id ? merged : a));
     });
+    if (fullUpdate) {
+      try { await apiUpdate("dsoActivation", id, fullUpdate); } catch (e) { console.error("updateActivation failed:", e); }
+    }
   };
 
   const deleteActivation = async (id: string) => {
