@@ -216,9 +216,14 @@ export default function ActiveSIMsPage() {
   const getDisplayStatus = (sim: any): { status: string; bvs: string; fca: string; ifca: string } => {
     const imp = importVerifications[sim.simNumber];
     const activation = getActivationForSIM(sim.simNumber);
-    let bvs = imp?.bvs || (activation ? vcFromActivation(activation.bvsStatus) : "X");
-    let fca = imp?.fca || (activation ? vcFromActivation(activation.fcaStatus) : "X");
-    let ifcaV = imp?.ifca || (activation ? vcFromActivation(activation.ifcaStatus) : "X");
+    const actBvs = activation ? vcFromActivation(activation.bvsStatus) : "X";
+    const actFca = activation ? vcFromActivation(activation.fcaStatus) : "X";
+    const actIfca = activation ? vcFromActivation(activation.ifcaStatus) : "X";
+    const pick = (impV: string | undefined, actV: string) =>
+      impV === "1" ? "1" : actV === "0" ? "0" : impV === "0" ? "0" : "X";
+    let bvs = pick(imp?.bvs, actBvs);
+    let fca = pick(imp?.fca, actFca);
+    let ifcaV = pick(imp?.ifca, actIfca);
     const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
     const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
     const oneItems = Object.entries(vals).filter(([, v]) => v === "1").map(([k]) => k);
