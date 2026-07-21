@@ -213,8 +213,23 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateActivation = async (id: string, updates: Partial<DSMActivation>) => {
-    setActivations((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
-    try { await apiUpdate("dsmActivation", id, updates); } catch {}
+    setActivations((prev) => {
+      return prev.map((a) => {
+        if (a.id !== id) return a;
+        const updated = { ...a, ...updates };
+        let progress = 0;
+        if (updated.bvsStatus === "Completed") progress += 33;
+        if (updated.fcaStatus === "Completed") progress += 33;
+        if (updated.ifcaStatus === "Completed") progress += 34;
+        updated.progress = progress;
+        if (progress === 100) updated.status = "Completed";
+        else if (updated.bvsStatus === "Completed" && updated.fcaStatus !== "Completed") updated.status = "Pending FCA";
+        else if (updated.fcaStatus === "Completed" && updated.ifcaStatus !== "Completed") updated.status = "Pending IFCA";
+        else if (updated.bvsStatus !== "Completed") updated.status = "Pending BVS";
+        apiUpdate("dsmActivation", id, updated);
+        return updated;
+      });
+    });
   };
 
   const deleteActivation = async (id: string) => {

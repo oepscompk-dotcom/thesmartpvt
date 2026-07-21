@@ -19,7 +19,7 @@ interface SIMStock {
 }
 
 export default function NewSIMActivation() {
-  const { addActivation, deleteActivation, auth, activations, importVerifications } = useDSMData();
+  const { addActivation, deleteActivation, updateActivation, auth, activations, importVerifications } = useDSMData();
   const router = useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
   const [activatingId, setActivatingId] = useState("");
@@ -162,6 +162,24 @@ export default function NewSIMActivation() {
     if (type === "BYN") return "BYN";
     if (type === "Replacement") return "REPL";
     return type;
+  };
+
+  const handleVerifyStep = async (a: any) => {
+    const now = new Date().toISOString();
+    if (a.bvsStatus !== "Completed") {
+      await updateActivation(a.id, { bvsStatus: "Completed", bvsDate: now });
+    } else if (a.fcaStatus !== "Completed") {
+      await updateActivation(a.id, { fcaStatus: "Completed", fcaDate: now });
+    } else if (a.ifcaStatus !== "Completed") {
+      await updateActivation(a.id, { ifcaStatus: "Completed", ifcaDate: now });
+    }
+  };
+
+  const verifyLabel = (a: any) => {
+    if (a.bvsStatus !== "Completed") return { label: "Verify BVS", color: "bg-amber-500 hover:bg-amber-600" };
+    if (a.fcaStatus !== "Completed") return { label: "Verify FCA", color: "bg-blue-500 hover:bg-blue-600" };
+    if (a.ifcaStatus !== "Completed") return { label: "Verify IFCA", color: "bg-purple-500 hover:bg-purple-600" };
+    return null;
   };
 
   const statusColor = (s: string) => {
@@ -535,7 +553,12 @@ export default function NewSIMActivation() {
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{a.createdAt}</td>
                   <td className="px-4 py-3 text-center">
-                    <button onClick={() => { if (confirm("Delete this activation?")) deleteActivation(a.id); }} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"><Trash2 size={14} /></button>
+                    <div className="flex items-center justify-center gap-1">
+                      {verifyLabel(a) && (
+                        <button onClick={() => handleVerifyStep(a)} className={`px-2 py-1 rounded-lg text-[10px] font-bold text-white transition-all ${verifyLabel(a)!.color}`}>{verifyLabel(a)!.label}</button>
+                      )}
+                      <button onClick={() => { if (confirm("Delete this activation?")) deleteActivation(a.id); }} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"><Trash2 size={14} /></button>
+                    </div>
                   </td>
                 </tr>
               ))}

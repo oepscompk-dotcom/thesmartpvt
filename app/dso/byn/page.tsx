@@ -43,7 +43,7 @@ const initialForm: BYNForm = {
 };
 
 export default function BYNPage() {
-  const { activations, addActivation, deleteActivation, device, auth, importVerifications } = useDSOData();
+  const { activations, addActivation, updateActivation, deleteActivation, device, auth, importVerifications } = useDSOData();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<BYNForm>(initialForm);
   const [filter, setFilter] = useState("All");
@@ -179,6 +179,24 @@ export default function BYNPage() {
     await updateFranchiseSIMStatus(form.simNumber || "", "Activated");
     setShowModal(false);
     alert("Activation submitted successfully! SIM is now pending verification (BVS → FCA → IFCA)");
+  };
+
+  const handleVerifyStep = async (a: any) => {
+    const now = new Date().toISOString();
+    if (a.bvsStatus !== "Completed") {
+      await updateActivation(a.id, { bvsStatus: "Completed", bvsDate: now });
+    } else if (a.fcaStatus !== "Completed") {
+      await updateActivation(a.id, { fcaStatus: "Completed", fcaDate: now });
+    } else if (a.ifcaStatus !== "Completed") {
+      await updateActivation(a.id, { ifcaStatus: "Completed", ifcaDate: now });
+    }
+  };
+
+  const verifyLabel = (a: any) => {
+    if (a.bvsStatus !== "Completed") return { label: "Verify BVS", color: "bg-amber-500 hover:bg-amber-600" };
+    if (a.fcaStatus !== "Completed") return { label: "Verify FCA", color: "bg-blue-500 hover:bg-blue-600" };
+    if (a.ifcaStatus !== "Completed") return { label: "Verify IFCA", color: "bg-purple-500 hover:bg-purple-600" };
+    return null;
   };
 
   const statusColor = (s: string) => {
@@ -328,6 +346,9 @@ export default function BYNPage() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-1">
+                          {verifyLabel(a) && (
+                            <button onClick={() => handleVerifyStep(a)} className={`px-2 py-1 rounded-lg text-[10px] font-bold text-white transition-all ${verifyLabel(a)!.color}`}>{verifyLabel(a)!.label}</button>
+                          )}
                           <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#0A2647] text-white hover:bg-[#144272] transition-all">View</button>
                           <button onClick={() => { if (confirm("Delete this BYN activation?")) deleteActivation(a.id); }} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"><Trash2 size={14} /></button>
                         </div>
