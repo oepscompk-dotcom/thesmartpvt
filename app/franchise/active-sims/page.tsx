@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, Filter, Smartphone, CheckCircle, Clock, Package, Upload, Download, X, FileSpreadsheet, AlertCircle, FileDown, Eye, Pencil, Trash2, Calendar, CheckSquare } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
-import { apiLoad, apiSave, apiUpdate, apiDelete } from "@/lib/api";
+import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 
 interface Activation { id: string; type: string; simNumber: string; status: string; bvsStatus: string; fcaStatus: string; ifcaStatus: string; dsoId: string; retailerId: string; createdAt: string; franchiseId: string; }
 
@@ -218,8 +218,6 @@ export default function ActiveSIMsPage() {
   };
 
   const getDisplayStatus = (sim: any): { status: string; bvs: string; fca: string; ifca: string } => {
-    const activation = getActivationForSIM(sim.simNumber);
-    if (!activation) return { status: "Issued", bvs: "X", fca: "X", ifca: "X" };
     const imp = importVerifications[sim.simNumber];
     if (imp) {
       const bvs = imp.bvs;
@@ -233,6 +231,8 @@ export default function ActiveSIMsPage() {
       const status = pending.length === 0 ? "Verified" : done.length === 0 ? "Active" : "Pending-V";
       return { status, bvs, fca, ifca: ifcaV };
     }
+    const activation = getActivationForSIM(sim.simNumber);
+    if (!activation) return { status: "Issued", bvs: "X", fca: "X", ifca: "X" };
     const bvs = vcFromActivation(activation.bvsStatus);
     const fca = vcFromActivation(activation.fcaStatus);
     const ifcaV = vcFromActivation(activation.ifcaStatus);
@@ -320,14 +320,14 @@ export default function ActiveSIMsPage() {
       if (rows.length === 0) { setImportError("No valid rows found. Check file format."); return; }
       const matched = rows.map((row) => {
         let foundSim = null;
-        let matchType: "deviceId" | "retailerId" | "simNumber" | "iccid" = "simNumber";
-        if (row.simNumber) {
-          foundSim = activeSIMs.find((s) => s.simNumber === row.simNumber);
-          matchType = "simNumber";
-        }
-        if (!foundSim && row.iccid) {
+        let matchType: "deviceId" | "retailerId" | "simNumber" | "iccid" = "iccid";
+        if (row.iccid) {
           foundSim = activeSIMs.find((s) => s.iccid && s.iccid.toLowerCase() === row.iccid.toLowerCase());
           matchType = "iccid";
+        }
+        if (!foundSim && row.simNumber) {
+          foundSim = activeSIMs.find((s) => s.simNumber === row.simNumber);
+          matchType = "simNumber";
         }
         if (!foundSim && row.deviceId) {
           foundSim = activeSIMs.find((s) => s.issuedToId === row.deviceId || s.deviceId === row.deviceId);
@@ -363,10 +363,12 @@ export default function ActiveSIMsPage() {
         verifiedAt: new Date().toISOString(),
       };
       if (row.matchedSimId && row.iccid) {
-        const sim = sims.find((s) => s.id === row.matchedSimId);
-        if (sim && sim.iccid !== row.iccid) {
-          try { await apiUpdate("sim", row.matchedSimId, { ...sim, iccid: row.iccid }); } catch {}
-        }
+        try {
+          const freshSim = await apiLoadById("sim", row.matchedSimId);
+          if (freshSim && freshSim.iccid !== row.iccid) {
+            await apiUpdate("sim", row.matchedSimId, { ...freshSim, iccid: row.iccid });
+          }
+        } catch (e) { console.error("ICCID update error:", e); }
       }
       updatedCount++;
     }
