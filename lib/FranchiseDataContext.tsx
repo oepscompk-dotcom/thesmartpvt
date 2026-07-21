@@ -539,8 +539,9 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     const newRecord: SIMIssueRecord = { ...record, id: `ISU-${Date.now()}` };
     await apiSave("simIssueRecord", newRecord);
     setIssueRecords((p) => [newRecord, ...p]);
-    const affected = sims.filter((s) => record.simIds.includes(s.id));
-    await Promise.all(affected.map((s) =>
+    const freshSims = await apiLoad("sim", record.franchiseId);
+    const affected = (Array.isArray(freshSims) ? freshSims : []).filter((s: any) => record.simIds.includes(s.id));
+    await Promise.all(affected.map((s: any) =>
       apiUpdate("sim", s.id, {
         status: "Issued",
         issuedToId: record.issuedById,
@@ -573,8 +574,9 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     const today = new Date().toISOString().split("T")[0];
     await apiUpdate("simIssueRecord", issueId, { status: "Returned", returnDate: today });
     setIssueRecords((prev) => prev.map((r) => r.id === issueId ? { ...r, status: "Returned", returnDate: today } : r));
-    const affected = sims.filter((s) => record.simIds.includes(s.id));
-    await Promise.all(affected.map((s) =>
+    const freshSims = await apiLoad("sim", record.franchiseId);
+    const affected = (Array.isArray(freshSims) ? freshSims : []).filter((s: any) => record.simIds.includes(s.id));
+    await Promise.all(affected.map((s: any) =>
       apiUpdate("sim", s.id, {
         status: "In Stock",
         issuedToId: "",
