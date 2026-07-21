@@ -350,18 +350,23 @@ export default function ActiveSIMsPage() {
   const handleImport = async () => {
     const matchedRows = importRows.filter((r) => r.matched);
     if (matchedRows.length === 0) { setImportError("No matching SIMs found."); return; }
+    const existing = await loadImportVerifications();
     let updatedCount = 0;
     let errors: string[] = [];
     for (const row of matchedRows) {
       const simNum = row.matchedSimNumber || row.simNumber;
       if (!simNum) continue;
+      const prev = existing[simNum] || { bvs: "X", fca: "X", ifca: "X" };
+      const newBvs = row.bvs === "1" ? "1" : (prev.bvs || "X");
+      const newFca = row.fca === "1" ? "1" : (prev.fca || "X");
+      const newIfca = row.ifca === "1" ? "1" : (prev.ifca || "X");
       try {
         const result = await apiSave("franchiseSimVerification", {
           id: simNum,
           simNumber: simNum,
-          bvs: row.bvs === "1" ? "1" : "0",
-          fca: row.fca === "1" ? "1" : "0",
-          ifca: row.ifca === "1" ? "1" : "0",
+          bvs: newBvs,
+          fca: newFca,
+          ifca: newIfca,
           verifiedAt: new Date().toISOString(),
         });
         if (result && (result as any).error) {
