@@ -184,7 +184,7 @@ export default function NewSIMActivation() {
     if (t === "Replacement") return "bg-rose-50 text-rose-600";
     return "bg-gray-100 text-gray-600";
   };
-  const vcBg = (v: string) => v === "0" ? "bg-green-100 text-green-700" : v === "1" ? "bg-blue-100 text-blue-700" : "bg-red-50 text-red-400";
+  const vcBg = (v: string) => v === "0" || v === "1" ? "bg-green-100 text-green-700" : v === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400";
   const derivedStatus = (a: any) => {
     const imp = importVerifications[a.simNumber];
     let bvs: string, fca: string, ifcaV: string;

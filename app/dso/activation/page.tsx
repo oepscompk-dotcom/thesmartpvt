@@ -211,7 +211,7 @@ export default function NewSIMActivationPage() {
     if (imp) return imp[field] || "X";
     return fallback === "Completed" ? "0" : "X";
   };
-  const vcBg = (v: string) => v === "0" ? "bg-green-100 text-green-700" : v === "1" ? "bg-blue-100 text-blue-700" : "bg-red-50 text-red-400";
+  const vcBg = (v: string) => v === "0" || v === "1" ? "bg-green-100 text-green-700" : v === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400";
   const typeColor = (t: string) => {
     if (t === "New SIM") return "bg-cyan-50 text-cyan-600";
     if (t === "MNP") return "bg-purple-50 text-purple-600";
