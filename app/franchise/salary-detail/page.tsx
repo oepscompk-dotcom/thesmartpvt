@@ -63,9 +63,14 @@ export default function SalaryDetailPage() {
 
     acts.all.forEach((a) => {
       const iv = importVerifications[a.simNumber];
-      const bvs = iv?.bvs || (a.bvsStatus === "Completed" ? "0" : "X");
-      const fca = iv?.fca || (a.fcaStatus === "Completed" ? "0" : "X");
-      const ifca = iv?.ifca || (a.ifcaStatus === "Completed" ? "0" : "X");
+      const actBvs = a.bvsStatus === "Completed" ? "0" : "X";
+      const actFca = a.fcaStatus === "Completed" ? "0" : "X";
+      const actIfca = a.ifcaStatus === "Completed" ? "0" : "X";
+      const pick = (impV: string | undefined, actV: string) =>
+        impV === "1" ? "1" : actV === "0" ? "0" : impV === "0" ? "0" : "X";
+      const bvs = pick(iv?.bvs, actBvs);
+      const fca = pick(iv?.fca, actFca);
+      const ifca = pick(iv?.ifca, actIfca);
 
       if (a.type === "New SIM") {
         if (bvs === "1") newSimBvsCount++;
