@@ -365,6 +365,7 @@ export default function ActiveSIMsPage() {
     const matchedRows = importRows.filter((r) => r.matched);
     if (matchedRows.length === 0) { setImportError("No matching SIMs found."); return; }
     const existing = await loadImportVerifications();
+    const freshActivations = await loadActivations(auth.franchiseId);
     let updatedCount = 0;
     let errors: string[] = [];
     for (const row of matchedRows) {
@@ -391,6 +392,18 @@ export default function ActiveSIMsPage() {
       } catch (e: any) {
         errors.push(`${simNum}: ${e.message || "save failed"}`);
       }
+      const activation = freshActivations.find((a) => a.simNumber === simNum);
+      if (activation) {
+        const actUpdates: Record<string, string> = {};
+        if (newBvs === "0" && activation.bvsStatus !== "Completed") { actUpdates.bvsStatus = "Completed"; actUpdates.bvsDate = new Date().toISOString(); }
+        if (newFca === "0" && activation.fcaStatus !== "Completed") { actUpdates.fcaStatus = "Completed"; actUpdates.fcaDate = new Date().toISOString(); }
+        if (newIfca === "0" && activation.ifcaStatus !== "Completed") { actUpdates.ifcaStatus = "Completed"; actUpdates.ifcaDate = new Date().toISOString(); }
+        if (Object.keys(actUpdates).length > 0) {
+          const fullAct = { ...activation, ...actUpdates };
+          try { await apiSave("dsoActivation", fullAct); } catch {}
+          try { await apiSave("dsmActivation", fullAct); } catch {}
+        }
+      }
       if (row.matchedSimId && row.iccid) {
         try {
           const freshSim = await apiLoadById("sim", row.matchedSimId);
@@ -405,7 +418,7 @@ export default function ActiveSIMsPage() {
     } else if (errors.length > 0) {
       setImportSuccess(`Imported ${updatedCount} records (${errors.length} failed: ${errors[0]})`);
     } else {
-      setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA + ICCID updated.`);
+      setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA updated.`);
     }
     setImportRows([]); setImportFile(null);
     setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 3000);
