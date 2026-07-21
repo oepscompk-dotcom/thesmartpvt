@@ -233,18 +233,17 @@ export default function ActiveSIMsPage() {
     const allX = bvs === "X" && fca === "X" && ifcaV === "X";
     const allZero = bvs === "0" && fca === "0" && ifcaV === "0";
     const allOne = bvs === "1" && fca === "1" && ifcaV === "1";
-    const simType = getSIMType(sim);
     let status: string;
     if (allX) {
-      status = `Issued ${simType}`;
+      status = "Issued";
     } else if (xItems.length > 0) {
       status = `Pending ${xItems.join(", ")} (${xItems.length})`;
     } else if (allZero) {
-      status = `Completed ${simType}`;
+      status = "Completed";
     } else if (allOne) {
-      status = `Verified ${simType}`;
+      status = "Verified";
     } else {
-      status = `Pending-V ${simType}`;
+      status = "Pending-V";
     }
     return { status, bvs, fca, ifca: ifcaV };
   };
