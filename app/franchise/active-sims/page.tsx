@@ -93,9 +93,9 @@ function parseCSV(text: string): ImportRow[] {
 
 function generateSampleCSV(): string {
   return `ICCID,SIM Number,Device ID,Retailer ID,BVS,FCA,IFCA
-89920387654321098765,0341-1111111,NRWP-1217-841,03001234567,1,1,1
+89920387654321098765,0341-1111111,NRWP-1217-841,03001234567,0,0,0
 89920387654321098766,0301-2222222,NRWP-1217-842,03001234568,1,1,0
-89920387654321098767,0331-3333333,,03001234569,1,0,0`;
+89920387654321098767,0331-3333333,,03001234569,1,1,1`;
 }
 
 function downloadSampleFile() {
@@ -212,35 +212,37 @@ export default function ActiveSIMsPage() {
 
   const vcFromActivation = (v: string) => v === "Completed" ? "0" : "X";
 
-  const getDerivedStatus = (pending: string[]) => {
-    if (pending.length === 0) return "Completed";
-    return `Pending ${pending.join(", ")} (${pending.length})`;
-  };
-
   const getDisplayStatus = (sim: any): { status: string; bvs: string; fca: string; ifca: string } => {
     const imp = importVerifications[sim.simNumber];
+    let bvs = "X", fca = "X", ifcaV = "X";
     if (imp) {
-      const bvs = imp.bvs;
-      const fca = imp.fca;
-      const ifcaV = imp.ifca;
-      const done: string[] = [];
-      const pending: string[] = [];
-      if (bvs === "1") done.push("BVS"); else pending.push("BVS");
-      if (fca === "1") done.push("FCA"); else pending.push("FCA");
-      if (ifcaV === "1") done.push("IFCA"); else pending.push("IFCA");
-      const status = pending.length === 0 ? "Verified" : done.length === 0 ? "Active" : "Pending-V";
-      return { status, bvs, fca, ifca: ifcaV };
+      bvs = imp.bvs || "X";
+      fca = imp.fca || "X";
+      ifcaV = imp.ifca || "X";
+    } else {
+      const activation = getActivationForSIM(sim.simNumber);
+      if (activation) {
+        bvs = vcFromActivation(activation.bvsStatus);
+        fca = vcFromActivation(activation.fcaStatus);
+        ifcaV = vcFromActivation(activation.ifcaStatus);
+      }
     }
-    const activation = getActivationForSIM(sim.simNumber);
-    if (!activation) return { status: "Issued", bvs: "X", fca: "X", ifca: "X" };
-    const bvs = vcFromActivation(activation.bvsStatus);
-    const fca = vcFromActivation(activation.fcaStatus);
-    const ifcaV = vcFromActivation(activation.ifcaStatus);
-    const pending: string[] = [];
-    if (bvs === "X") pending.push("BVS");
-    if (fca === "X") pending.push("FCA");
-    if (ifcaV === "X") pending.push("IFCA");
-    const status = getDerivedStatus(pending);
+    const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
+    const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
+    const oneItems = Object.entries(vals).filter(([, v]) => v === "1").map(([k]) => k);
+    const allZero = bvs === "0" && fca === "0" && ifcaV === "0";
+    const allOne = bvs === "1" && fca === "1" && ifcaV === "1";
+    const simType = getSIMType(sim);
+    let status: string;
+    if (xItems.length > 0) {
+      status = `Pending ${xItems.join(", ")} (${xItems.length})`;
+    } else if (allZero) {
+      status = `Completed ${simType}`;
+    } else if (allOne) {
+      status = `Verified ${simType}`;
+    } else {
+      status = `Pending-V ${simType}`;
+    }
     return { status, bvs, fca, ifca: ifcaV };
   };
 
@@ -283,7 +285,11 @@ export default function ActiveSIMsPage() {
         retailerId.toLowerCase().includes(search.toLowerCase());
 
       const matchStatus = statusFilter === "All" || 
-        (statusFilter === "Pending" ? (status === "Active" || status === "Pending-V") : status === statusFilter);
+        (statusFilter === "Issued" && status === "Issued") ||
+        (statusFilter === "Pending" && status.startsWith("Pending ") && !status.startsWith("Pending-V")) ||
+        (statusFilter === "Pending-V" && status.startsWith("Pending-V")) ||
+        (statusFilter === "Completed" && status.startsWith("Completed")) ||
+        (statusFilter === "Verified" && status.startsWith("Verified"));
       const matchType = typeFilter === "All" || simType === typeFilter;
 
       let matchDate = true;
@@ -298,9 +304,16 @@ export default function ActiveSIMsPage() {
   }, [activeSIMs, search, statusFilter, typeFilter, dateFrom, dateTo, allActivations]);
 
   const stats = useMemo(() => {
-    let issued = 0, active = 0, verified = 0, pending = 0;
-    activeSIMs.forEach((s) => { const { status } = getDisplayStatus(s); if (status === "Issued") issued++; else if (status === "Active" || status === "Pending-V") pending++; else if (status === "Verified") verified++; else active++; });
-    return { total: activeSIMs.length, issued, active, verified, pending };
+    let issued = 0, completed = 0, verified = 0, pending = 0, pendingV = 0;
+    activeSIMs.forEach((s) => {
+      const { status } = getDisplayStatus(s);
+      if (status === "Issued") issued++;
+      else if (status.startsWith("Pending-V")) pendingV++;
+      else if (status.startsWith("Verified")) verified++;
+      else if (status.startsWith("Completed")) completed++;
+      else pending++;
+    });
+    return { total: activeSIMs.length, issued, completed, verified, pending, pendingV };
   }, [activeSIMs, allActivations]);
 
   const typeStats = useMemo(() => {
@@ -357,9 +370,9 @@ export default function ActiveSIMsPage() {
       const simNum = row.matchedSimNumber || row.simNumber;
       if (!simNum) continue;
       const prev = existing[simNum] || { bvs: "X", fca: "X", ifca: "X" };
-      const newBvs = row.bvs === "1" ? "1" : (prev.bvs || "X");
-      const newFca = row.fca === "1" ? "1" : (prev.fca || "X");
-      const newIfca = row.ifca === "1" ? "1" : (prev.ifca || "X");
+      const newBvs = row.bvs === "0" || row.bvs === "1" ? row.bvs : (prev.bvs || "X");
+      const newFca = row.fca === "0" || row.fca === "1" ? row.fca : (prev.fca || "X");
+      const newIfca = row.ifca === "0" || row.ifca === "1" ? row.ifca : (prev.ifca || "X");
       try {
         const result = await apiSave("franchiseSimVerification", {
           id: simNum,
@@ -437,11 +450,15 @@ export default function ActiveSIMsPage() {
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><AlertCircle size={14} className="text-amber-600" /></div>
-          <div><p className="text-lg font-black text-amber-600">{stats.active}</p><p className="text-gray-500 text-[10px]">Active</p></div>
+          <div><p className="text-lg font-black text-amber-600">{stats.pending}</p><p className="text-gray-500 text-[10px]">Pending</p></div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center"><Clock size={14} className="text-orange-600" /></div>
-          <div><p className="text-lg font-black text-orange-600">{stats.pending}</p><p className="text-gray-500 text-[10px]">Pending</p></div>
+          <div><p className="text-lg font-black text-orange-600">{stats.pendingV}</p><p className="text-gray-500 text-[10px]">Pending-V</p></div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center"><CheckCircle size={14} className="text-emerald-600" /></div>
+          <div><p className="text-lg font-black text-emerald-600">{stats.completed}</p><p className="text-gray-500 text-[10px]">Completed</p></div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><CheckCircle size={14} className="text-green-600" /></div>
@@ -472,7 +489,7 @@ export default function ActiveSIMsPage() {
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by Sr.No, SIM, ICCID, Device, DSO/DSM, Retailer..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {["All", "Issued", "Active", "Pending", "Verified"].map((s) => (
+            {["All", "Issued", "Pending", "Pending-V", "Completed", "Verified"].map((s) => (
               <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${statusFilter === s ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
                 <span className="flex items-center gap-1.5"><Filter size={12} /> {s}</span>
               </button>
@@ -579,18 +596,18 @@ export default function ActiveSIMsPage() {
                     <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">{dateStr}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${simStatus === "Verified" ? "bg-green-50 text-green-700" : simStatus === "Completed" ? "bg-emerald-50 text-emerald-700" : simStatus === "Active" ? "bg-gray-100 text-gray-600" : simStatus === "Pending-V" ? "bg-amber-50 text-amber-700" : "bg-amber-50 text-amber-700"}`}>{simStatus}</span>
+                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${simStatus.startsWith("Verified") ? "bg-green-50 text-green-700" : simStatus.startsWith("Completed") ? "bg-emerald-50 text-emerald-700" : simStatus.startsWith("Pending-V") ? "bg-orange-50 text-orange-700" : simStatus === "Issued" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"}`}>{simStatus}</span>
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${simType === "New" ? "bg-cyan-50 text-cyan-600" : simType === "MNP" ? "bg-purple-50 text-purple-600" : simType === "BYN" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"}`}>{simType}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${bvs === "1" || bvs === "0" ? "bg-green-100 text-green-700" : "bg-red-50 text-red-400"}`}>{bvs}</span>
+                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${bvs === "0" || bvs === "1" ? "bg-green-100 text-green-700" : bvs === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400"}`}>{bvs}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${fca === "1" || fca === "0" ? "bg-green-100 text-green-700" : "bg-red-50 text-red-400"}`}>{fca}</span>
+                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${fca === "0" || fca === "1" ? "bg-green-100 text-green-700" : fca === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400"}`}>{fca}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${ifca === "1" || ifca === "0" ? "bg-green-100 text-green-700" : "bg-red-50 text-red-400"}`}>{ifca}</span>
+                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${ifca === "0" || ifca === "1" ? "bg-green-100 text-green-700" : ifca === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400"}`}>{ifca}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
@@ -644,14 +661,14 @@ export default function ActiveSIMsPage() {
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">DSO/DSM ID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.dsoId}</p></div>
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">DSO/DSM Name</p><p className="text-gray-900 text-sm font-medium">{viewSIM.dsoName}</p></div>
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Date</p><p className="text-gray-900 text-sm">{viewSIM.dateStr}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Status</p><span className={`px-2 py-1 rounded-lg text-xs font-bold ${viewSIM.simStatus === "Verified" ? "bg-green-100 text-green-700" : viewSIM.simStatus === "Completed" ? "bg-emerald-100 text-emerald-700" : viewSIM.simStatus === "Active" ? "bg-gray-100 text-gray-600" : "bg-amber-100 text-amber-700"}`}>{viewSIM.simStatus}</span></div>
+                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Status</p><span className={`px-2 py-1 rounded-lg text-xs font-bold ${viewSIM.simStatus.startsWith("Verified") ? "bg-green-100 text-green-700" : viewSIM.simStatus.startsWith("Completed") ? "bg-emerald-100 text-emerald-700" : viewSIM.simStatus.startsWith("Pending-V") ? "bg-orange-100 text-orange-700" : viewSIM.simStatus === "Issued" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>{viewSIM.simStatus}</span></div>
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
                 <p className="text-gray-400 text-xs mb-2 font-medium">Verification</p>
                 <div className="flex gap-3">
-                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.bvs === "1" || viewSIM.bvs === "0" ? "bg-green-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.bvs === "1" || viewSIM.bvs === "0" ? "text-green-700" : "text-red-400"}`}>{viewSIM.bvs}</p><p className="text-xs font-medium text-gray-500">BVS</p></div>
-                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.fca === "1" || viewSIM.fca === "0" ? "bg-green-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.fca === "1" || viewSIM.fca === "0" ? "text-green-700" : "text-red-400"}`}>{viewSIM.fca}</p><p className="text-xs font-medium text-gray-500">FCA</p></div>
-                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.ifca === "1" || viewSIM.ifca === "0" ? "bg-green-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.ifca === "1" || viewSIM.ifca === "0" ? "text-green-700" : "text-red-400"}`}>{viewSIM.ifca}</p><p className="text-xs font-medium text-gray-500">IFCA</p></div>
+                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.bvs === "0" || viewSIM.bvs === "1" ? "bg-green-100" : viewSIM.bvs === "X" ? "bg-gray-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.bvs === "0" || viewSIM.bvs === "1" ? "text-green-700" : viewSIM.bvs === "X" ? "text-gray-400" : "text-red-400"}`}>{viewSIM.bvs}</p><p className="text-xs font-medium text-gray-500">BVS</p></div>
+                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.fca === "0" || viewSIM.fca === "1" ? "bg-green-100" : viewSIM.fca === "X" ? "bg-gray-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.fca === "0" || viewSIM.fca === "1" ? "text-green-700" : viewSIM.fca === "X" ? "text-gray-400" : "text-red-400"}`}>{viewSIM.fca}</p><p className="text-xs font-medium text-gray-500">FCA</p></div>
+                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.ifca === "0" || viewSIM.ifca === "1" ? "bg-green-100" : viewSIM.ifca === "X" ? "bg-gray-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.ifca === "0" || viewSIM.ifca === "1" ? "text-green-700" : viewSIM.ifca === "X" ? "text-gray-400" : "text-red-400"}`}>{viewSIM.ifca}</p><p className="text-xs font-medium text-gray-500">IFCA</p></div>
                 </div>
               </div>
             </div>
@@ -828,8 +845,8 @@ export default function ActiveSIMsPage() {
                 <ul className="text-blue-700 text-xs space-y-1 list-disc list-inside">
                   <li>Match by <strong>ICCID</strong> OR <strong>SIM Number</strong> OR <strong>Device ID</strong> OR <strong>Retailer ID</strong></li>
                   <li>ICCID column will also be <strong>updated</strong> on matched SIM records</li>
-                  <li>Use <code className="bg-blue-100 px-1 rounded">1</code> for done, <code className="bg-blue-100 px-1 rounded">0</code> for pending</li>
-                  <li>When BVS=1, FCA=1, IFCA=1 → Status becomes <strong>Verified</strong></li>
+                  <li>Use <code className="bg-blue-100 px-1 rounded">0</code> = Done, <code className="bg-blue-100 px-1 rounded">1</code> = Verified, leave empty to keep existing</li>
+                  <li>All 0 → <strong>Completed</strong>, All 1 → <strong>Verified</strong>, Has X → <strong>Pending</strong></li>
                 </ul>
                 <button onClick={downloadSampleFile} className="mt-3 inline-flex items-center gap-1.5 text-blue-700 text-xs font-bold hover:underline"><Download size={12} /> Download Sample CSV</button>
               </div>
