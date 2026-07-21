@@ -43,7 +43,7 @@ const initialForm: BYNForm = {
 };
 
 export default function BYNPage() {
-  const { activations, addActivation, deleteActivation, device, auth } = useDSOData();
+  const { activations, addActivation, deleteActivation, device, auth, importVerifications } = useDSOData();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<BYNForm>(initialForm);
   const [filter, setFilter] = useState("All");
@@ -189,6 +189,31 @@ export default function BYNPage() {
     return "bg-gray-100 text-gray-600";
   };
 
+  const vcVal = (simNumber: string, field: "bvs" | "fca" | "ifca", fallback: string) => {
+    const imp = importVerifications[simNumber];
+    if (imp) return imp[field] || "X";
+    return fallback === "Completed" ? "0" : "X";
+  };
+  const vcBg = (v: string) => v === "0" ? "bg-green-100 text-green-700" : v === "1" ? "bg-blue-100 text-blue-700" : "bg-red-50 text-red-400";
+  const derivedStatus = (a: any) => {
+    const imp = importVerifications[a.simNumber];
+    let bvs: string, fca: string, ifcaV: string;
+    if (imp) {
+      bvs = imp.bvs; fca = imp.fca; ifcaV = imp.ifca;
+    } else {
+      bvs = a.bvsStatus === "Completed" ? "0" : "X";
+      fca = a.fcaStatus === "Completed" ? "0" : "X";
+      ifcaV = a.ifcaStatus === "Completed" ? "0" : "X";
+    }
+    const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
+    const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
+    if (bvs === "X" && fca === "X" && ifcaV === "X") return "Issued";
+    if (xItems.length > 0) return `Pending ${xItems.join(", ")} (${xItems.length})`;
+    if (bvs === "0" && fca === "0" && ifcaV === "0") return "Completed";
+    if (bvs === "1" && fca === "1" && ifcaV === "1") return "Verified";
+    return "Pending-V";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -253,8 +278,12 @@ export default function BYNPage() {
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Customer</th>
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">CNIC</th>
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Desired Number</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">SIM Number</th>
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Network</th>
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">BVS</th>
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">FCA</th>
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">IFCA</th>
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Progress</th>
                   <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Action</th>
                 </tr>
@@ -273,11 +302,21 @@ export default function BYNPage() {
                       <td className="px-4 py-3 font-medium text-sm text-gray-900">{a.customerName}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{a.customerCNIC}</td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-700">{a.simNumber}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-gray-900 text-sm font-mono font-medium">{a.simNumber}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${a.network === "Jazz" ? "bg-red-50 text-red-600" : a.network === "Telenor" ? "bg-blue-50 text-blue-600" : a.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{a.network}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${statusColor(a.status)}`}>{a.status}</span>
+                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${derivedStatus(a) === "Completed" || derivedStatus(a) === "Verified" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{derivedStatus(a)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "bvs", a.bvsStatus))}`}>{vcVal(a.simNumber, "bvs", a.bvsStatus)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "fca", a.fcaStatus))}`}>{vcVal(a.simNumber, "fca", a.fcaStatus)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "ifca", a.ifcaStatus))}`}>{vcVal(a.simNumber, "ifca", a.ifcaStatus)}</span>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">
                         <div className="flex items-center gap-2">

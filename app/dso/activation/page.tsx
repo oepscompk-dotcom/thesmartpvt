@@ -45,7 +45,7 @@ const initialForm: ActivationForm = {
 };
 
 export default function NewSIMActivationPage() {
-  const { activations, addActivation, deleteActivation, device, auth } = useDSOData();
+  const { activations, addActivation, deleteActivation, device, auth, importVerifications } = useDSOData();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<ActivationForm>({
     ...initialForm,
@@ -206,7 +206,12 @@ export default function NewSIMActivationPage() {
     return type;
   };
 
-  const vcVal = (v: string) => v === "Completed" ? "0" : "X";
+  const vcVal = (simNumber: string, field: "bvs" | "fca" | "ifca", fallback: string) => {
+    const imp = importVerifications[simNumber];
+    if (imp) return imp[field] || "X";
+    return fallback === "Completed" ? "0" : "X";
+  };
+  const vcBg = (v: string) => v === "0" ? "bg-green-100 text-green-700" : v === "1" ? "bg-blue-100 text-blue-700" : "bg-red-50 text-red-400";
   const typeColor = (t: string) => {
     if (t === "New SIM") return "bg-cyan-50 text-cyan-600";
     if (t === "MNP") return "bg-purple-50 text-purple-600";
@@ -214,14 +219,23 @@ export default function NewSIMActivationPage() {
     if (t === "Replacement") return "bg-rose-50 text-rose-600";
     return "bg-gray-100 text-gray-600";
   };
-  const vcBg = (v: string) => v === "Completed" ? "bg-green-100 text-green-700" : "bg-red-50 text-red-400";
   const derivedStatus = (a: any) => {
-    const pending: string[] = [];
-    if (a.bvsStatus !== "Completed") pending.push("BVS");
-    if (a.fcaStatus !== "Completed") pending.push("FCA");
-    if (a.ifcaStatus !== "Completed") pending.push("IFCA");
-    if (pending.length === 0) return "Completed";
-    return `Pending ${pending.join(", ")} (${pending.length})`;
+    const imp = importVerifications[a.simNumber];
+    let bvs: string, fca: string, ifcaV: string;
+    if (imp) {
+      bvs = imp.bvs; fca = imp.fca; ifcaV = imp.ifca;
+    } else {
+      bvs = a.bvsStatus === "Completed" ? "0" : "X";
+      fca = a.fcaStatus === "Completed" ? "0" : "X";
+      ifcaV = a.ifcaStatus === "Completed" ? "0" : "X";
+    }
+    const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
+    const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
+    if (bvs === "X" && fca === "X" && ifcaV === "X") return "Issued";
+    if (xItems.length > 0) return `Pending ${xItems.join(", ")} (${xItems.length})`;
+    if (bvs === "0" && fca === "0" && ifcaV === "0") return "Completed";
+    if (bvs === "1" && fca === "1" && ifcaV === "1") return "Verified";
+    return "Pending-V";
   };
 
   return (
@@ -335,13 +349,13 @@ export default function NewSIMActivationPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(a.bvsStatus)}`}>{vcVal(a.bvsStatus)}</span>
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "bvs", a.bvsStatus))}`}>{vcVal(a.simNumber, "bvs", a.bvsStatus)}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(a.fcaStatus)}`}>{vcVal(a.fcaStatus)}</span>
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "fca", a.fcaStatus))}`}>{vcVal(a.simNumber, "fca", a.fcaStatus)}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(a.ifcaStatus)}`}>{vcVal(a.ifcaStatus)}</span>
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "ifca", a.ifcaStatus))}`}>{vcVal(a.simNumber, "ifca", a.ifcaStatus)}</span>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">
                         <div className="flex items-center gap-2">

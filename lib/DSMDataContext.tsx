@@ -84,6 +84,7 @@ interface DSMDataContextType {
   deleteActivation: (id: string) => Promise<void>;
   dsos: DSORecord[];
   sims: DSMSim[];
+  importVerifications: Record<string, { bvs: string; fca: string; ifca: string }>;
   attendance: DSODAttendance[];
   leaveRequests: DSOLeaveRequest[]; reviewLeaveRequest: (id: string, status: "Approved" | "Rejected") => Promise<void>;
   warnings: DSOAttendanceWarning[];
@@ -113,6 +114,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   const [leaveRequests, setLeaveRequests] = useState<DSOLeaveRequest[]>([]);
   const [warnings, setWarnings] = useState<DSOAttendanceWarning[]>([]);
   const [allFranchiseSims, setAllFranchiseSims] = useState<DSMSim[]>([]);
+  const [importVerifications, setImportVerifications] = useState<Record<string, { bvs: string; fca: string; ifca: string }>>({});
   const [mounted, setMounted] = useState(false);
   const [settingsData, setSettingsData] = useState({ companyName: "THE SMART ERP", logo: "", franchiseName: "" });
 
@@ -133,7 +135,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
     if (!fId || !mounted) return;
     const loadAll = async () => {
       try {
-        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes, adminSettings, franchiseRecord] = await Promise.all([
+        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes, adminSettings, franchiseRecord, loadedVerifications] = await Promise.all([
           apiLoad("dsmActivation", fId),
           apiLoad("dsmTargetEntry", fId),
           apiLoad("dsmWalletEntry", fId),
@@ -144,6 +146,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
           apiLoad("dsoAttendance", fId),
           apiLoadById("adminSettings", "admin").catch(() => null),
           apiLoadById("franchise", fId).catch(() => null),
+          apiLoad("franchiseSimVerification").catch(() => []),
         ]);
         setActivations(actRes);
         setTargets(tgtRes);
@@ -153,6 +156,11 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
         setAllFranchiseSims(simRes);
         setDSOs(dsoRes);
         setAttendance(attRes);
+        const vMap: Record<string, { bvs: string; fca: string; ifca: string }> = {};
+        (Array.isArray(loadedVerifications) ? loadedVerifications : []).forEach((v: any) => {
+          if (v.simNumber) vMap[v.simNumber] = { bvs: v.bvs || "X", fca: v.fca || "X", ifca: v.ifca || "X" };
+        });
+        setImportVerifications(vMap);
         setSettingsData({
           companyName: adminSettings?.companyName || "THE SMART ERP",
           logo: adminSettings?.logo || "",
@@ -263,7 +271,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
 
   return (
     <DSMDataContext.Provider value={{
-      auth, hydrated: mounted, dsmLogin, dsmLogout, updateProfile, activations, addActivation, updateActivation, deleteActivation, dsos, sims, attendance,
+      auth, hydrated: mounted, dsmLogin, dsmLogout, updateProfile, activations, addActivation, updateActivation, deleteActivation, dsos, sims, importVerifications, attendance,
       leaveRequests, reviewLeaveRequest, warnings,
       dailyReports, weeklyReports, targets, updateTarget, addTarget,
       wallet, addWalletEntry, notifications, markNotificationRead,

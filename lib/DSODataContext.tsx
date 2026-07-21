@@ -71,6 +71,7 @@ interface DSODataContextType {
   targets: DSOTarget; updateTargets: (t: Partial<DSOTarget>) => void;
   device: DSODevice | null;
   sims: DSOSim[];
+  importVerifications: Record<string, { bvs: string; fca: string; ifca: string }>;
   notifications: DSONotification[]; markNotificationRead: (id: string) => void;
   settings: { franchiseName: string; logo: string; companyName: string; dsoName: string };
 }
@@ -92,6 +93,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   const [device] = useState<DSODevice | null>(null);
   const [notifications, setNotifications] = useState<DSONotification[]>([]);
   const [allFranchiseSims, setAllFranchiseSims] = useState<DSOSim[]>([]);
+  const [importVerifications, setImportVerifications] = useState<Record<string, { bvs: string; fca: string; ifca: string }>>({});
   const [mounted, setMounted] = useState(false);
   const [settingsData, setSettingsData] = useState({ companyName: "THE SMART ERP", logo: "", franchiseName: "" });
 
@@ -113,7 +115,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord] = await Promise.all([
+      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord, loadedVerifications] = await Promise.all([
         apiLoad("dsoActivation", fid),
         apiLoad("dsoAttendance", fid),
         apiLoad("leaveRequest", fid),
@@ -124,6 +126,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         apiLoad("sim", fid),
         apiLoadById("adminSettings", "admin").catch(() => null),
         apiLoadById("franchise", fid).catch(() => null),
+        apiLoad("franchiseSimVerification").catch(() => []),
       ]);
       setActivations(loadedActivations || []);
       setAttendance(loadedAttendance || []);
@@ -133,6 +136,11 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       setTargets((loadedTargets.length > 0 ? loadedTargets[0] : defaultTargets) as DSOTarget);
       setNotifications(loadedNotifications || []);
       setAllFranchiseSims(loadedSims || []);
+      const vMap: Record<string, { bvs: string; fca: string; ifca: string }> = {};
+      (Array.isArray(loadedVerifications) ? loadedVerifications : []).forEach((v: any) => {
+        if (v.simNumber) vMap[v.simNumber] = { bvs: v.bvs || "X", fca: v.fca || "X", ifca: v.ifca || "X" };
+      });
+      setImportVerifications(vMap);
       setSettingsData({
         companyName: adminSettings?.companyName || "THE SMART ERP",
         logo: adminSettings?.logo || "",
@@ -237,7 +245,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       auth, hydrated: mounted, dsoLogin, dsoLogout, activations, addActivation, updateActivation, deleteActivation,
       attendance, addAttendance, updateAttendance, leaveRequests, addLeaveRequest, warnings,
       wallet, addWalletEntry, targets, updateTargets,
-      device, sims, notifications, markNotificationRead, settings,
+      device, sims, importVerifications, notifications, markNotificationRead, settings,
     }}>
       {children}
     </DSODataContext.Provider>
