@@ -16,8 +16,9 @@ interface ImportRow {
   fca: string;
   ifca: string;
   matched?: boolean;
-  matchType?: "deviceId" | "retailerId" | "simNumber";
+  matchType?: "deviceId" | "retailerId" | "simNumber" | "iccid";
   matchedSimNumber?: string;
+  matchedSimId?: string;
 }
 
 async function loadActivations(franchiseId: string): Promise<Activation[]> {
@@ -94,6 +95,49 @@ function generateSampleCSV(): string {
 0331-3333333,,03001234569,1,0,0`;
 }
 
+interface SIMUpdateRow {
+  iccid: string;
+  network?: string;
+  status?: string;
+  deviceId?: string;
+  simNumber?: string;
+  matched?: boolean;
+  matchedSimId?: string;
+  matchedSimNumber?: string;
+}
+
+function parseSIMUpdateCSV(text: string): SIMUpdateRow[] {
+  const lines = text.trim().split("\n");
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/["\s]/g, ""));
+  const rows: SIMUpdateRow[] = [];
+  const iccidIdx = headers.findIndex((h) => h.includes("iccid"));
+  const networkIdx = headers.findIndex((h) => h.includes("network"));
+  const statusIdx = headers.findIndex((h) => h.includes("status"));
+  const deviceIdIdx = headers.findIndex((h) => (h.includes("device") && h.includes("id")) || h === "deviceid");
+  const simNumIdx = headers.findIndex((h) => (h.includes("sim") && h.includes("number")) || h === "simnumber");
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map((c) => c.trim().replace(/["']/g, ""));
+    if (cols.length < 1) continue;
+    const iccid = iccidIdx >= 0 ? cols[iccidIdx] : "";
+    if (!iccid) continue;
+    rows.push({
+      iccid,
+      network: networkIdx >= 0 ? cols[networkIdx] : undefined,
+      status: statusIdx >= 0 ? cols[statusIdx] : undefined,
+      deviceId: deviceIdIdx >= 0 ? cols[deviceIdIdx] : undefined,
+      simNumber: simNumIdx >= 0 ? cols[simNumIdx] : undefined,
+    });
+  }
+  return rows;
+}
+
+function generateSIMUpdateSampleCSV(): string {
+  return `ICCID,Network,Status,Device ID
+89920387654321098765,Jazz,Active,NRWP-1217-841
+89920387654321098766,Telenor,Verified,NRWP-1217-842`;
+}
+
 function downloadSampleFile() {
   const csv = generateSampleCSV();
   const blob = new Blob([csv], { type: "text/csv" });
@@ -101,6 +145,19 @@ function downloadSampleFile() {
   const a = document.createElement("a");
   a.href = url;
   a.download = "active-sims-import-sample.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadSIMUpdateSampleFile() {
+  const csv = generateSIMUpdateSampleCSV();
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "sim-update-import-sample.csv";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -143,7 +200,9 @@ export default function ActiveSIMsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importMode, setImportMode] = useState<"verification" | "simUpdate">("verification");
   const [importRows, setImportRows] = useState<ImportRow[]>([]);
+  const [simUpdateRows, setSimUpdateRows] = useState<SIMUpdateRow[]>([]);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importError, setImportError] = useState("");
   const [importSuccess, setImportSuccess] = useState("");
@@ -359,6 +418,46 @@ export default function ActiveSIMsPage() {
     await saveImportVerifications(verifications);
     setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA updated.`);
     setImportRows([]); setImportFile(null);
+    setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 2000);
+  };
+
+  const handleSIMUpdateFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportError(""); setImportSuccess(""); setImportFile(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const rows = parseSIMUpdateCSV(text);
+      if (rows.length === 0) { setImportError("No valid rows found. Check file has ICCID column."); return; }
+      const matched = rows.map((row) => {
+        const foundSim = sims.find((s) => s.iccid && s.iccid.toLowerCase() === row.iccid.toLowerCase());
+        return { ...row, matched: !!foundSim, matchedSimId: foundSim?.id, matchedSimNumber: foundSim?.simNumber };
+      });
+      setSimUpdateRows(matched);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleSIMUpdateImport = async () => {
+    const matchedRows = simUpdateRows.filter((r) => r.matched);
+    if (matchedRows.length === 0) { setImportError("No matching SIMs found by ICCID."); return; }
+    let updatedCount = 0;
+    for (const row of matchedRows) {
+      if (!row.matchedSimId) continue;
+      const existing = sims.find((s) => s.id === row.matchedSimId);
+      if (!existing) continue;
+      const updates: any = {};
+      if (row.network && row.network !== existing.network) updates.network = row.network;
+      if (row.status && row.status !== existing.status) updates.status = row.status;
+      if (row.deviceId && row.deviceId !== existing.deviceId) updates.deviceId = row.deviceId;
+      if (Object.keys(updates).length > 0) {
+        await apiUpdate("sim", row.matchedSimId, { ...existing, ...updates });
+        updatedCount++;
+      }
+    }
+    setImportSuccess(`Updated ${updatedCount} SIM records by ICCID match.`);
+    setSimUpdateRows([]); setImportFile(null);
     setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 2000);
   };
 
@@ -777,72 +876,138 @@ export default function ActiveSIMsPage() {
       )}
 
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowImportModal(false)}>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setShowImportModal(false); setImportRows([]); setSimUpdateRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }}>
           <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#0A2647]/10 flex items-center justify-center"><FileSpreadsheet size={20} className="text-[#0A2647]" /></div>
-                <div><h3 className="text-gray-900 font-bold">Import Verification File</h3><p className="text-gray-500 text-xs">CSV with SIM Number, Device ID, Retailer ID, BVS, FCA, IFCA</p></div>
+                <div><h3 className="text-gray-900 font-bold">Import CSV</h3><p className="text-gray-500 text-xs">Choose import type below</p></div>
               </div>
-              <button onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+              <button onClick={() => { setShowImportModal(false); setImportRows([]); setSimUpdateRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-5">
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                <p className="text-blue-800 text-sm font-medium mb-2">Format: SIM Number, Device ID, Retailer ID, BVS, FCA, IFCA</p>
-                <ul className="text-blue-700 text-xs space-y-1 list-disc list-inside">
-                  <li>Match by <strong>SIM Number</strong> OR <strong>Device ID</strong> OR <strong>Retailer ID</strong></li>
-                  <li>Use <code className="bg-blue-100 px-1 rounded">1</code> for done, <code className="bg-blue-100 px-1 rounded">0</code> for pending</li>
-                  <li>When BVS=1, FCA=1, IFCA=1 → Status becomes <strong>Verified</strong></li>
-                </ul>
-                <button onClick={downloadSampleFile} className="mt-3 inline-flex items-center gap-1.5 text-blue-700 text-xs font-bold hover:underline"><Download size={12} /> Download Sample CSV</button>
+              <div className="flex gap-2 bg-gray-100 rounded-xl p-1">
+                <button onClick={() => { setImportMode("verification"); setImportRows([]); setSimUpdateRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${importMode === "verification" ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-200"}`}>Verification (BVS/FCA/IFCA)</button>
+                <button onClick={() => { setImportMode("simUpdate"); setImportRows([]); setSimUpdateRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${importMode === "simUpdate" ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-200"}`}>SIM Update (by ICCID)</button>
               </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-2">Upload File</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#0A2647]/50 hover:bg-gray-50 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                  <Upload size={32} className="text-gray-400 mx-auto mb-2" />
-                  {importFile ? <div><p className="text-gray-900 text-sm font-medium">{importFile.name}</p><p className="text-gray-500 text-xs">{importRows.length} rows</p></div> : <div><p className="text-gray-600 text-sm">Click to upload CSV</p></div>}
-                </div>
-                <input ref={fileInputRef} type="file" accept=".csv,.txt" onChange={handleFileUpload} className="hidden" />
-              </div>
-              {importError && <div className="bg-red-50 rounded-xl p-3 border border-red-200 flex items-center gap-2"><AlertCircle size={16} className="text-red-500" /><p className="text-red-700 text-sm">{importError}</p></div>}
-              {importSuccess && <div className="bg-green-50 rounded-xl p-3 border border-green-200 flex items-center gap-2"><CheckCircle size={16} className="text-green-500" /><p className="text-green-700 text-sm">{importSuccess}</p></div>}
-              {importRows.length > 0 && (
-                <div>
-                  <p className="text-gray-700 text-sm font-medium mb-2">Preview ({importRows.filter((r) => r.matched).length} matched)</p>
-                  <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50 sticky top-0"><tr>
-                        <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">SIM Number</th>
-                        <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Device ID</th>
-                        <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Retailer ID</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">BVS</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">FCA</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">IFCA</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">Status</th>
-                      </tr></thead>
-                      <tbody>
-                        {importRows.map((row, i) => (
-                          <tr key={i} className={`border-t border-gray-100 ${row.matched ? "bg-green-50/50" : "bg-red-50/50"}`}>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.simNumber || "—"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.deviceId || "—"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.retailerId || "—"}</td>
-                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.bvs === "1" ? "text-green-600" : "text-gray-400"}`}>{row.bvs}</span></td>
-                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.fca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.fca}</span></td>
-                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.ifca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.ifca}</span></td>
-                            <td className="px-3 py-2 text-center">
-                              {row.matched ? <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold">Matched ({row.matchType})</span> : <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">Not Found</span>}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+
+              {importMode === "verification" ? (
+                <>
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                    <p className="text-blue-800 text-sm font-medium mb-2">Format: SIM Number, Device ID, Retailer ID, BVS, FCA, IFCA</p>
+                    <ul className="text-blue-700 text-xs space-y-1 list-disc list-inside">
+                      <li>Match by <strong>SIM Number</strong> OR <strong>Device ID</strong> OR <strong>Retailer ID</strong></li>
+                      <li>Use <code className="bg-blue-100 px-1 rounded">1</code> for done, <code className="bg-blue-100 px-1 rounded">0</code> for pending</li>
+                      <li>When BVS=1, FCA=1, IFCA=1 → Status becomes <strong>Verified</strong></li>
+                    </ul>
+                    <button onClick={downloadSampleFile} className="mt-3 inline-flex items-center gap-1.5 text-blue-700 text-xs font-bold hover:underline"><Download size={12} /> Download Sample CSV</button>
                   </div>
-                </div>
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-2">Upload File</label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#0A2647]/50 hover:bg-gray-50 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                      <Upload size={32} className="text-gray-400 mx-auto mb-2" />
+                      {importFile ? <div><p className="text-gray-900 text-sm font-medium">{importFile.name}</p><p className="text-gray-500 text-xs">{importRows.length} rows</p></div> : <div><p className="text-gray-600 text-sm">Click to upload CSV</p></div>}
+                    </div>
+                    <input ref={fileInputRef} type="file" accept=".csv,.txt" onChange={handleFileUpload} className="hidden" />
+                  </div>
+                  {importError && <div className="bg-red-50 rounded-xl p-3 border border-red-200 flex items-center gap-2"><AlertCircle size={16} className="text-red-500" /><p className="text-red-700 text-sm">{importError}</p></div>}
+                  {importSuccess && <div className="bg-green-50 rounded-xl p-3 border border-green-200 flex items-center gap-2"><CheckCircle size={16} className="text-green-500" /><p className="text-green-700 text-sm">{importSuccess}</p></div>}
+                  {importRows.length > 0 && (
+                    <div>
+                      <p className="text-gray-700 text-sm font-medium mb-2">Preview ({importRows.filter((r) => r.matched).length} matched)</p>
+                      <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-gray-50 sticky top-0"><tr>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">SIM Number</th>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Device ID</th>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Retailer ID</th>
+                            <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">BVS</th>
+                            <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">FCA</th>
+                            <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">IFCA</th>
+                            <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">Status</th>
+                          </tr></thead>
+                          <tbody>
+                            {importRows.map((row, i) => (
+                              <tr key={i} className={`border-t border-gray-100 ${row.matched ? "bg-green-50/50" : "bg-red-50/50"}`}>
+                                <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.simNumber || "—"}</td>
+                                <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.deviceId || "—"}</td>
+                                <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.retailerId || "—"}</td>
+                                <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.bvs === "1" ? "text-green-600" : "text-gray-400"}`}>{row.bvs}</span></td>
+                                <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.fca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.fca}</span></td>
+                                <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.ifca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.ifca}</span></td>
+                                <td className="px-3 py-2 text-center">
+                                  {row.matched ? <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold">Matched ({row.matchType})</span> : <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">Not Found</span>}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                    <p className="text-purple-800 text-sm font-medium mb-2">Format: ICCID, Network, Status, Device ID</p>
+                    <ul className="text-purple-700 text-xs space-y-1 list-disc list-inside">
+                      <li>Match by <strong>ICCID</strong> (required column)</li>
+                      <li>Optional fields: Network, Status, Device ID — only changed fields are updated</li>
+                      <li>Leave a field empty to keep the existing value</li>
+                    </ul>
+                    <button onClick={downloadSIMUpdateSampleFile} className="mt-3 inline-flex items-center gap-1.5 text-purple-700 text-xs font-bold hover:underline"><Download size={12} /> Download Sample CSV</button>
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-2">Upload File</label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#0A2647]/50 hover:bg-gray-50 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                      <Upload size={32} className="text-gray-400 mx-auto mb-2" />
+                      {importFile ? <div><p className="text-gray-900 text-sm font-medium">{importFile.name}</p><p className="text-gray-500 text-xs">{simUpdateRows.length} rows</p></div> : <div><p className="text-gray-600 text-sm">Click to upload CSV</p></div>}
+                    </div>
+                    <input ref={fileInputRef} type="file" accept=".csv,.txt" onChange={handleSIMUpdateFileUpload} className="hidden" />
+                  </div>
+                  {importError && <div className="bg-red-50 rounded-xl p-3 border border-red-200 flex items-center gap-2"><AlertCircle size={16} className="text-red-500" /><p className="text-red-700 text-sm">{importError}</p></div>}
+                  {importSuccess && <div className="bg-green-50 rounded-xl p-3 border border-green-200 flex items-center gap-2"><CheckCircle size={16} className="text-green-500" /><p className="text-green-700 text-sm">{importSuccess}</p></div>}
+                  {simUpdateRows.length > 0 && (
+                    <div>
+                      <p className="text-gray-700 text-sm font-medium mb-2">Preview ({simUpdateRows.filter((r) => r.matched).length} matched by ICCID)</p>
+                      <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-gray-50 sticky top-0"><tr>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">ICCID</th>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Network</th>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Status</th>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Device ID</th>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">SIM Number</th>
+                            <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">Match</th>
+                          </tr></thead>
+                          <tbody>
+                            {simUpdateRows.map((row, i) => (
+                              <tr key={i} className={`border-t border-gray-100 ${row.matched ? "bg-green-50/50" : "bg-red-50/50"}`}>
+                                <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.iccid}</td>
+                                <td className="px-3 py-2 text-gray-700 text-xs">{row.network || "—"}</td>
+                                <td className="px-3 py-2 text-gray-700 text-xs">{row.status || "—"}</td>
+                                <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.deviceId || "—"}</td>
+                                <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.matchedSimNumber || "—"}</td>
+                                <td className="px-3 py-2 text-center">
+                                  {row.matched ? <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold">Matched</span> : <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">Not Found</span>}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3 sticky bottom-0 bg-white">
-              <button onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleImport} disabled={importRows.length === 0 || importRows.filter((r) => r.matched).length === 0} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"><Upload size={14} /> Import {importRows.filter((r) => r.matched).length} Records</button>
+              <button onClick={() => { setShowImportModal(false); setImportRows([]); setSimUpdateRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
+              {importMode === "verification" ? (
+                <button onClick={handleImport} disabled={importRows.length === 0 || importRows.filter((r) => r.matched).length === 0} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"><Upload size={14} /> Import {importRows.filter((r) => r.matched).length} Records</button>
+              ) : (
+                <button onClick={handleSIMUpdateImport} disabled={simUpdateRows.length === 0 || simUpdateRows.filter((r) => r.matched).length === 0} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"><Upload size={14} /> Update {simUpdateRows.filter((r) => r.matched).length} SIMs</button>
+              )}
             </div>
           </div>
         </div>
