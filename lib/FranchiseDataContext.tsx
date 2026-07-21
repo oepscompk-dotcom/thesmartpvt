@@ -595,29 +595,33 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
 
   const deleteIssueRecords = async (ids: string[]) => {
     const today = new Date().toISOString().split("T")[0];
+    const allSimIdsToRestore: string[] = [];
     for (const id of ids) {
       const record = issueRecords.find((r) => r.id === id);
       if (record) {
-        const freshSims = await apiLoad("sim", record.franchiseId);
-        const affected = (Array.isArray(freshSims) ? freshSims : []).filter((s: any) => record.simIds.includes(s.id));
-        await Promise.all(affected.map((s: any) =>
-          apiUpdate("sim", s.id, {
-            status: "In Stock",
-            issuedToId: "",
-            issuedToName: "",
-            issuedToRole: "",
-            statusDate: today,
-            statusChangedFrom: s.status,
-          })
-        ));
+        allSimIdsToRestore.push(...record.simIds);
       }
+    }
+    const simIdsSet = new Set(allSimIdsToRestore);
+    const freshSims = await apiLoad("sim");
+    const affectedSims = (Array.isArray(freshSims) ? freshSims : []).filter((s: any) => simIdsSet.has(s.id));
+    await Promise.all(affectedSims.map((s: any) =>
+      apiUpdate("sim", s.id, {
+        status: "In Stock",
+        issuedToId: "",
+        issuedToName: "",
+        issuedToRole: "",
+        statusDate: today,
+        statusChangedFrom: s.status,
+      })
+    ));
+    for (const id of ids) {
       await apiDelete("simIssueRecord", id);
     }
     const deletedIds = new Set(ids);
     setIssueRecords((prev) => prev.filter((r) => !deletedIds.has(r.id)));
     setSIMs((prev) => prev.map((s) => {
-      const record = issueRecords.find((r) => deletedIds.has(r.id) && r.simIds.includes(s.id));
-      if (record) {
+      if (simIdsSet.has(s.id)) {
         return { ...s, status: "In Stock", issuedToId: "", issuedToName: "", issuedToRole: "", statusDate: today, statusChangedFrom: s.status };
       }
       return s;

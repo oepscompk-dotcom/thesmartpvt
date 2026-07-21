@@ -1,5 +1,4 @@
 "use client";
-export const dynamic = "force-dynamic";
 
 import { useState, useMemo } from "react";
 import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, Filter, CheckSquare, Square, User, Smartphone, Trash2 } from "lucide-react";
@@ -61,9 +60,14 @@ export default function IssuedReturnsPage() {
   };
 
   const handleDeleteSelected = async () => {
-    await deleteIssueRecords(selectedIds);
-    setSelectedIds([]);
-    setShowDeleteConfirm(false);
+    try {
+      await deleteIssueRecords(selectedIds);
+      setSelectedIds([]);
+      setShowDeleteConfirm(false);
+    } catch (e) {
+      console.error("Failed to delete issue records:", e);
+      alert("Failed to delete records. Please try again.");
+    }
   };
 
   const getMobileDigits = (mobile: string) => mobile.replace(/[^0-9]/g, "").slice(-10);
