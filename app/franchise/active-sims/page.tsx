@@ -216,16 +216,16 @@ export default function ActiveSIMsPage() {
   const getDisplayStatus = (sim: any): { status: string; bvs: string; fca: string; ifca: string } => {
     const imp = importVerifications[sim.simNumber];
     const activation = getActivationForSIM(sim.simNumber);
-    let bvs = "X", fca = "X", ifcaV = "X";
-    if (activation) {
-      bvs = vcFromActivation(activation.bvsStatus);
-      fca = vcFromActivation(activation.fcaStatus);
-      ifcaV = vcFromActivation(activation.ifcaStatus);
-    } else if (imp) {
-      bvs = imp.bvs || "X";
-      fca = imp.fca || "X";
-      ifcaV = imp.ifca || "X";
-    }
+    const actBvs = activation ? vcFromActivation(activation.bvsStatus) : "X";
+    const actFca = activation ? vcFromActivation(activation.fcaStatus) : "X";
+    const actIfca = activation ? vcFromActivation(activation.ifcaStatus) : "X";
+    const impBvs = imp?.bvs || "X";
+    const impFca = imp?.fca || "X";
+    const impIfca = imp?.ifca || "X";
+    const best = (a: string, b: string) => a === "0" || b === "0" ? "0" : a === "1" || b === "1" ? "1" : "X";
+    let bvs = best(actBvs, impBvs);
+    let fca = best(actFca, impFca);
+    let ifcaV = best(actIfca, impIfca);
     const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
     const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
     const oneItems = Object.entries(vals).filter(([, v]) => v === "1").map(([k]) => k);
@@ -399,9 +399,9 @@ export default function ActiveSIMsPage() {
         if (newFca === "0" && activation.fcaStatus !== "Completed") { actUpdates.fcaStatus = "Completed"; actUpdates.fcaDate = new Date().toISOString(); }
         if (newIfca === "0" && activation.ifcaStatus !== "Completed") { actUpdates.ifcaStatus = "Completed"; actUpdates.ifcaDate = new Date().toISOString(); }
         if (Object.keys(actUpdates).length > 0) {
-          const modelName = activation.type === "MNP" || activation.type === "BYN" || activation.type === "Replacement" ? "dsoActivation" : "dsoActivation";
           try { await apiUpdate("dsoActivation", activation.id, actUpdates); } catch {}
           try { await apiUpdate("dsmActivation", activation.id, actUpdates); } catch {}
+          Object.assign(activation, actUpdates);
         }
       }
       if (row.matchedSimId && row.iccid) {
@@ -421,7 +421,9 @@ export default function ActiveSIMsPage() {
       setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA updated.`);
     }
     setImportRows([]); setImportFile(null);
-    setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 3000);
+    setAllActivations(freshActivations);
+    setImportVerifications(await loadImportVerifications());
+    setTimeout(() => { setShowImportModal(false); setImportSuccess(""); }, 3000);
   };
 
   return (
