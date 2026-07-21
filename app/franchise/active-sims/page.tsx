@@ -364,14 +364,14 @@ export default function ActiveSIMsPage() {
   const handleImport = async () => {
     const matchedRows = importRows.filter((r) => r.matched);
     if (matchedRows.length === 0) { setImportError("No matching SIMs found."); return; }
-    const existing = await loadImportVerifications();
     const freshActivations = await loadActivations(auth.franchiseId);
     let updatedCount = 0;
     let errors: string[] = [];
+    const localVerifications: Record<string, ImportVerification> = { ...importVerifications };
     for (const row of matchedRows) {
       const simNum = row.matchedSimNumber || row.simNumber;
       if (!simNum) continue;
-      const prev = existing[simNum] || { bvs: "X", fca: "X", ifca: "X" };
+      const prev = localVerifications[simNum] || { bvs: "X", fca: "X", ifca: "X" };
       const newBvs = row.bvs === "0" || row.bvs === "1" ? row.bvs : (prev.bvs || "X");
       const newFca = row.fca === "0" || row.fca === "1" ? row.fca : (prev.fca || "X");
       const newIfca = row.ifca === "0" || row.ifca === "1" ? row.ifca : (prev.ifca || "X");
@@ -392,6 +392,8 @@ export default function ActiveSIMsPage() {
       } catch (e: any) {
         errors.push(`${simNum}: ${e.message || "save failed"}`);
       }
+      localVerifications[simNum] = { simNumber: simNum, bvs: newBvs, fca: newFca, ifca: newIfca, verifiedAt: new Date().toISOString() };
+      console.log(`Import ${simNum}: bvs=${newBvs} fca=${newFca} ifca=${newIfca}`);
       const activation = freshActivations.find((a) => a.simNumber === simNum);
       if (activation) {
         const actUpdates: Record<string, string> = {};
@@ -422,7 +424,7 @@ export default function ActiveSIMsPage() {
     }
     setImportRows([]); setImportFile(null);
     setAllActivations(freshActivations);
-    setImportVerifications(await loadImportVerifications());
+    setImportVerifications(localVerifications);
     setTimeout(() => { setShowImportModal(false); setImportSuccess(""); }, 3000);
   };
 

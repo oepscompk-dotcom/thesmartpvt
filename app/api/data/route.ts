@@ -124,9 +124,11 @@ export async function POST(req: NextRequest) {
     }
 
     const serialized = serializeData(data);
+    const updateData = { ...serialized };
+    if (updateData.id) delete updateData.id;
     const record = await model.upsert({
       where: { id: data.id },
-      update: serialized,
+      update: updateData,
       create: serialized,
     });
     return NextResponse.json(deserializeRecord(record));
