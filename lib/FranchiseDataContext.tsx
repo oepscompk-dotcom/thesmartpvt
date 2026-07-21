@@ -75,7 +75,7 @@ export interface Device {
 
 export interface SIM {
   id: string; network: string; simNumber: string; iccid: string; deviceId: string;
-  status: string; receiveDate: string; franchiseId: string; type: "new" | "hlr";
+  status: string; receiveDate: string; franchiseId: string; type: "new" | "hlr" | "mnp" | "byn" | "replacement";
   issuedToId?: string; issuedToName?: string; issuedToRole?: string;
   statusDate?: string; statusChangedFrom?: string;
 }

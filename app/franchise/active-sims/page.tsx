@@ -154,7 +154,7 @@ export default function ActiveSIMsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewSIM, setViewSIM] = useState<any>(null);
   const [editSIM, setEditSIM] = useState<any>(null);
-  const [editForm, setEditForm] = useState({ network: "", status: "", notes: "", bvs: "", fca: "", ifca: "", deviceId: "", iccid: "" });
+  const [editForm, setEditForm] = useState({ network: "", status: "", notes: "", bvs: "", fca: "", ifca: "", deviceId: "", iccid: "", simType: "" });
   const [deleteConfirm, setDeleteConfirm] = useState<any>(null);
   const [allActivations, setAllActivations] = useState<Activation[]>([]);
   const [importVerifications, setImportVerifications] = useState<Record<string, ImportVerification>>({});
@@ -530,7 +530,7 @@ export default function ActiveSIMsPage() {
           <CheckSquare size={16} className="text-[#0A2647]" />
           <span className="text-sm font-medium text-[#0A2647]">{selectedIds.length} SIM{selectedIds.length > 1 ? "s" : ""} selected</span>
           <div className="flex gap-2 ml-auto">
-            <button onClick={() => { setBulkEditActive(true); const first = filteredList.find((s) => selectedIds.includes(s.id)); if (first) { const display = getDisplayStatus(first); setEditSIM(first); setEditForm({ network: first.network, status: first.status, notes: "", bvs: display.bvs, fca: display.fca, ifca: display.ifca, deviceId: first.deviceId || "", iccid: first.iccid || "" }); } }} className="px-4 py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition-all flex items-center gap-1.5">
+            <button onClick={() => { setBulkEditActive(true); const first = filteredList.find((s) => selectedIds.includes(s.id)); if (first) { const display = getDisplayStatus(first); setEditSIM(first); setEditForm({ network: first.network, status: first.status, notes: "", bvs: display.bvs, fca: display.fca, ifca: display.ifca, deviceId: first.deviceId || "", iccid: first.iccid || "", simType: first.type || "" }); } }} className="px-4 py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition-all flex items-center gap-1.5">
               <Pencil size={14} /> Edit Selected
             </button>
             <button onClick={() => setDeleteConfirm({ _bulk: true, count: selectedIds.length })} className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition-all flex items-center gap-1.5">
@@ -626,6 +626,7 @@ export default function ActiveSIMsPage() {
                             ifca: display.ifca,
                             deviceId: sim.deviceId || "",
                             iccid: sim.iccid || "",
+                            simType: sim.type || "",
                           }); 
                         }} className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-all" title="Edit"><Pencil size={14} /></button>
                         <button onClick={() => setDeleteConfirm(sim)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-all" title="Delete"><Trash2 size={14} /></button>
@@ -699,9 +700,31 @@ export default function ActiveSIMsPage() {
                   <label className="block text-gray-500 text-xs font-medium mb-1.5">Status</label>
                   <select value={editForm.status} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
                     {bulkEditActive && <option value="">— No change —</option>}
-                    <option value="Issued">Issued</option><option value="Active">Active</option><option value="Verified">Verified</option>
+                    <option value="Issued">Issued</option>
+                    <option value="Active">Active</option>
+                    <option value="Pending BVS">Pending BVS</option>
+                    <option value="Pending FCA">Pending FCA</option>
+                    <option value="Pending IFCA">Pending IFCA</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Verified">Verified</option>
+                    <option value="Pending-V">Pending-V</option>
+                    <option value="Returned">Returned</option>
+                    <option value="In Stock">In Stock</option>
+                    <option value="Damaged">Damaged</option>
+                    <option value="Lost">Lost</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Decommissioned">Decommissioned</option>
+                    <option value="Blocked">Blocked</option>
+                    <option value="Suspended">Suspended</option>
                   </select>
                 </div>
+              </div>
+              <div>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">SIM Category</label>
+                <select value={editForm.simType || ""} onChange={(e) => setEditForm((p) => ({ ...p, simType: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  {bulkEditActive && <option value="">— No change —</option>}
+                  <option value="new">New</option><option value="mnp">MNP</option><option value="byn">BYN</option><option value="replacement">REPL</option><option value="hlr">HLR</option>
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -764,6 +787,7 @@ export default function ActiveSIMsPage() {
                         ...sim,
                         network: editForm.network || sim.network,
                         ...(editForm.status ? { status: editForm.status } : {}),
+                        ...(editForm.simType ? { type: editForm.simType } : {}),
                         deviceId: editForm.deviceId || sim.deviceId,
                         iccid: editForm.iccid || sim.iccid,
                       };
