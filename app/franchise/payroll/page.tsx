@@ -15,7 +15,7 @@ type Tab = "generate" | "list";
 
 export default function PayrollPage() {
   const { auth, payroll, dsms, dso, addPayroll, updatePayroll, deletePayroll, addExpense } = useFranchiseData();
-  const { activations } = useDSOData();
+  const { activations, importVerifications } = useDSOData();
 
   const [tab, setTab] = useState<Tab>("generate");
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
@@ -62,14 +62,27 @@ export default function PayrollPage() {
       const aMonth = a.createdAt?.slice(0, 7);
       return a.dsoId === empId && aMonth === m && a.status === "Completed";
     });
+    const pick = (impV: string | undefined, actV: string) =>
+      impV === "1" ? "1" : actV === "0" ? "0" : impV === "0" ? "0" : "X";
+    const actBvs = (a: any) => a.bvsStatus === "Completed" ? "0" : "X";
+    const actFca = (a: any) => a.fcaStatus === "Completed" ? "0" : "X";
+    const actIfca = (a: any) => a.ifcaStatus === "Completed" ? "0" : "X";
+    let bvsCount = 0, fcaCount = 0, ifcaCount = 0;
+    acts.forEach((a) => {
+      const iv = importVerifications?.[a.simNumber];
+      if (pick(iv?.bvs, actBvs(a)) === "1") bvsCount++;
+      if (pick(iv?.fca, actFca(a)) === "1") fcaCount++;
+      if (pick(iv?.ifca, actIfca(a)) === "1") ifcaCount++;
+    });
     return {
       newSIM: acts.filter((a) => a.type === "New SIM").length,
       mnp: acts.filter((a) => a.type === "MNP").length,
       replacement: acts.filter((a) => a.type === "Replacement").length,
       byn: acts.filter((a) => a.type === "BYN").length,
-      bvs: acts.filter((a) => a.bvsStatus === "Completed").length,
-      fca: acts.filter((a) => a.fcaStatus === "Completed").length,
-      ifca: acts.filter((a) => a.ifcaStatus === "Completed").length,
+      total: acts.length,
+      bvs: bvsCount,
+      fca: fcaCount,
+      ifca: ifcaCount,
     };
   };
 
@@ -121,6 +134,8 @@ export default function PayrollPage() {
       bynBvsRate: d.bynBvs || 0, bynBvsCommission: acts.byn * (d.bynBvs || 0),
       bynFcaRate: d.bynFca || 0, bynFcaCommission: acts.byn * (d.bynFca || 0),
       bynIfcaRate: d.bynIfca || 0, bynIfcaCommission: acts.byn * (d.bynIfca || 0),
+      bvsCount: acts.bvs, fcaCount: acts.fca, ifcaCount: acts.ifca,
+      totalActivations: acts.total,
       hike, other, totalCommission,
       targetBonus, perfBonus,
       advance, loan, otherDed, totalDeductions,
@@ -532,10 +547,10 @@ export default function PayrollPage() {
                         <td className="px-4 py-3 text-right text-gray-600 text-xs hidden lg:table-cell">PKR {calc.totalAllowances.toLocaleString()}</td>
                         <td className="px-4 py-3 text-center hidden lg:table-cell">
                           <div className="flex items-center justify-center gap-1 text-[10px]">
-                            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded font-bold">{calc.newSimCount}</span>
-                            <span className="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-bold">{calc.mnpCount}</span>
-                            <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded font-bold">{calc.replacementCount}</span>
-                            <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded font-bold">{calc.bynCount}</span>
+                            <span className="px-1.5 py-0.5 bg-gray-900 text-white rounded font-bold" title="Total">{calc.totalActivations}</span>
+                            <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded font-bold" title="BVS">{calc.bvsCount}</span>
+                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-bold" title="FCA">{calc.fcaCount}</span>
+                            <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold" title="IFCA">{calc.ifcaCount}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right text-green-600 text-xs font-medium hidden xl:table-cell">PKR {calc.totalCommission.toLocaleString()}</td>
