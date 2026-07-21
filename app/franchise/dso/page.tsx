@@ -142,24 +142,58 @@ export default function DSOPage() {
 
   const downloadSalarySlip = (emp: DSO, monthVal?: string) => {
     const m = monthVal || new Date().toISOString().slice(0, 7);
-    const acts = {
-      newSIM: activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed" && a.type === "New SIM").length,
-      mnp: activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed" && a.type === "MNP").length,
-      replacement: activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed" && a.type === "Replacement").length,
-      byn: activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed" && a.type === "BYN").length,
-      bvs: activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed" && a.bvsStatus === "Completed").length,
-      fca: activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed" && a.fcaStatus === "Completed").length,
-      ifca: activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed" && a.ifcaStatus === "Completed").length,
-    };
+    const empActivations = activations.filter((a) => a.dsoId === emp.id && a.createdAt?.slice(0, 7) === m && a.status === "Completed");
+    const pick = (impV: string | undefined, actV: string) =>
+      impV === "1" ? "1" : actV === "0" ? "0" : impV === "0" ? "0" : "X";
+    const actBvs = (a: any) => a.bvsStatus === "Completed" ? "0" : "X";
+    const actFca = (a: any) => a.fcaStatus === "Completed" ? "0" : "X";
+    const actIfca = (a: any) => a.ifcaStatus === "Completed" ? "0" : "X";
+    let newSimBvs = 0, newSimFca = 0, newSimIfca = 0;
+    let mnpBvs = 0, mnpFca = 0, mnpIfca = 0;
+    let replBvs = 0, replFca = 0, replIfca = 0;
+    let bynBvs = 0, bynFca = 0, bynIfca = 0;
+    let bvsCount = 0, fcaCount = 0, ifcaCount = 0;
+    let newSimCount = 0, mnpCount = 0, replCount = 0, bynCount = 0;
+    empActivations.forEach((a) => {
+      const iv = importVerifications?.[a.simNumber];
+      const bv = pick(iv?.bvs, actBvs(a));
+      const fc = pick(iv?.fca, actFca(a));
+      const ic = pick(iv?.ifca, actIfca(a));
+      if (bv === "1") bvsCount++;
+      if (fc === "1") fcaCount++;
+      if (ic === "1") ifcaCount++;
+      if (a.type === "New SIM") {
+        newSimCount++;
+        if (bv === "1") newSimBvs++;
+        if (fc === "1") newSimFca++;
+        if (ic === "1") newSimIfca++;
+      } else if (a.type === "MNP") {
+        mnpCount++;
+        if (bv === "1") mnpBvs++;
+        if (fc === "1") mnpFca++;
+        if (ic === "1") mnpIfca++;
+      } else if (a.type === "Replacement") {
+        replCount++;
+        if (bv === "1") replBvs++;
+        if (fc === "1") replFca++;
+        if (ic === "1") replIfca++;
+      } else if (a.type === "BYN") {
+        bynCount++;
+        if (bv === "1") bynBvs++;
+        if (fc === "1") bynFca++;
+        if (ic === "1") bynIfca++;
+      }
+    });
     const v = (f: string) => (emp[f as keyof DSO] as number) || 0;
     const basic = v("salary");
     const fuel = v("fuelAllowance"), mobile = v("mobileAllowance"), daily = v("dailyAllowance"), residence = v("residenceAllowance");
     const totalAllow = fuel + mobile + daily + residence;
-    const newSimComm = acts.newSIM * (v("newSimBvs") + v("newSimFca") + v("newSimIfca")), mnpComm = acts.mnp * (v("mnpBvs") + v("mnpFca") + v("mnpIfca"));
-    const replComm = acts.replacement * (v("replacementBvs") + v("replacementFca") + v("replacementIfca")), bynComm = acts.byn * (v("bynBvs") + v("bynFca") + v("bynIfca"));
-    const bvsComm = 0; const fcaComm = 0; const ifcaComm = 0;
+    const newSimComm = newSimBvs * v("newSimBvs") + newSimFca * v("newSimFca") + newSimIfca * v("newSimIfca");
+    const mnpComm = mnpBvs * v("mnpBvs") + mnpFca * v("mnpFca") + mnpIfca * v("mnpIfca");
+    const replComm = replBvs * v("replacementBvs") + replFca * v("replacementFca") + replIfca * v("replacementIfca");
+    const bynComm = bynBvs * v("bynBvs") + bynFca * v("bynFca") + bynIfca * v("bynIfca");
     const hike = v("hikeCommission"), other = v("otherCommission");
-    const totalComm = newSimComm + mnpComm + replComm + bynComm + bvsComm + fcaComm + ifcaComm + hike + other;
+    const totalComm = newSimComm + mnpComm + replComm + bynComm + hike + other;
     const targetBonus = v("targetBonus"), perfBonus = v("bonus");
     const advance = v("advanceSalary"), loan = v("loanDeduction"), otherDed = v("otherDeduction");
     const totalDed = advance + loan + otherDed;
@@ -283,10 +317,10 @@ export default function DSOPage() {
       <tr><td class="row-label row-sub">Residence Allowance</td><td class="row-value">PKR ${residence.toLocaleString()}</td></tr>
       <tr class="row-total"><td class="row-label">Total Allowances</td><td class="row-value">PKR ${totalAllow.toLocaleString()}</td></tr>
       <tr class="row-divider"><td colspan="2"></td></tr>
-      <tr><td class="row-label">New SIM <span class="act-badge act-blue">${acts.newSIM} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${v("newSimCommission")}</span></td><td class="row-value">PKR ${newSimComm.toLocaleString()}</td></tr>
-      <tr class="row-alt"><td class="row-label">MNP <span class="act-badge act-purple">${acts.mnp} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${v("mnpCommission")}</span></td><td class="row-value">PKR ${mnpComm.toLocaleString()}</td></tr>
-      <tr><td class="row-label">Replacement <span class="act-badge act-orange">${acts.replacement} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${v("replacementCommission")}</span></td><td class="row-value">PKR ${replComm.toLocaleString()}</td></tr>
-      <tr class="row-alt"><td class="row-label">BYN <span class="act-badge act-teal">${acts.byn} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${v("bynCommission")}</span></td><td class="row-value">PKR ${bynComm.toLocaleString()}</td></tr>
+      <tr><td class="row-label">New SIM <span style="font-size:9px;color:#94a3b8;">BVS(${newSimBvs}×${v("newSimBvs")})+FCA(${newSimFca}×${v("newSimFca")})+IFCA(${newSimIfca}×${v("newSimIfca")})</span></td><td class="row-value">PKR ${newSimComm.toLocaleString()}</td></tr>
+      <tr class="row-alt"><td class="row-label">MNP <span style="font-size:9px;color:#94a3b8;">BVS(${mnpBvs}×${v("mnpBvs")})+FCA(${mnpFca}×${v("mnpFca")})+IFCA(${mnpIfca}×${v("mnpIfca")})</span></td><td class="row-value">PKR ${mnpComm.toLocaleString()}</td></tr>
+      <tr><td class="row-label">Replacement <span style="font-size:9px;color:#94a3b8;">BVS(${replBvs}×${v("replacementBvs")})+FCA(${replFca}×${v("replacementFca")})+IFCA(${replIfca}×${v("replacementIfca")})</span></td><td class="row-value">PKR ${replComm.toLocaleString()}</td></tr>
+      <tr class="row-alt"><td class="row-label">BYN <span style="font-size:9px;color:#94a3b8;">BVS(${bynBvs}×${v("bynBvs")})+FCA(${bynFca}×${v("bynFca")})+IFCA(${bynIfca}×${v("bynIfca")})</span></td><td class="row-value">PKR ${bynComm.toLocaleString()}</td></tr>
       <tr><td class="row-label row-sub">Hike Commission</td><td class="row-value">PKR ${hike.toLocaleString()}</td></tr>
       <tr class="row-alt"><td class="row-label row-sub">Other Commission</td><td class="row-value">PKR ${other.toLocaleString()}</td></tr>
       <tr class="row-total"><td class="row-label">Total Commission</td><td class="row-value">PKR ${totalComm.toLocaleString()}</td></tr>
@@ -303,7 +337,7 @@ export default function DSOPage() {
       <tr class="row-ded-total"><td class="row-label">Total Deductions</td><td class="row-value">PKR ${totalDed.toLocaleString()}</td></tr>
     </table>
     <div class="summary-grid">
-      <div class="summary-card"><div class="sc-label">Total Activations</div><div class="sc-value">${acts.newSIM + acts.mnp + acts.replacement + acts.byn}</div></div>
+      <div class="summary-card"><div class="sc-label">Total Activations</div><div class="sc-value">${newSimCount + mnpCount + replCount + bynCount}  |  BVS:${bvsCount}  FCA:${fcaCount}  IFCA:${ifcaCount}</div></div>
       <div class="summary-card"><div class="sc-label">Gross Pay</div><div class="sc-value">PKR ${gross.toLocaleString()}</div></div>
     </div>
     <div class="net-pay-box">
