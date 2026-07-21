@@ -68,7 +68,7 @@ const DOC_FIELDS: { key: string; label: string; path: (d: DSM) => string | undef
 
 export default function DSMPage() {
   const { auth, dsms, addDSM, updateDSM, deleteDSM } = useFranchiseData();
-  const { activations } = useDSOData();
+  const { activations, importVerifications } = useDSOData();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<Tab>("all");

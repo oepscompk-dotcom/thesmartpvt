@@ -68,7 +68,7 @@ const DOC_FIELDS: { key: string; label: string; path: (d: DSO) => string | undef
 
 export default function DSOPage() {
   const { auth, dso, dsms, addDSO, updateDSO, deleteDSO } = useFranchiseData();
-  const { activations } = useDSOData();
+  const { activations, importVerifications } = useDSOData();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<Tab>("all");
