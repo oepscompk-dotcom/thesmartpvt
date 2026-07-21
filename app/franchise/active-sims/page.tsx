@@ -399,9 +399,9 @@ export default function ActiveSIMsPage() {
         if (newFca === "0" && activation.fcaStatus !== "Completed") { actUpdates.fcaStatus = "Completed"; actUpdates.fcaDate = new Date().toISOString(); }
         if (newIfca === "0" && activation.ifcaStatus !== "Completed") { actUpdates.ifcaStatus = "Completed"; actUpdates.ifcaDate = new Date().toISOString(); }
         if (Object.keys(actUpdates).length > 0) {
-          const fullAct = { ...activation, ...actUpdates };
-          try { await apiSave("dsoActivation", fullAct); } catch {}
-          try { await apiSave("dsmActivation", fullAct); } catch {}
+          const modelName = activation.type === "MNP" || activation.type === "BYN" || activation.type === "Replacement" ? "dsoActivation" : "dsoActivation";
+          try { await apiUpdate("dsoActivation", activation.id, actUpdates); } catch {}
+          try { await apiUpdate("dsmActivation", activation.id, actUpdates); } catch {}
         }
       }
       if (row.matchedSimId && row.iccid) {
