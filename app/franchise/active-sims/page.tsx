@@ -302,7 +302,7 @@ export default function ActiveSIMsPage() {
       }
       return matchSearch && matchStatus && matchType && matchDate;
     });
-  }, [activeSIMs, search, statusFilter, typeFilter, dateFrom, dateTo, allActivations]);
+  }, [activeSIMs, search, statusFilter, typeFilter, dateFrom, dateTo, allActivations, importVerifications]);
 
   const stats = useMemo(() => {
     let issued = 0, completed = 0, verified = 0, pending = 0, pendingV = 0;
@@ -315,7 +315,7 @@ export default function ActiveSIMsPage() {
       else pending++;
     });
     return { total: activeSIMs.length, issued, completed, verified, pending, pendingV };
-  }, [activeSIMs, allActivations]);
+  }, [activeSIMs, allActivations, importVerifications]);
 
   const typeStats = useMemo(() => {
     let newCount = 0, mnp = 0, byn = 0, repl = 0;
