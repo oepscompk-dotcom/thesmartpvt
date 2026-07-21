@@ -185,8 +185,6 @@ export default function NewSIMActivationPage() {
     alert("Activation submitted successfully! SIM is now pending verification (BVS → FCA → IFCA)");
   };
 
-  const [confirmVerify, setConfirmVerify] = useState<{ activation: any; step: string } | null>(null);
-
   const handleVerifyStep = async (a: any) => {
     const now = new Date().toISOString();
     let step = "";
@@ -195,18 +193,12 @@ export default function NewSIMActivationPage() {
     else if (a.fcaStatus !== "Completed") { step = "FCA"; updates = { fcaStatus: "Completed", fcaDate: now }; }
     else if (a.ifcaStatus !== "Completed") { step = "IFCA"; updates = { ifcaStatus: "Completed", ifcaDate: now }; }
     if (!step) return;
-    setConfirmVerify({ activation: { ...a, _updates: updates, _step: step }, step });
-  };
-
-  const confirmVerifyStep = async () => {
-    if (!confirmVerify) return;
-    const { activation, step } = confirmVerify;
-    await updateActivation(activation.id, activation._updates);
+    if (!confirm(`Verify ${step} for SIM ${a.simNumber}?`)) return;
+    await updateActivation(a.id, updates);
     const nextStep = step === "BVS" ? "FCA" : step === "FCA" ? "IFCA" : null;
     const msg = nextStep
       ? `${step} Verified! Status updated to Pending ${nextStep}.`
       : `${step} Verified! All verification completed.`;
-    setConfirmVerify(null);
     alert(msg);
   };
 
@@ -564,22 +556,6 @@ export default function NewSIMActivationPage() {
                 >
                   <CheckCircle className="h-4 w-4" /> Save Activation
                 </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {confirmVerify && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm mx-4 shadow-2xl p-6 text-center">
-              <div className={`mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-4 ${confirmVerify.step === "BVS" ? "bg-amber-100" : confirmVerify.step === "FCA" ? "bg-blue-100" : "bg-purple-100"}`}>
-                <CheckCircle className={`h-7 w-7 ${confirmVerify.step === "BVS" ? "text-amber-600" : confirmVerify.step === "FCA" ? "text-blue-600" : "text-purple-600"}`} />
-              </div>
-              <h3 className="text-lg font-bold mb-2" style={{ color: "#0A2647" }}>Confirm Verify {confirmVerify.step}</h3>
-              <p className="text-sm text-gray-500 mb-1">SIM: <span className="font-semibold text-gray-700">{confirmVerify.activation.simNumber}</span></p>
-              <p className="text-sm text-gray-500 mb-6">Are you sure you want to verify <span className="font-bold" style={{ color: confirmVerify.step === "BVS" ? "#D97706" : confirmVerify.step === "FCA" ? "#2563EB" : "#9333EA" }}>{confirmVerify.step}</span>?</p>
-              <div className="flex gap-3">
-                <button onClick={() => setConfirmVerify(null)} className="flex-1 px-4 py-3 min-h-[48px] rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button onClick={confirmVerifyStep} className={`flex-1 px-4 py-3 min-h-[48px] rounded-lg text-sm font-bold text-white transition hover:opacity-90 ${confirmVerify.step === "BVS" ? "bg-amber-500 hover:bg-amber-600" : confirmVerify.step === "FCA" ? "bg-blue-500 hover:bg-blue-600" : "bg-purple-500 hover:bg-purple-600"}`}>Verify {confirmVerify.step}</button>
               </div>
             </div>
           </div>

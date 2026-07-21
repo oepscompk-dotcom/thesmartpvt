@@ -181,13 +181,16 @@ export default function ReplacementPage() {
 
   const handleVerifyStep = async (a: any) => {
     const now = new Date().toISOString();
-    if (a.bvsStatus !== "Completed") {
-      await updateActivation(a.id, { bvsStatus: "Completed", bvsDate: now });
-    } else if (a.fcaStatus !== "Completed") {
-      await updateActivation(a.id, { fcaStatus: "Completed", fcaDate: now });
-    } else if (a.ifcaStatus !== "Completed") {
-      await updateActivation(a.id, { ifcaStatus: "Completed", ifcaDate: now });
-    }
+    let step = "";
+    let updates: any = {};
+    if (a.bvsStatus !== "Completed") { step = "BVS"; updates = { bvsStatus: "Completed", bvsDate: now }; }
+    else if (a.fcaStatus !== "Completed") { step = "FCA"; updates = { fcaStatus: "Completed", fcaDate: now }; }
+    else if (a.ifcaStatus !== "Completed") { step = "IFCA"; updates = { ifcaStatus: "Completed", ifcaDate: now }; }
+    if (!step) return;
+    if (!confirm(`Verify ${step} for SIM ${a.simNumber}?`)) return;
+    await updateActivation(a.id, updates);
+    const nextStep = step === "BVS" ? "FCA" : step === "FCA" ? "IFCA" : null;
+    alert(nextStep ? `${step} Verified! Status updated to Pending ${nextStep}.` : `${step} Verified! All verification completed.`);
   };
 
   const verifyLabel = (a: any) => {
