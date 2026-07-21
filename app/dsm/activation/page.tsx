@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDSMData } from "@/lib/DSMDataContext";
+import { VerifyConfirmPopup, VerifySuccessPopup } from "@/lib/VerifyPopup";
 import { apiLoad, apiUpdate } from "@/lib/api";
 import { Smartphone, User, CreditCard, Phone, Wifi, Tag, MessageSquare, CheckCircle2, ArrowRight, ArrowLeft, ChevronRight, Signal, Trash2 } from "lucide-react";
 
@@ -164,18 +165,30 @@ export default function NewSIMActivation() {
     return type;
   };
 
-  const handleVerifyStep = async (a: any) => {
-    const now = new Date().toISOString();
+  const [verifyConfirm, setVerifyConfirm] = useState<{ step: string; simNumber: string; activation: any } | null>(null);
+  const [verifySuccess, setVerifySuccess] = useState<string | null>(null);
+
+  const handleVerifyStep = (a: any) => {
     let step = "";
-    let updates: any = {};
-    if (a.bvsStatus !== "Completed") { step = "BVS"; updates = { bvsStatus: "Completed", bvsDate: now }; }
-    else if (a.fcaStatus !== "Completed") { step = "FCA"; updates = { fcaStatus: "Completed", fcaDate: now }; }
-    else if (a.ifcaStatus !== "Completed") { step = "IFCA"; updates = { ifcaStatus: "Completed", ifcaDate: now }; }
+    if (a.bvsStatus !== "Completed") step = "BVS";
+    else if (a.fcaStatus !== "Completed") step = "FCA";
+    else if (a.ifcaStatus !== "Completed") step = "IFCA";
     if (!step) return;
-    if (!confirm(`Verify ${step} for SIM ${a.simNumber}?`)) return;
-    await updateActivation(a.id, updates);
+    setVerifyConfirm({ step, simNumber: a.simNumber, activation: a });
+  };
+
+  const doVerifyConfirm = async () => {
+    if (!verifyConfirm) return;
+    const { step, activation } = verifyConfirm;
+    const now = new Date().toISOString();
+    let updates: any = {};
+    if (step === "BVS") updates = { bvsStatus: "Completed", bvsDate: now };
+    else if (step === "FCA") updates = { fcaStatus: "Completed", fcaDate: now };
+    else if (step === "IFCA") updates = { ifcaStatus: "Completed", ifcaDate: now };
+    setVerifyConfirm(null);
+    await updateActivation(activation.id, updates);
     const nextStep = step === "BVS" ? "FCA" : step === "FCA" ? "IFCA" : null;
-    alert(nextStep ? `${step} Verified! Status updated to Pending ${nextStep}.` : `${step} Verified! All verification completed.`);
+    setVerifySuccess(nextStep ? `${step} Verified! Status updated to Pending ${nextStep}.` : `${step} Verified! All verification completed.`);
   };
 
   const verifyLabel = (a: any) => {
@@ -560,6 +573,12 @@ export default function NewSIMActivation() {
           </table>
         </div>
       </div>
+      {verifyConfirm && (
+        <VerifyConfirmPopup step={verifyConfirm.step} simNumber={verifyConfirm.simNumber} onConfirm={doVerifyConfirm} onCancel={() => setVerifyConfirm(null)} />
+      )}
+      {verifySuccess && (
+        <VerifySuccessPopup message={verifySuccess} onClose={() => setVerifySuccess(null)} />
+      )}
     </div>
   );
 }
