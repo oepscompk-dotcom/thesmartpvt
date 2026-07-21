@@ -9,6 +9,7 @@ import { apiLoad, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 interface Activation { id: string; type: string; simNumber: string; status: string; bvsStatus: string; fcaStatus: string; ifcaStatus: string; dsoId: string; retailerId: string; createdAt: string; franchiseId: string; }
 
 interface ImportRow {
+  iccid: string;
   deviceId: string;
   retailerId: string;
   simNumber: string;
@@ -69,7 +70,8 @@ function parseCSV(text: string): ImportRow[] {
   const rows: ImportRow[] = [];
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(",").map((c) => c.trim().replace(/["']/g, ""));
-    if (cols.length < 4) continue;
+    if (cols.length < 2) continue;
+    const iccidIdx = headers.findIndex((h) => h.includes("iccid"));
     const deviceIdIdx = headers.findIndex((h) => h.includes("device") && h.includes("id"));
     const retailerIdx = headers.findIndex((h) => h.includes("retailer"));
     const simNumIdx = headers.findIndex((h) => h.includes("sim") && h.includes("number"));
@@ -77,6 +79,7 @@ function parseCSV(text: string): ImportRow[] {
     const fcaIdx = headers.findIndex((h) => h.includes("fca"));
     const ifcaIdx = headers.findIndex((h) => h.includes("ifca"));
     rows.push({
+      iccid: iccidIdx >= 0 ? cols[iccidIdx] : "",
       deviceId: deviceIdIdx >= 0 ? cols[deviceIdIdx] : "",
       retailerId: retailerIdx >= 0 ? cols[retailerIdx] : "",
       simNumber: simNumIdx >= 0 ? cols[simNumIdx] : "",
@@ -89,10 +92,10 @@ function parseCSV(text: string): ImportRow[] {
 }
 
 function generateSampleCSV(): string {
-  return `SIM Number,Device ID,Retailer ID,BVS,FCA,IFCA
-0341-1111111,NRWP-1217-841,03001234567,1,1,1
-0301-2222222,NRWP-1217-842,03001234568,1,1,0
-0331-3333333,,03001234569,1,0,0`;
+  return `ICCID,SIM Number,Device ID,Retailer ID,BVS,FCA,IFCA
+89920387654321098765,0341-1111111,NRWP-1217-841,03001234567,1,1,1
+89920387654321098766,0301-2222222,NRWP-1217-842,03001234568,1,1,0
+89920387654321098767,0331-3333333,,03001234569,1,0,0`;
 }
 
 interface SIMUpdateRow {
@@ -375,10 +378,14 @@ export default function ActiveSIMsPage() {
       if (rows.length === 0) { setImportError("No valid rows found. Check file format."); return; }
       const matched = rows.map((row) => {
         let foundSim = null;
-        let matchType: "deviceId" | "retailerId" | "simNumber" = "simNumber";
+        let matchType: "deviceId" | "retailerId" | "simNumber" | "iccid" = "simNumber";
         if (row.simNumber) {
           foundSim = activeSIMs.find((s) => s.simNumber === row.simNumber);
           matchType = "simNumber";
+        }
+        if (!foundSim && row.iccid) {
+          foundSim = activeSIMs.find((s) => s.iccid && s.iccid.toLowerCase() === row.iccid.toLowerCase());
+          matchType = "iccid";
         }
         if (!foundSim && row.deviceId) {
           foundSim = activeSIMs.find((s) => s.issuedToId === row.deviceId || s.deviceId === row.deviceId);
@@ -391,7 +398,7 @@ export default function ActiveSIMsPage() {
           });
           matchType = "retailerId";
         }
-        return { ...row, matched: !!foundSim, matchType: foundSim ? matchType : undefined, matchedSimNumber: foundSim?.simNumber };
+        return { ...row, matched: !!foundSim, matchType: foundSim ? matchType : undefined, matchedSimNumber: foundSim?.simNumber, matchedSimId: foundSim?.id };
       });
       setImportRows(matched);
     };
@@ -413,10 +420,16 @@ export default function ActiveSIMsPage() {
         ifca: row.ifca === "1" ? "1" : "0",
         verifiedAt: new Date().toISOString(),
       };
+      if (row.matchedSimId && row.iccid) {
+        const sim = sims.find((s) => s.id === row.matchedSimId);
+        if (sim && sim.iccid !== row.iccid) {
+          try { await apiUpdate("sim", row.matchedSimId, { ...sim, iccid: row.iccid }); } catch {}
+        }
+      }
       updatedCount++;
     }
     await saveImportVerifications(verifications);
-    setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA updated.`);
+    setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA + ICCID updated.`);
     setImportRows([]); setImportFile(null);
     setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 2000);
   };
@@ -894,9 +907,10 @@ export default function ActiveSIMsPage() {
               {importMode === "verification" ? (
                 <>
                   <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                    <p className="text-blue-800 text-sm font-medium mb-2">Format: SIM Number, Device ID, Retailer ID, BVS, FCA, IFCA</p>
+                    <p className="text-blue-800 text-sm font-medium mb-2">Format: ICCID, SIM Number, Device ID, Retailer ID, BVS, FCA, IFCA</p>
                     <ul className="text-blue-700 text-xs space-y-1 list-disc list-inside">
-                      <li>Match by <strong>SIM Number</strong> OR <strong>Device ID</strong> OR <strong>Retailer ID</strong></li>
+                      <li>Match by <strong>ICCID</strong> OR <strong>SIM Number</strong> OR <strong>Device ID</strong> OR <strong>Retailer ID</strong></li>
+                      <li>ICCID column will also be <strong>updated</strong> on matched SIM records</li>
                       <li>Use <code className="bg-blue-100 px-1 rounded">1</code> for done, <code className="bg-blue-100 px-1 rounded">0</code> for pending</li>
                       <li>When BVS=1, FCA=1, IFCA=1 → Status becomes <strong>Verified</strong></li>
                     </ul>
@@ -918,6 +932,7 @@ export default function ActiveSIMsPage() {
                       <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto">
                         <table className="w-full text-sm">
                           <thead className="bg-gray-50 sticky top-0"><tr>
+                            <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">ICCID</th>
                             <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">SIM Number</th>
                             <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Device ID</th>
                             <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Retailer ID</th>
@@ -929,6 +944,7 @@ export default function ActiveSIMsPage() {
                           <tbody>
                             {importRows.map((row, i) => (
                               <tr key={i} className={`border-t border-gray-100 ${row.matched ? "bg-green-50/50" : "bg-red-50/50"}`}>
+                                <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.iccid || "—"}</td>
                                 <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.simNumber || "—"}</td>
                                 <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.deviceId || "—"}</td>
                                 <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.retailerId || "—"}</td>
