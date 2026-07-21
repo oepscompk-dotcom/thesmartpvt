@@ -187,7 +187,8 @@ export default function ActiveSIMsPage() {
     const onVisibility = () => { if (document.visibilityState === "visible") refresh(); };
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", onVisibility);
-    return () => { window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", onVisibility); };
+    const interval = setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 10000);
+    return () => { window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", onVisibility); clearInterval(interval); };
   }, [auth?.franchiseId]);
 
   const getPersonName = (dsoId: string) => {
@@ -214,18 +215,16 @@ export default function ActiveSIMsPage() {
 
   const getDisplayStatus = (sim: any): { status: string; bvs: string; fca: string; ifca: string } => {
     const imp = importVerifications[sim.simNumber];
+    const activation = getActivationForSIM(sim.simNumber);
     let bvs = "X", fca = "X", ifcaV = "X";
-    if (imp) {
+    if (activation) {
+      bvs = vcFromActivation(activation.bvsStatus);
+      fca = vcFromActivation(activation.fcaStatus);
+      ifcaV = vcFromActivation(activation.ifcaStatus);
+    } else if (imp) {
       bvs = imp.bvs || "X";
       fca = imp.fca || "X";
       ifcaV = imp.ifca || "X";
-    } else {
-      const activation = getActivationForSIM(sim.simNumber);
-      if (activation) {
-        bvs = vcFromActivation(activation.bvsStatus);
-        fca = vcFromActivation(activation.fcaStatus);
-        ifcaV = vcFromActivation(activation.ifcaStatus);
-      }
     }
     const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
     const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);

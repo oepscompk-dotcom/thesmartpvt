@@ -46,7 +46,7 @@ const initialForm: ReplacementForm = {
 };
 
 export default function ReplacementPage() {
-  const { activations, addActivation, updateActivation, deleteActivation, device, auth, importVerifications } = useDSOData();
+  const { activations, addActivation, updateActivation, deleteActivation, device, auth } = useDSOData();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<ReplacementForm>(initialForm);
   const [filter, setFilter] = useState("All");
@@ -134,7 +134,8 @@ export default function ReplacementPage() {
 
   const handleSubmit = async () => {
     if (!selectedSimId || !form.reason) return;
-    if (await isSIMInPipeline(form.newSimNumber || "")) {
+    const simNum = form.newSimNumber;
+    if (await isSIMInPipeline(simNum || "")) {
       alert("This SIM is already in a verification pipeline (BVS/FCA/IFCA). Cannot submit until the current process is completed.");
       return;
     }
@@ -143,11 +144,11 @@ export default function ReplacementPage() {
     const customerMobile = form.customerMobile.trim() || "03XX-XXXXXXX";
 
     const sim = simStockList.find((s) => s.id === selectedSimId);
-    addActivation({
+    await addActivation({
       id: `REPL-${Date.now()}`,
       type: "Replacement",
       simId: `SIM-${Date.now()}`,
-      simNumber: form.newSimNumber,
+      simNumber: simNum,
       network: form.network,
       iccid: form.iccid,
       deviceId: device?.id ?? "",
@@ -167,19 +168,13 @@ export default function ReplacementPage() {
       ifcaNotes: "",
       progress: 0,
       createdAt: new Date().toISOString(),
-      dsoId: "",
-      franchiseId: "",
+      dsoId: auth.dsoId || "",
+      franchiseId: auth.franchiseId || "",
     });
+    await updateFranchiseSIMStatus(simNum || "", "Activated");
+    setSimStockList((prev) => prev.filter((s) => s.simNumber !== simNum));
     setForm(initialForm);
     setSelectedSimId("");
-    if (auth.franchiseId) {
-      try {
-        const allSims = await apiLoad("sim", auth.franchiseId);
-        const sims = Array.isArray(allSims) ? allSims : [];
-        setSimStockList(sims.filter((s: any) => s.status === "Issued" && s.type === "hlr" && s.deviceId === device?.id));
-      } catch {}
-    }
-    await updateFranchiseSIMStatus(form.newSimNumber || "", "Activated");
     setShowModal(false);
     alert("Activation submitted successfully! SIM is now pending verification (BVS → FCA → IFCA)");
   };
@@ -211,27 +206,18 @@ export default function ReplacementPage() {
   };
 
   const vcVal = (simNumber: string, field: "bvs" | "fca" | "ifca", fallback: string) => {
-    const imp = importVerifications[simNumber];
-    if (imp) return imp[field] || "X";
     return fallback === "Completed" ? "0" : "X";
   };
   const vcBg = (v: string) => v === "0" || v === "1" ? "bg-green-100 text-green-700" : v === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400";
   const derivedStatus = (a: any) => {
-    const imp = importVerifications[a.simNumber];
-    let bvs: string, fca: string, ifcaV: string;
-    if (imp) {
-      bvs = imp.bvs; fca = imp.fca; ifcaV = imp.ifca;
-    } else {
-      bvs = a.bvsStatus === "Completed" ? "0" : "X";
-      fca = a.fcaStatus === "Completed" ? "0" : "X";
-      ifcaV = a.ifcaStatus === "Completed" ? "0" : "X";
-    }
+    const bvs = a.bvsStatus === "Completed" ? "0" : "X";
+    const fca = a.fcaStatus === "Completed" ? "0" : "X";
+    const ifcaV = a.ifcaStatus === "Completed" ? "0" : "X";
     const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
     const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
     if (bvs === "X" && fca === "X" && ifcaV === "X") return "Issued";
     if (xItems.length > 0) return `Pending ${xItems.join(", ")} (${xItems.length})`;
     if (bvs === "0" && fca === "0" && ifcaV === "0") return "Completed";
-    if (bvs === "1" && fca === "1" && ifcaV === "1") return "Verified";
     return "Pending-V";
   };
 

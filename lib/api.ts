@@ -15,7 +15,7 @@ async function request(method: string, body?: any) {
 export async function apiLoad(model: string, franchiseId?: string): Promise<any[]> {
   const params = new URLSearchParams({ model });
   if (franchiseId) params.set("franchiseId", franchiseId);
-  const res = await fetch(`${BASE}?${params}`);
+  const res = await fetch(`${BASE}?${params}`, { cache: "no-store" });
   const json = await res.json();
   if (json && json.error) return [];
   return Array.isArray(json) ? json : [];

@@ -193,7 +193,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       return prev.map((a) => (a.id === id ? merged : a));
     });
     if (fullUpdate) {
-      try { await apiUpdate("dsoActivation", id, fullUpdate); } catch (e) { console.error("updateActivation failed:", e); }
+      try { await apiSave("dsoActivation", fullUpdate); } catch (e) { console.error("updateActivation save failed:", e); }
     }
   };
 

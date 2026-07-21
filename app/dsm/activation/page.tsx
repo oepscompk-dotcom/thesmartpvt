@@ -19,7 +19,7 @@ interface SIMStock {
 }
 
 export default function NewSIMActivation() {
-  const { addActivation, deleteActivation, updateActivation, auth, activations, importVerifications } = useDSMData();
+  const { addActivation, deleteActivation, updateActivation, auth, activations } = useDSMData();
   const router = useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
   const [activatingId, setActivatingId] = useState("");
@@ -137,7 +137,7 @@ export default function NewSIMActivation() {
       progress: 0,
       createdAt: today,
       dsmId: auth.dsmId,
-      dsoId: "",
+      dsoId: auth.dsmId || "",
       franchiseId: auth.franchiseId,
     } as any);
     await updateFranchiseSIMStatus(form.simNumber || "", "Activated");
@@ -191,8 +191,6 @@ export default function NewSIMActivation() {
   };
 
   const vcVal = (simNumber: string, field: "bvs" | "fca" | "ifca", fallback: string) => {
-    const imp = importVerifications[simNumber];
-    if (imp) return imp[field] || "X";
     return fallback === "Completed" ? "0" : "X";
   };
   const typeColor = (t: string) => {
@@ -204,21 +202,14 @@ export default function NewSIMActivation() {
   };
   const vcBg = (v: string) => v === "0" || v === "1" ? "bg-green-100 text-green-700" : v === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400";
   const derivedStatus = (a: any) => {
-    const imp = importVerifications[a.simNumber];
-    let bvs: string, fca: string, ifcaV: string;
-    if (imp) {
-      bvs = imp.bvs; fca = imp.fca; ifcaV = imp.ifca;
-    } else {
-      bvs = a.bvsStatus === "Completed" ? "0" : "X";
-      fca = a.fcaStatus === "Completed" ? "0" : "X";
-      ifcaV = a.ifcaStatus === "Completed" ? "0" : "X";
-    }
+    const bvs = a.bvsStatus === "Completed" ? "0" : "X";
+    const fca = a.fcaStatus === "Completed" ? "0" : "X";
+    const ifcaV = a.ifcaStatus === "Completed" ? "0" : "X";
     const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
     const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
     if (bvs === "X" && fca === "X" && ifcaV === "X") return "Issued";
     if (xItems.length > 0) return `Pending ${xItems.join(", ")} (${xItems.length})`;
     if (bvs === "0" && fca === "0" && ifcaV === "0") return "Completed";
-    if (bvs === "1" && fca === "1" && ifcaV === "1") return "Verified";
     return "Pending-V";
   };
 

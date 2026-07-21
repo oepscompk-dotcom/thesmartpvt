@@ -232,7 +232,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
       });
     });
     if (fullUpdate) {
-      try { await apiUpdate("dsmActivation", id, fullUpdate); } catch (e) { console.error("updateActivation failed:", e); }
+      try { await apiSave("dsmActivation", fullUpdate); } catch (e) { console.error("updateActivation save failed:", e); }
     }
   };
 

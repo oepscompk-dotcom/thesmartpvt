@@ -151,6 +151,7 @@ export async function PUT(req: NextRequest) {
 
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     const serialized = serializeData(data);
+    if (serialized && typeof serialized === "object" && serialized.id) delete serialized.id;
     const record = await model.update({ where: { id }, data: serialized });
     return NextResponse.json(deserializeRecord(record));
   } catch (error: any) {
