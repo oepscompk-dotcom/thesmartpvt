@@ -230,11 +230,14 @@ export default function ActiveSIMsPage() {
     const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
     const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
     const oneItems = Object.entries(vals).filter(([, v]) => v === "1").map(([k]) => k);
+    const allX = bvs === "X" && fca === "X" && ifcaV === "X";
     const allZero = bvs === "0" && fca === "0" && ifcaV === "0";
     const allOne = bvs === "1" && fca === "1" && ifcaV === "1";
     const simType = getSIMType(sim);
     let status: string;
-    if (xItems.length > 0) {
+    if (allX) {
+      status = `Issued ${simType}`;
+    } else if (xItems.length > 0) {
       status = `Pending ${xItems.join(", ")} (${xItems.length})`;
     } else if (allZero) {
       status = `Completed ${simType}`;
