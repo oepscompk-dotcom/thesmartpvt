@@ -13,7 +13,7 @@ import Link from "next/link";
 
 export default function SalaryDetailPage() {
   const { dso, dsms } = useFranchiseData();
-  const { activations } = useDSOData();
+  const { activations, importVerifications } = useDSOData();
 
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const [roleFilter, setRoleFilter] = useState<"All" | "DSO" | "DSM">("All");
@@ -33,6 +33,7 @@ export default function SalaryDetailPage() {
       return a.dsoId === empId && aMonth === m && a.status === "Completed";
     });
     return {
+      all: empActs,
       newSIM: empActs.filter((a) => a.type === "New SIM").length,
       mnp: empActs.filter((a) => a.type === "MNP").length,
       replacement: empActs.filter((a) => a.type === "Replacement").length,
@@ -54,10 +55,70 @@ export default function SalaryDetailPage() {
     const totalAllowances = fuel + mobile + daily + residence;
 
     const acts = getActivationsForDSO(emp.id, month);
-    const newSimComm = acts.newSIM * getVal(emp, "newSimCommission");
-    const mnpComm = acts.mnp * getVal(emp, "mnpCommission");
-    const replComm = acts.replacement * getVal(emp, "replacementCommission");
-    const bynComm = acts.byn * getVal(emp, "bynCommission");
+
+    let newSimBvsCount = 0, newSimFcaCount = 0, newSimIfcaCount = 0;
+    let mnpBvsCount = 0, mnpFcaCount = 0, mnpIfcaCount = 0;
+    let replacementBvsCount = 0, replacementFcaCount = 0, replacementIfcaCount = 0;
+    let bynBvsCount = 0, bynFcaCount = 0, bynIfcaCount = 0;
+
+    acts.all.forEach((a) => {
+      const iv = importVerifications[a.simNumber];
+      const bvs = iv?.bvs || (a.bvsStatus === "Completed" ? "0" : "X");
+      const fca = iv?.fca || (a.fcaStatus === "Completed" ? "0" : "X");
+      const ifca = iv?.ifca || (a.ifcaStatus === "Completed" ? "0" : "X");
+
+      if (a.type === "New SIM") {
+        if (bvs === "1") newSimBvsCount++;
+        if (fca === "1") newSimFcaCount++;
+        if (ifca === "1") newSimIfcaCount++;
+      } else if (a.type === "MNP") {
+        if (bvs === "1") mnpBvsCount++;
+        if (fca === "1") mnpFcaCount++;
+        if (ifca === "1") mnpIfcaCount++;
+      } else if (a.type === "Replacement") {
+        if (bvs === "1") replacementBvsCount++;
+        if (fca === "1") replacementFcaCount++;
+        if (ifca === "1") replacementIfcaCount++;
+      } else if (a.type === "BYN") {
+        if (bvs === "1") bynBvsCount++;
+        if (fca === "1") bynFcaCount++;
+        if (ifca === "1") bynIfcaCount++;
+      }
+    });
+
+    const newSimBvsRate = getVal(emp, "newSimBvs");
+    const newSimFcaRate = getVal(emp, "newSimFca");
+    const newSimIfcaRate = getVal(emp, "newSimIfca");
+    const mnpBvsRate = getVal(emp, "mnpBvs");
+    const mnpFcaRate = getVal(emp, "mnpFca");
+    const mnpIfcaRate = getVal(emp, "mnpIfca");
+    const replacementBvsRate = getVal(emp, "replacementBvs");
+    const replacementFcaRate = getVal(emp, "replacementFca");
+    const replacementIfcaRate = getVal(emp, "replacementIfca");
+    const bynBvsRate = getVal(emp, "bynBvs");
+    const bynFcaRate = getVal(emp, "bynFca");
+    const bynIfcaRate = getVal(emp, "bynIfca");
+
+    const newSimBvsComm = newSimBvsCount * newSimBvsRate;
+    const newSimFcaComm = newSimFcaCount * newSimFcaRate;
+    const newSimIfcaComm = newSimIfcaCount * newSimIfcaRate;
+    const newSimComm = newSimBvsComm + newSimFcaComm + newSimIfcaComm;
+
+    const mnpBvsComm = mnpBvsCount * mnpBvsRate;
+    const mnpFcaComm = mnpFcaCount * mnpFcaRate;
+    const mnpIfcaComm = mnpIfcaCount * mnpIfcaRate;
+    const mnpComm = mnpBvsComm + mnpFcaComm + mnpIfcaComm;
+
+    const replacementBvsComm = replacementBvsCount * replacementBvsRate;
+    const replacementFcaComm = replacementFcaCount * replacementFcaRate;
+    const replacementIfcaComm = replacementIfcaCount * replacementIfcaRate;
+    const replComm = replacementBvsComm + replacementFcaComm + replacementIfcaComm;
+
+    const bynBvsComm = bynBvsCount * bynBvsRate;
+    const bynFcaComm = bynFcaCount * bynFcaRate;
+    const bynIfcaComm = bynIfcaCount * bynIfcaRate;
+    const bynComm = bynBvsComm + bynFcaComm + bynIfcaComm;
+
     const hike = getVal(emp, "hikeCommission");
     const other = getVal(emp, "otherCommission");
     const totalCommission = newSimComm + mnpComm + replComm + bynComm + hike + other;
@@ -72,12 +133,29 @@ export default function SalaryDetailPage() {
     const totalDeductions = advance + loan + otherDed;
     const netPay = gross - totalDeductions;
 
+    const newSimRate = newSimBvsRate + newSimFcaRate + newSimIfcaRate;
+    const mnpRate = mnpBvsRate + mnpFcaRate + mnpIfcaRate;
+    const replacementRate = replacementBvsRate + replacementFcaRate + replacementIfcaRate;
+    const bynRate = bynBvsRate + bynFcaRate + bynIfcaRate;
+
     return {
       basic, fuel, mobile, daily, residence, totalAllowances,
-      newSimCount: acts.newSIM, newSimRate: getVal(emp, "newSimCommission"), newSimComm,
-      mnpCount: acts.mnp, mnpRate: getVal(emp, "mnpCommission"), mnpComm,
-      replacementCount: acts.replacement, replacementRate: getVal(emp, "replacementCommission"), replComm,
-      bynCount: acts.byn, bynRate: getVal(emp, "bynCommission"), bynComm,
+      newSimCount: acts.newSIM, newSimRate, newSimComm,
+      newSimBvsCount, newSimBvsRate, newSimBvsComm,
+      newSimFcaCount, newSimFcaRate, newSimFcaComm,
+      newSimIfcaCount, newSimIfcaRate, newSimIfcaComm,
+      mnpCount: acts.mnp, mnpRate, mnpComm,
+      mnpBvsCount, mnpBvsRate, mnpBvsComm,
+      mnpFcaCount, mnpFcaRate, mnpFcaComm,
+      mnpIfcaCount, mnpIfcaRate, mnpIfcaComm,
+      replacementCount: acts.replacement, replacementRate, replComm,
+      replacementBvsCount, replacementBvsRate, replacementBvsComm,
+      replacementFcaCount, replacementFcaRate, replacementFcaComm,
+      replacementIfcaCount, replacementIfcaRate, replacementIfcaComm,
+      bynCount: acts.byn, bynRate, bynComm,
+      bynBvsCount, bynBvsRate, bynBvsComm,
+      bynFcaCount, bynFcaRate, bynFcaComm,
+      bynIfcaCount, bynIfcaRate, bynIfcaComm,
       hike, other, totalCommission,
       targetBonus, perfBonus,
       advance, loan, otherDed, totalDeductions,
@@ -135,7 +213,11 @@ export default function SalaryDetailPage() {
           <span style="font-weight:700;color:#1a1a1a;font-size:9px;">${totalActivations}</span>
         </td>
         <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:8px;text-align:right;color:#555;">
-          NS:${c.newSimComm.toLocaleString()}<br/>MNP:${c.mnpComm.toLocaleString()}<br/>Rep:${c.replComm.toLocaleString()}<br/>BYN:${c.bynComm.toLocaleString()}<br/>HK:${c.hike.toLocaleString()}<br/>Oth:${c.other.toLocaleString()}<br/><span style="font-weight:600;color:#059669;font-size:9px;">${c.totalCommission.toLocaleString()}</span>
+          NS-BVS:${c.newSimBvsComm.toLocaleString()} NS-FCA:${c.newSimFcaComm.toLocaleString()} NS-IFCA:${c.newSimIfcaComm.toLocaleString()}<br/>
+          MNP-BVS:${c.mnpBvsComm.toLocaleString()} MNP-FCA:${c.mnpFcaComm.toLocaleString()} MNP-IFCA:${c.mnpIfcaComm.toLocaleString()}<br/>
+          Rep-BVS:${c.replacementBvsComm.toLocaleString()} Rep-FCA:${c.replacementFcaComm.toLocaleString()} Rep-IFCA:${c.replacementIfcaComm.toLocaleString()}<br/>
+          BYN-BVS:${c.bynBvsComm.toLocaleString()} BYN-FCA:${c.bynFcaComm.toLocaleString()} BYN-IFCA:${c.bynIfcaComm.toLocaleString()}<br/>
+          HK:${c.hike.toLocaleString()} Oth:${c.other.toLocaleString()}<br/><span style="font-weight:600;color:#059669;font-size:9px;">${c.totalCommission.toLocaleString()}</span>
         </td>
         <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:right;color:#2563eb;font-weight:500;">${(c.targetBonus + c.perfBonus).toLocaleString()}</td>
         <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:8px;text-align:right;color:#dc2626;">
@@ -381,10 +463,38 @@ export default function SalaryDetailPage() {
                                 <TrendingUp size={14} className="text-blue-500" /> Commissions
                               </h4>
                               <div className="space-y-2 text-xs">
-                                <div className="flex justify-between"><span className="text-gray-500">New SIM ({c.newSimCount} × Rs.{c.newSimRate})</span><span className="font-medium text-green-600">PKR {c.newSimComm.toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">MNP ({c.mnpCount} × Rs.{c.mnpRate})</span><span className="font-medium text-green-600">PKR {c.mnpComm.toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">Replace ({c.replacementCount} × Rs.{c.replacementRate})</span><span className="font-medium text-green-600">PKR {c.replComm.toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">BYN ({c.bynCount} × Rs.{c.bynRate})</span><span className="font-medium text-green-600">PKR {c.bynComm.toLocaleString()}</span></div>
+                                {c.newSimCount > 0 && (
+                                  <>
+                                    <div className="flex justify-between"><span className="text-gray-500">New SIM ({c.newSimCount})</span><span className="font-medium text-green-600">PKR {c.newSimComm.toLocaleString()}</span></div>
+                                    {c.newSimBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.newSimBvsCount} × Rs.{c.newSimBvsRate})</span><span className="text-green-600">PKR {c.newSimBvsComm.toLocaleString()}</span></div>}
+                                    {c.newSimFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.newSimFcaCount} × Rs.{c.newSimFcaRate})</span><span className="text-green-600">PKR {c.newSimFcaComm.toLocaleString()}</span></div>}
+                                    {c.newSimIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.newSimIfcaCount} × Rs.{c.newSimIfcaRate})</span><span className="text-green-600">PKR {c.newSimIfcaComm.toLocaleString()}</span></div>}
+                                  </>
+                                )}
+                                {c.mnpCount > 0 && (
+                                  <>
+                                    <div className="flex justify-between"><span className="text-gray-500">MNP ({c.mnpCount})</span><span className="font-medium text-green-600">PKR {c.mnpComm.toLocaleString()}</span></div>
+                                    {c.mnpBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.mnpBvsCount} × Rs.{c.mnpBvsRate})</span><span className="text-green-600">PKR {c.mnpBvsComm.toLocaleString()}</span></div>}
+                                    {c.mnpFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.mnpFcaCount} × Rs.{c.mnpFcaRate})</span><span className="text-green-600">PKR {c.mnpFcaComm.toLocaleString()}</span></div>}
+                                    {c.mnpIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.mnpIfcaCount} × Rs.{c.mnpIfcaRate})</span><span className="text-green-600">PKR {c.mnpIfcaComm.toLocaleString()}</span></div>}
+                                  </>
+                                )}
+                                {c.replacementCount > 0 && (
+                                  <>
+                                    <div className="flex justify-between"><span className="text-gray-500">Replace ({c.replacementCount})</span><span className="font-medium text-green-600">PKR {c.replComm.toLocaleString()}</span></div>
+                                    {c.replacementBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.replacementBvsCount} × Rs.{c.replacementBvsRate})</span><span className="text-green-600">PKR {c.replacementBvsComm.toLocaleString()}</span></div>}
+                                    {c.replacementFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.replacementFcaCount} × Rs.{c.replacementFcaRate})</span><span className="text-green-600">PKR {c.replacementFcaComm.toLocaleString()}</span></div>}
+                                    {c.replacementIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.replacementIfcaCount} × Rs.{c.replacementIfcaRate})</span><span className="text-green-600">PKR {c.replacementIfcaComm.toLocaleString()}</span></div>}
+                                  </>
+                                )}
+                                {c.bynCount > 0 && (
+                                  <>
+                                    <div className="flex justify-between"><span className="text-gray-500">BYN ({c.bynCount})</span><span className="font-medium text-green-600">PKR {c.bynComm.toLocaleString()}</span></div>
+                                    {c.bynBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.bynBvsCount} × Rs.{c.bynBvsRate})</span><span className="text-green-600">PKR {c.bynBvsComm.toLocaleString()}</span></div>}
+                                    {c.bynFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.bynFcaCount} × Rs.{c.bynFcaRate})</span><span className="text-green-600">PKR {c.bynFcaComm.toLocaleString()}</span></div>}
+                                    {c.bynIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.bynIfcaCount} × Rs.{c.bynIfcaRate})</span><span className="text-green-600">PKR {c.bynIfcaComm.toLocaleString()}</span></div>}
+                                  </>
+                                )}
                                 <div className="flex justify-between"><span className="text-gray-500">Hike + Other</span><span className="font-medium text-green-600">PKR {(c.hike + c.other).toLocaleString()}</span></div>
                                 <div className="border-t border-gray-200 pt-2 flex justify-between font-bold"><span>Total Commission</span><span className="text-green-600">PKR {c.totalCommission.toLocaleString()}</span></div>
                               </div>
