@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Building2, Check, AlertCircle } from "lucide-react";
+import { apiLoad } from "@/lib/api";
 
 interface CompanyCardProps {
   onVerified: (companyId: string) => void;
@@ -13,31 +14,32 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
   const [verifiedId, setVerifiedId] = useState("");
   const [verifiedName, setVerifiedName] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const id = companyId.trim().toUpperCase();
     if (!id) return;
-
-    let companies: { id: string; name: string; status: string }[] = [];
+    setLoading(true);
     try {
-      const stored = localStorage.getItem("smart-erp-companies");
-      if (stored) companies = JSON.parse(stored);
-    } catch {}
-
-    const found = companies.find((c) => c.id.toUpperCase() === id.toUpperCase());
-    if (!found) {
-      setError("Company not found. Please check the ID.");
-      return;
+      const companies = await apiLoad("company") as { id: string; name: string; status: string }[];
+      const found = companies.find((c) => c.id.toUpperCase() === id.toUpperCase());
+      if (!found) {
+        setError("Company not found. Please check the ID.");
+        return;
+      }
+      if (found.status !== "Active") {
+        setError(`Company is ${found.status}. Contact Super Admin.`);
+        return;
+      }
+      setError("");
+      setVerifiedId(id);
+      setVerifiedName(found.name);
+      setStep("verify");
+    } catch {
+      setError("Failed to verify company. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    if (found.status !== "Active") {
-      setError(`Company is ${found.status}. Contact Super Admin.`);
-      return;
-    }
-
-    setError("");
-    setVerifiedId(id);
-    setVerifiedName(found.name);
-    setStep("verify");
   };
 
   const handleContinue = () => {
@@ -78,10 +80,10 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
 
             <button
               onClick={handleSubmit}
-              disabled={!companyId.trim()}
+              disabled={!companyId.trim() || loading}
               className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold rounded-xl hover:shadow-[0_0_25px_rgba(14,165,233,0.3)] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Verify Company
+              {loading ? "Verifying..." : "Verify Company"}
             </button>
 
             <div className="mt-4 flex flex-wrap justify-center gap-2">

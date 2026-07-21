@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useData } from "@/lib/DataContext";
+import { apiLoad } from "@/lib/api";
 
 function useCountUp(end: number, duration: number = 2000) {
   const [count, setCount] = useState(0);
@@ -66,18 +67,7 @@ function StatCard({ value, suffix, label, icon }: StatCardProps) {
 }
 
 function countAll(prefix: string, suffix: string): number {
-  if (typeof window === "undefined") return 0;
-  let total = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith(prefix) && key.endsWith(suffix)) {
-      try {
-        const data = JSON.parse(localStorage.getItem(key) || "[]");
-        if (Array.isArray(data)) total += data.length;
-      } catch {}
-    }
-  }
-  return total;
+  return 0;
 }
 
 export default function Statistics() {
@@ -85,11 +75,23 @@ export default function Statistics() {
   const [counts, setCounts] = useState({ devices: 0, sims: 0 });
 
   useEffect(() => {
-    setCounts({
-      devices: countAll("franchise-", "-devices"),
-      sims: countAll("franchise-", "-sims"),
-    });
-  }, []);
+    (async () => {
+      try {
+        const franchiseIds = franchises.map((f: any) => f.id);
+        let totalDevices = 0;
+        let totalSims = 0;
+        await Promise.all(franchiseIds.map(async (fid: string) => {
+          const [devices, sims] = await Promise.all([
+            apiLoad("device", fid),
+            apiLoad("sim", fid),
+          ]);
+          totalDevices += Array.isArray(devices) ? devices.length : 0;
+          totalSims += Array.isArray(sims) ? sims.length : 0;
+        }));
+        setCounts({ devices: totalDevices, sims: totalSims });
+      } catch {}
+    })();
+  }, [franchises]);
 
   const franchiseCount = franchises.length;
   const totalStaff = franchises.reduce((sum, f) => sum + (f.dsm || 0) + (f.dso || 0), 0);

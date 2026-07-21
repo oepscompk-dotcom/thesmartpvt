@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { apiLoadById } from "@/lib/api";
 
 export default function DynamicFavicon() {
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("smart-erp-settings");
-      if (stored) {
-        const settings = JSON.parse(stored);
-        if (settings.favicon) {
+    (async () => {
+      try {
+        const settings = await apiLoadById("adminSettings", "admin");
+        if (settings?.favicon) {
           let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
           if (!link) {
             link = document.createElement("link");
@@ -17,8 +17,8 @@ export default function DynamicFavicon() {
           }
           link.href = settings.favicon;
         }
-      }
-    } catch {}
+      } catch {}
+    })();
   }, []);
 
   return null;
