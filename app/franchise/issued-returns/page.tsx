@@ -2,9 +2,10 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useMemo } from "react";
-import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, Filter, CheckSquare, Square, User, Smartphone } from "lucide-react";
+import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, Filter, CheckSquare, Square, User, Smartphone, Trash2 } from "lucide-react";
 import { useFranchiseData, SIMIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { apiDelete } from "@/lib/api";
 
 export default function IssuedReturnsPage() {
   const { sims, dso, dsms, issueRecords, issueSIMs, returnSIMs, devices } = useFranchiseData();
@@ -14,6 +15,8 @@ export default function IssuedReturnsPage() {
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState<SIMIssueRecord | null>(null);
   const [showReturnConfirm, setShowReturnConfirm] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Issue modal states
   const [step, setStep] = useState(1);
@@ -44,6 +47,26 @@ export default function IssuedReturnsPage() {
       const combined = prev.concat(ids.filter((id) => !prev.includes(id)));
       return combined;
     });
+  };
+
+  const toggleRecordSelect = (id: string) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
+  const toggleAllRecords = () => {
+    setSelectedIds((prev) => {
+      const allSelected = filteredRecords.every((r) => prev.includes(r.id));
+      if (allSelected) return [];
+      return filteredRecords.map((r) => r.id);
+    });
+  };
+
+  const handleDeleteSelected = async () => {
+    for (const id of selectedIds) {
+      await apiDelete("issueRecord", id);
+    }
+    setSelectedIds([]);
+    setShowDeleteConfirm(false);
   };
 
   const getMobileDigits = (mobile: string) => mobile.replace(/[^0-9]/g, "").slice(-10);
@@ -192,12 +215,31 @@ export default function IssuedReturnsPage() {
         </div>
       </div>
 
+      {/* Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-3">
+          <CheckSquare size={16} className="text-red-600" />
+          <span className="text-red-700 text-sm font-medium">{selectedIds.length} record(s) selected</span>
+          <div className="flex-1" />
+          <button onClick={() => setSelectedIds([])} className="px-3 py-1.5 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50">Clear</button>
+          <button onClick={() => setShowDeleteConfirm(true)} className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 inline-flex items-center gap-1.5"><Trash2 size={12} /> Delete Selected</button>
+        </div>
+      )}
+
       {/* Records Table */}
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="w-10 px-4 py-4">
+                  <button onClick={toggleAllRecords} className="flex items-center justify-center">
+                    {filteredRecords.length > 0 && filteredRecords.every((r) => selectedIds.includes(r.id))
+                      ? <CheckSquare size={16} className="text-[#0A2647]" />
+                      : <Square size={16} className="text-gray-300" />
+                    }
+                  </button>
+                </th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Issue ID</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Issued To</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Role</th>
@@ -212,6 +254,14 @@ export default function IssuedReturnsPage() {
             <tbody>
               {filteredRecords.map((r) => (
                 <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <td className="w-10 px-4 py-4">
+                    <button onClick={() => toggleRecordSelect(r.id)} className="flex items-center justify-center">
+                      {selectedIds.includes(r.id)
+                        ? <CheckSquare size={16} className="text-[#0A2647]" />
+                        : <Square size={16} className="text-gray-300" />
+                      }
+                    </button>
+                  </td>
                   <td className="px-6 py-4">
                     <p className="text-gray-900 text-sm font-mono font-medium">{r.id}</p>
                   </td>
@@ -562,6 +612,21 @@ export default function IssuedReturnsPage() {
             <div className="flex gap-3">
               <button onClick={() => setShowReturnConfirm(null)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
               <button onClick={() => { returnSIMs(showReturnConfirm); setShowReturnConfirm(null); }} className="flex-1 py-2.5 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 inline-flex items-center justify-center gap-2"><RotateCcw size={14} /> Return</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-4"><Trash2 size={20} className="text-red-600" /></div>
+            <h3 className="text-gray-900 font-bold mb-2">Delete {selectedIds.length} Record(s)?</h3>
+            <p className="text-gray-500 text-sm mb-6">This will permanently delete these issue records. SIMs will be set back to stock.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
+              <button onClick={handleDeleteSelected} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 inline-flex items-center justify-center gap-2"><Trash2 size={14} /> Delete</button>
             </div>
           </div>
         </div>
