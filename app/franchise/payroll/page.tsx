@@ -67,12 +67,36 @@ export default function PayrollPage() {
     const actBvs = (a: any) => a.bvsStatus === "Completed" ? "0" : "X";
     const actFca = (a: any) => a.fcaStatus === "Completed" ? "0" : "X";
     const actIfca = (a: any) => a.ifcaStatus === "Completed" ? "0" : "X";
+    let newSimBvs = 0, newSimFca = 0, newSimIfca = 0;
+    let mnpBvs = 0, mnpFca = 0, mnpIfca = 0;
+    let replBvs = 0, replFca = 0, replIfca = 0;
+    let bynBvs = 0, bynFca = 0, bynIfca = 0;
     let bvsCount = 0, fcaCount = 0, ifcaCount = 0;
     acts.forEach((a) => {
       const iv = importVerifications?.[a.simNumber];
-      if (pick(iv?.bvs, actBvs(a)) === "1") bvsCount++;
-      if (pick(iv?.fca, actFca(a)) === "1") fcaCount++;
-      if (pick(iv?.ifca, actIfca(a)) === "1") ifcaCount++;
+      const bv = pick(iv?.bvs, actBvs(a));
+      const fc = pick(iv?.fca, actFca(a));
+      const ic = pick(iv?.ifca, actIfca(a));
+      if (bv === "1") bvsCount++;
+      if (fc === "1") fcaCount++;
+      if (ic === "1") ifcaCount++;
+      if (a.type === "New SIM") {
+        if (bv === "1") newSimBvs++;
+        if (fc === "1") newSimFca++;
+        if (ic === "1") newSimIfca++;
+      } else if (a.type === "MNP") {
+        if (bv === "1") mnpBvs++;
+        if (fc === "1") mnpFca++;
+        if (ic === "1") mnpIfca++;
+      } else if (a.type === "Replacement") {
+        if (bv === "1") replBvs++;
+        if (fc === "1") replFca++;
+        if (ic === "1") replIfca++;
+      } else if (a.type === "BYN") {
+        if (bv === "1") bynBvs++;
+        if (fc === "1") bynFca++;
+        if (ic === "1") bynIfca++;
+      }
     });
     return {
       newSIM: acts.filter((a) => a.type === "New SIM").length,
@@ -80,9 +104,11 @@ export default function PayrollPage() {
       replacement: acts.filter((a) => a.type === "Replacement").length,
       byn: acts.filter((a) => a.type === "BYN").length,
       total: acts.length,
-      bvs: bvsCount,
-      fca: fcaCount,
-      ifca: ifcaCount,
+      bvs: bvsCount, fca: fcaCount, ifca: ifcaCount,
+      newSimBvs, newSimFca, newSimIfca,
+      mnpBvs, mnpFca, mnpIfca,
+      replBvs, replFca, replIfca,
+      bynBvs, bynFca, bynIfca,
     };
   };
 
@@ -96,14 +122,13 @@ export default function PayrollPage() {
     const residence = d.residenceAllowance || 0;
     const totalAllowances = fuel + mobile + daily + residence;
 
-    const newSimComm = acts.newSIM * ((d.newSimBvs || 0) + (d.newSimFca || 0) + (d.newSimIfca || 0));
-    const mnpComm = acts.mnp * ((d.mnpBvs || 0) + (d.mnpFca || 0) + (d.mnpIfca || 0));
-    const replComm = acts.replacement * ((d.replacementBvs || 0) + (d.replacementFca || 0) + (d.replacementIfca || 0));
-    const bynComm = acts.byn * ((d.bynBvs || 0) + (d.bynFca || 0) + (d.bynIfca || 0));
-    const bvsComm = 0; const fcaComm = 0; const ifcaComm = 0;
+    const newSimComm = acts.newSimBvs * (d.newSimBvs || 0) + acts.newSimFca * (d.newSimFca || 0) + acts.newSimIfca * (d.newSimIfca || 0);
+    const mnpComm = acts.mnpBvs * (d.mnpBvs || 0) + acts.mnpFca * (d.mnpFca || 0) + acts.mnpIfca * (d.mnpIfca || 0);
+    const replComm = acts.replBvs * (d.replacementBvs || 0) + acts.replFca * (d.replacementFca || 0) + acts.replIfca * (d.replacementIfca || 0);
+    const bynComm = acts.bynBvs * (d.bynBvs || 0) + acts.bynFca * (d.bynFca || 0) + acts.bynIfca * (d.bynIfca || 0);
     const hike = d.hikeCommission || 0;
     const other = d.otherCommission || 0;
-    const totalCommission = newSimComm + mnpComm + replComm + bynComm + bvsComm + fcaComm + ifcaComm + hike + other;
+    const totalCommission = newSimComm + mnpComm + replComm + bynComm + hike + other;
 
     const targetBonus = d.targetBonus || 0;
     const perfBonus = d.bonus || 0;
@@ -119,21 +144,21 @@ export default function PayrollPage() {
     return {
       basic, fuel, mobile, daily, residence, totalAllowances,
       newSimCount: acts.newSIM, newSimRate: (d.newSimBvs || 0) + (d.newSimFca || 0) + (d.newSimIfca || 0), newSimComm,
-      newSimBvsRate: d.newSimBvs || 0, newSimBvsCommission: acts.newSIM * (d.newSimBvs || 0),
-      newSimFcaRate: d.newSimFca || 0, newSimFcaCommission: acts.newSIM * (d.newSimFca || 0),
-      newSimIfcaRate: d.newSimIfca || 0, newSimIfcaCommission: acts.newSIM * (d.newSimIfca || 0),
+      newSimBvsRate: d.newSimBvs || 0, newSimBvsCommission: acts.newSimBvs * (d.newSimBvs || 0),
+      newSimFcaRate: d.newSimFca || 0, newSimFcaCommission: acts.newSimFca * (d.newSimFca || 0),
+      newSimIfcaRate: d.newSimIfca || 0, newSimIfcaCommission: acts.newSimIfca * (d.newSimIfca || 0),
       mnpCount: acts.mnp, mnpRate: (d.mnpBvs || 0) + (d.mnpFca || 0) + (d.mnpIfca || 0), mnpComm,
-      mnpBvsRate: d.mnpBvs || 0, mnpBvsCommission: acts.mnp * (d.mnpBvs || 0),
-      mnpFcaRate: d.mnpFca || 0, mnpFcaCommission: acts.mnp * (d.mnpFca || 0),
-      mnpIfcaRate: d.mnpIfca || 0, mnpIfcaCommission: acts.mnp * (d.mnpIfca || 0),
+      mnpBvsRate: d.mnpBvs || 0, mnpBvsCommission: acts.mnpBvs * (d.mnpBvs || 0),
+      mnpFcaRate: d.mnpFca || 0, mnpFcaCommission: acts.mnpFca * (d.mnpFca || 0),
+      mnpIfcaRate: d.mnpIfca || 0, mnpIfcaCommission: acts.mnpIfca * (d.mnpIfca || 0),
       replacementCount: acts.replacement, replacementRate: (d.replacementBvs || 0) + (d.replacementFca || 0) + (d.replacementIfca || 0), replComm,
-      replacementBvsRate: d.replacementBvs || 0, replacementBvsCommission: acts.replacement * (d.replacementBvs || 0),
-      replacementFcaRate: d.replacementFca || 0, replacementFcaCommission: acts.replacement * (d.replacementFca || 0),
-      replacementIfcaRate: d.replacementIfca || 0, replacementIfcaCommission: acts.replacement * (d.replacementIfca || 0),
+      replacementBvsRate: d.replacementBvs || 0, replacementBvsCommission: acts.replBvs * (d.replacementBvs || 0),
+      replacementFcaRate: d.replacementFca || 0, replacementFcaCommission: acts.replFca * (d.replacementFca || 0),
+      replacementIfcaRate: d.replacementIfca || 0, replacementIfcaCommission: acts.replIfca * (d.replacementIfca || 0),
       bynCount: acts.byn, bynRate: (d.bynBvs || 0) + (d.bynFca || 0) + (d.bynIfca || 0), bynComm,
-      bynBvsRate: d.bynBvs || 0, bynBvsCommission: acts.byn * (d.bynBvs || 0),
-      bynFcaRate: d.bynFca || 0, bynFcaCommission: acts.byn * (d.bynFca || 0),
-      bynIfcaRate: d.bynIfca || 0, bynIfcaCommission: acts.byn * (d.bynIfca || 0),
+      bynBvsRate: d.bynBvs || 0, bynBvsCommission: acts.bynBvs * (d.bynBvs || 0),
+      bynFcaRate: d.bynFca || 0, bynFcaCommission: acts.bynFca * (d.bynFca || 0),
+      bynIfcaRate: d.bynIfca || 0, bynIfcaCommission: acts.bynIfca * (d.bynIfca || 0),
       bvsCount: acts.bvs, fcaCount: acts.fca, ifcaCount: acts.ifca,
       totalActivations: acts.total,
       hike, other, totalCommission,
