@@ -114,6 +114,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   const [warnings, setWarnings] = useState<DSOAttendanceWarning[]>([]);
   const [allFranchiseSims, setAllFranchiseSims] = useState<DSMSim[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [settingsData, setSettingsData] = useState({ companyName: "THE SMART ERP", logo: "", franchiseName: "" });
 
   const fId = auth.franchiseId || "";
 
@@ -132,7 +133,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
     if (!fId || !mounted) return;
     const loadAll = async () => {
       try {
-        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes] = await Promise.all([
+        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes, adminSettings, franchiseRecord] = await Promise.all([
           apiLoad("dsmActivation", fId),
           apiLoad("dsmTargetEntry", fId),
           apiLoad("dsmWalletEntry", fId),
@@ -141,6 +142,8 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
           apiLoad("sim", fId),
           apiLoad("dso", fId),
           apiLoad("dsoAttendance", fId),
+          apiLoadById("adminSettings", "admin").catch(() => null),
+          apiLoadById("franchise", fId).catch(() => null),
         ]);
         setActivations(actRes);
         setTargets(tgtRes);
@@ -150,6 +153,11 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
         setAllFranchiseSims(simRes);
         setDSOs(dsoRes);
         setAttendance(attRes);
+        setSettingsData({
+          companyName: adminSettings?.companyName || "THE SMART ERP",
+          logo: adminSettings?.logo || "",
+          franchiseName: franchiseRecord?.name || "Northern Region Rawalpindi",
+        });
       } catch {}
     };
     loadAll();
@@ -246,26 +254,12 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   const totalSales = dsos.reduce((s, d) => s + d.sales, 0);
   const totalRevenue = wallet.filter((w) => w.type === "Credit").reduce((s, w) => s + w.amount, 0);
 
-  const getSettings = () => {
-    let adminSettings = { companyName: "THE SMART ERP", logo: "" };
-    try {
-      const stored = localStorage.getItem("smart-erp-settings");
-      if (stored) adminSettings = JSON.parse(stored);
-    } catch {}
-    let franchiseSettings = { franchiseName: "Northern Region Rawalpindi" };
-    try {
-      const stored = localStorage.getItem("franchise-settings");
-      if (stored) franchiseSettings = JSON.parse(stored);
-    } catch {}
-    return {
-      franchiseName: franchiseSettings.franchiseName,
-      logo: adminSettings.logo,
-      companyName: adminSettings.companyName || "THE SMART ERP",
-      dsmName: auth.dsmName,
-    };
+  const settings = {
+    franchiseName: settingsData.franchiseName || "Northern Region Rawalpindi",
+    logo: settingsData.logo,
+    companyName: settingsData.companyName || "THE SMART ERP",
+    dsmName: auth.dsmName,
   };
-
-  const settings = getSettings();
 
   return (
     <DSMDataContext.Provider value={{

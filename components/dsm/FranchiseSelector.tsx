@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Building2, Check, AlertCircle } from "lucide-react";
+import { apiLoad } from "@/lib/api";
 
 interface FranchiseSelectorProps {
   onVerified: (franchiseId: string) => void;
@@ -12,30 +13,32 @@ export default function FranchiseSelector({ onVerified }: FranchiseSelectorProps
   const [franchiseId, setFranchiseId] = useState("");
   const [verifiedId, setVerifiedId] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
     if (!franchiseId.trim()) return;
 
     const id = franchiseId.trim().toUpperCase();
-    let franchises: { id: string; name: string; status: string }[] = [];
+    setLoading(true);
     try {
-      const stored = localStorage.getItem("smart-erp-franchises");
-      if (stored) franchises = JSON.parse(stored);
-    } catch {}
-
-    const franchise = franchises.find((f) => f.id === id);
-    if (!franchise) {
-      setError("Franchise not found. Please check the ID.");
-      return;
+      const franchises = await apiLoad("franchise") as { id: string; name: string; status: string }[];
+      const franchise = franchises.find((f) => f.id === id);
+      if (!franchise) {
+        setError("Franchise not found. Please check the ID.");
+        return;
+      }
+      if (franchise.status !== "Active") {
+        setError("This franchise is inactive. Contact Super Admin.");
+        return;
+      }
+      setVerifiedId(id);
+      setStep("verify");
+    } catch {
+      setError("Failed to verify franchise. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    if (franchise.status !== "Active") {
-      setError("This franchise is inactive. Contact Super Admin.");
-      return;
-    }
-
-    setVerifiedId(id);
-    setStep("verify");
   };
 
   return (
@@ -73,10 +76,10 @@ export default function FranchiseSelector({ onVerified }: FranchiseSelectorProps
 
             <button
               onClick={handleSubmit}
-              disabled={!franchiseId.trim()}
+              disabled={!franchiseId.trim() || loading}
               className="w-full py-3.5 bg-gradient-to-r from-[#0057FF] to-[#0EA5E9] text-white font-bold rounded-xl hover:shadow-[0_0_25px_rgba(0,87,255,0.3)] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Verify Franchise
+              {loading ? "Verifying..." : "Verify Franchise"}
             </button>
 
             <div className="mt-4 flex flex-wrap justify-center gap-2">

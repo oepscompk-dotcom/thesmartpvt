@@ -93,6 +93,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<DSONotification[]>([]);
   const [allFranchiseSims, setAllFranchiseSims] = useState<DSOSim[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [settingsData, setSettingsData] = useState({ companyName: "THE SMART ERP", logo: "", franchiseName: "" });
 
   const fid = auth.franchiseId || "";
 
@@ -112,7 +113,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims] = await Promise.all([
+      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord] = await Promise.all([
         apiLoad("dsoActivation", fid),
         apiLoad("dsoAttendance", fid),
         apiLoad("leaveRequest", fid),
@@ -121,6 +122,8 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         apiLoad("dsoTargetEntry", fid),
         apiLoad("dsoNotification"),
         apiLoad("sim", fid),
+        apiLoadById("adminSettings", "admin").catch(() => null),
+        apiLoadById("franchise", fid).catch(() => null),
       ]);
       setActivations(loadedActivations || []);
       setAttendance(loadedAttendance || []);
@@ -130,6 +133,11 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       setTargets((loadedTargets.length > 0 ? loadedTargets[0] : defaultTargets) as DSOTarget);
       setNotifications(loadedNotifications || []);
       setAllFranchiseSims(loadedSims || []);
+      setSettingsData({
+        companyName: adminSettings?.companyName || "THE SMART ERP",
+        logo: adminSettings?.logo || "",
+        franchiseName: franchiseRecord?.name || "Northern Region Rawalpindi",
+      });
     };
     loadAll();
   }, [fid, mounted]);
@@ -215,28 +223,14 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
     setNotifications((p) => p.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
 
-  const getSettings = () => {
-    let adminSettings = { companyName: "THE SMART ERP", logo: "" };
-    try {
-      const stored = localStorage.getItem("smart-erp-settings");
-      if (stored) adminSettings = JSON.parse(stored);
-    } catch {}
-    let franchiseSettings = { franchiseName: "Northern Region Rawalpindi" };
-    try {
-      const stored = localStorage.getItem("franchise-settings");
-      if (stored) franchiseSettings = JSON.parse(stored);
-    } catch {}
-    return {
-      franchiseName: franchiseSettings.franchiseName,
-      logo: adminSettings.logo,
-      companyName: adminSettings.companyName || "THE SMART ERP",
-      dsoName: auth.dsoName,
-    };
-  };
-
   const sims = useMemo(() => allFranchiseSims.filter((s) => s.issuedToId === auth.dsoId && s.status === "Issued"), [allFranchiseSims, auth.dsoId]);
 
-  const settings = getSettings();
+  const settings = {
+    franchiseName: settingsData.franchiseName || "Northern Region Rawalpindi",
+    logo: settingsData.logo,
+    companyName: settingsData.companyName || "THE SMART ERP",
+    dsoName: auth.dsoName,
+  };
 
   return (
     <DSODataContext.Provider value={{
