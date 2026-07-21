@@ -5,10 +5,9 @@ import { useState, useMemo } from "react";
 import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, Filter, CheckSquare, Square, User, Smartphone, Trash2 } from "lucide-react";
 import { useFranchiseData, SIMIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
-import { apiDelete } from "@/lib/api";
 
 export default function IssuedReturnsPage() {
-  const { sims, dso, dsms, issueRecords, issueSIMs, returnSIMs, devices } = useFranchiseData();
+  const { sims, dso, dsms, issueRecords, issueSIMs, returnSIMs, deleteIssueRecords, devices } = useFranchiseData();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -62,9 +61,7 @@ export default function IssuedReturnsPage() {
   };
 
   const handleDeleteSelected = async () => {
-    for (const id of selectedIds) {
-      await apiDelete("issueRecord", id);
-    }
+    await deleteIssueRecords(selectedIds);
     setSelectedIds([]);
     setShowDeleteConfirm(false);
   };

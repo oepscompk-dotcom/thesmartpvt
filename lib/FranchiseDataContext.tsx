@@ -229,6 +229,7 @@ interface FranchiseDataContextType {
   issueRecords: SIMIssueRecord[];
   issueSIMs: (record: Omit<SIMIssueRecord, "id">) => Promise<void>;
   returnSIMs: (issueId: string) => Promise<void>;
+  deleteIssueRecords: (ids: string[]) => Promise<void>;
 }
 
 const FranchiseDataContext = createContext<FranchiseDataContextType | undefined>(undefined);
@@ -592,6 +593,37 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     setSIMs(returnedSIMs);
   };
 
+  const deleteIssueRecords = async (ids: string[]) => {
+    const today = new Date().toISOString().split("T")[0];
+    for (const id of ids) {
+      const record = issueRecords.find((r) => r.id === id);
+      if (record) {
+        const freshSims = await apiLoad("sim", record.franchiseId);
+        const affected = (Array.isArray(freshSims) ? freshSims : []).filter((s: any) => record.simIds.includes(s.id));
+        await Promise.all(affected.map((s: any) =>
+          apiUpdate("sim", s.id, {
+            status: "In Stock",
+            issuedToId: "",
+            issuedToName: "",
+            issuedToRole: "",
+            statusDate: today,
+            statusChangedFrom: s.status,
+          })
+        ));
+      }
+      await apiDelete("simIssueRecord", id);
+    }
+    const deletedIds = new Set(ids);
+    setIssueRecords((prev) => prev.filter((r) => !deletedIds.has(r.id)));
+    setSIMs((prev) => prev.map((s) => {
+      const record = issueRecords.find((r) => deletedIds.has(r.id) && r.simIds.includes(s.id));
+      if (record) {
+        return { ...s, status: "In Stock", issuedToId: "", issuedToName: "", issuedToRole: "", statusDate: today, statusChangedFrom: s.status };
+      }
+      return s;
+    }));
+  };
+
   return (
     <FranchiseDataContext.Provider value={{
       auth, hydrated: mounted, login, logout, dsms, dso, devices, sims, equipment,
@@ -607,7 +639,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       addTarget, updateTarget, getTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
       addExpense, deleteExpense, updateExpense, addAccountEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
-      issueRecords, issueSIMs, returnSIMs,
+      issueRecords, issueSIMs, returnSIMs, deleteIssueRecords,
     }}>
       {children}
     </FranchiseDataContext.Provider>
