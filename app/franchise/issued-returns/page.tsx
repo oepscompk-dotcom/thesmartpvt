@@ -94,22 +94,31 @@ export default function IssuedReturnsPage() {
     setStep(4);
   };
 
-  const handleIssueSubmit = () => {
+  const handleIssueSubmit = async () => {
     if (selectedSimIds.length === 0 || !selectedPerson) return;
     const now = new Date().toISOString().split("T")[0];
-    issueSIMs({
-      simIds: selectedSimIds,
-      issuedTo: selectedPerson.name,
-      issuedToRole: issueType,
-      issuedById: selectedPerson.id,
-      retailerId,
-      franchiseId: selectedPerson.franchiseId,
-      issueDate: now,
-      returnDate: "",
-      status: "Issued",
-      notes,
-    });
-    setShowIssueModal(false);
+    try {
+      await issueSIMs({
+        simIds: selectedSimIds,
+        issuedTo: selectedPerson.name,
+        issuedToRole: issueType,
+        issuedById: selectedPerson.id,
+        retailerId,
+        franchiseId: selectedPerson.franchiseId,
+        issueDate: now,
+        returnDate: "",
+        status: "Issued",
+        notes,
+      });
+      setShowIssueModal(false);
+      setStep(1);
+      setSelectedSimIds([]);
+      setSelectedPersonId("");
+      setNotes("");
+    } catch (e) {
+      console.error("Failed to issue SIMs:", e);
+      alert("Failed to issue SIMs. Please try again.");
+    }
   };
 
   const filteredRecords = useMemo(() => {

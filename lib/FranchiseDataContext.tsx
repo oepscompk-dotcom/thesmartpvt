@@ -539,9 +539,20 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     const newRecord: SIMIssueRecord = { ...record, id: `ISU-${Date.now()}` };
     await apiSave("simIssueRecord", newRecord);
     setIssueRecords((p) => [newRecord, ...p]);
-    const updatedSIMs = sims.map((s) => record.simIds.includes(s.id) ? { ...s, status: "Issued", issuedToId: record.issuedById, issuedToName: record.issuedTo, issuedToRole: record.issuedToRole, statusDate: record.issueDate || today, statusChangedFrom: s.status } : s);
-    const affected = updatedSIMs.filter((s) => record.simIds.includes(s.id));
-    await apiUpdateMany("sim", affected.map((s) => s.id), affected);
+    const affected = sims.filter((s) => record.simIds.includes(s.id));
+    await Promise.all(affected.map((s) =>
+      apiUpdate("sim", s.id, {
+        status: "Issued",
+        issuedToId: record.issuedById,
+        issuedToName: record.issuedTo,
+        issuedToRole: record.issuedToRole,
+        statusDate: record.issueDate || today,
+        statusChangedFrom: s.status,
+      })
+    ));
+    const updatedSIMs = sims.map((s) => record.simIds.includes(s.id)
+      ? { ...s, status: "Issued", issuedToId: record.issuedById, issuedToName: record.issuedTo, issuedToRole: record.issuedToRole, statusDate: record.issueDate || today, statusChangedFrom: s.status }
+      : s);
     setSIMs(updatedSIMs);
   };
 
@@ -562,9 +573,20 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     const today = new Date().toISOString().split("T")[0];
     await apiUpdate("simIssueRecord", issueId, { status: "Returned", returnDate: today });
     setIssueRecords((prev) => prev.map((r) => r.id === issueId ? { ...r, status: "Returned", returnDate: today } : r));
-    const returnedSIMs = sims.map((s) => record.simIds.includes(s.id) ? { ...s, status: "In Stock", issuedToId: undefined, issuedToName: undefined, issuedToRole: undefined, statusDate: today, statusChangedFrom: s.status } : s);
-    const affected = returnedSIMs.filter((s) => record.simIds.includes(s.id));
-    await apiUpdateMany("sim", affected.map((s) => s.id), affected);
+    const affected = sims.filter((s) => record.simIds.includes(s.id));
+    await Promise.all(affected.map((s) =>
+      apiUpdate("sim", s.id, {
+        status: "In Stock",
+        issuedToId: "",
+        issuedToName: "",
+        issuedToRole: "",
+        statusDate: today,
+        statusChangedFrom: s.status,
+      })
+    ));
+    const returnedSIMs = sims.map((s) => record.simIds.includes(s.id)
+      ? { ...s, status: "In Stock", issuedToId: "", issuedToName: "", issuedToRole: "", statusDate: today, statusChangedFrom: s.status }
+      : s);
     setSIMs(returnedSIMs);
   };
 

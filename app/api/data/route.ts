@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 const JSON_FIELDS = [
   "newSimLimits", "hlrSimLimits", "dailyTargets", "monthlyTargets",
   "documents", "agreements", "guarantor", "attendanceSettings", "permissions",
+  "simIds",
 ];
 
 function getModel(name: string) {
