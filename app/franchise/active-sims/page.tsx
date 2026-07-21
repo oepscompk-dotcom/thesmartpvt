@@ -350,18 +350,28 @@ export default function ActiveSIMsPage() {
   const handleImport = async () => {
     const matchedRows = importRows.filter((r) => r.matched);
     if (matchedRows.length === 0) { setImportError("No matching SIMs found."); return; }
-    const verifications = await loadImportVerifications();
     let updatedCount = 0;
+    let errors: string[] = [];
     for (const row of matchedRows) {
       const simNum = row.matchedSimNumber || row.simNumber;
       if (!simNum) continue;
-      verifications[simNum] = {
-        simNumber: simNum,
-        bvs: row.bvs === "1" ? "1" : "0",
-        fca: row.fca === "1" ? "1" : "0",
-        ifca: row.ifca === "1" ? "1" : "0",
-        verifiedAt: new Date().toISOString(),
-      };
+      try {
+        const result = await apiSave("franchiseSimVerification", {
+          id: simNum,
+          simNumber: simNum,
+          bvs: row.bvs === "1" ? "1" : "0",
+          fca: row.fca === "1" ? "1" : "0",
+          ifca: row.ifca === "1" ? "1" : "0",
+          verifiedAt: new Date().toISOString(),
+        });
+        if (result && (result as any).error) {
+          errors.push(`${simNum}: ${(result as any).error}`);
+        } else {
+          updatedCount++;
+        }
+      } catch (e: any) {
+        errors.push(`${simNum}: ${e.message || "save failed"}`);
+      }
       if (row.matchedSimId && row.iccid) {
         try {
           const freshSim = await apiLoadById("sim", row.matchedSimId);
@@ -370,12 +380,16 @@ export default function ActiveSIMsPage() {
           }
         } catch (e) { console.error("ICCID update error:", e); }
       }
-      updatedCount++;
     }
-    await saveImportVerifications(verifications);
-    setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA + ICCID updated.`);
+    if (updatedCount === 0) {
+      setImportError(`Import failed: ${errors[0] || "Unknown error"}. Check console.`);
+    } else if (errors.length > 0) {
+      setImportSuccess(`Imported ${updatedCount} records (${errors.length} failed: ${errors[0]})`);
+    } else {
+      setImportSuccess(`Imported ${updatedCount} records. BVS/FCA/IFCA + ICCID updated.`);
+    }
     setImportRows([]); setImportFile(null);
-    setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 2000);
+    setTimeout(() => { setShowImportModal(false); setImportSuccess(""); window.location.reload(); }, 3000);
   };
 
   return (
