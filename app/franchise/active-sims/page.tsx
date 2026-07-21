@@ -59,7 +59,7 @@ async function loadImportVerifications(): Promise<Record<string, ImportVerificat
 
 async function saveImportVerifications(data: Record<string, ImportVerification>) {
   for (const verification of Object.values(data)) {
-    try { await apiSave("franchiseSimVerification", verification); } catch {}
+    try { await apiSave("franchiseSimVerification", { ...verification, id: verification.simNumber }); } catch (e) { console.error("saveImportVerifications error:", e); }
   }
 }
 
@@ -742,6 +742,7 @@ export default function ActiveSIMsPage() {
                       const existing = existingVerifications[simNum] || {};
                       await apiSave("franchiseSimVerification", {
                         ...existing,
+                        id: simNum,
                         simNumber: simNum,
                         bvs: editForm.bvs || existing.bvs || "0",
                         fca: editForm.fca || existing.fca || "0",
