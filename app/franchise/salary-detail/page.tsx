@@ -425,11 +425,10 @@ export default function SalaryDetailPage() {
                       <td className="px-4 py-3 text-right text-gray-600 text-xs hidden lg:table-cell">PKR {c.totalAllowances.toLocaleString()}</td>
                       <td className="px-4 py-3 text-center hidden lg:table-cell">
                         <div className="flex items-center justify-center gap-1 text-[10px]">
-                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded font-bold">{c.newSimCount}</span>
-                          <span className="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-bold">{c.mnpCount}</span>
-                          <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded font-bold">{c.replacementCount}</span>
-                          <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded font-bold">{c.bynCount}</span>
-                          <span className="px-1.5 py-0.5 bg-gray-900 text-white rounded font-bold">{c.newSimCount + c.mnpCount + c.replacementCount + c.bynCount}</span>
+                          <span className="px-1.5 py-0.5 bg-gray-900 text-white rounded font-bold" title="Total">{c.newSimCount + c.mnpCount + c.replacementCount + c.bynCount}</span>
+                          <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded font-bold" title="BVS">{c.newSimBvsCount + c.mnpBvsCount + c.replacementBvsCount + c.bynBvsCount}</span>
+                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-bold" title="FCA">{c.newSimFcaCount + c.mnpFcaCount + c.replacementFcaCount + c.bynFcaCount}</span>
+                          <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold" title="IFCA">{c.newSimIfcaCount + c.mnpIfcaCount + c.replacementIfcaCount + c.bynIfcaCount}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right text-green-600 text-xs font-medium hidden xl:table-cell">PKR {c.totalCommission.toLocaleString()}</td>
