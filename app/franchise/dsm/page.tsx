@@ -830,7 +830,7 @@ function SalaryTab({
   saveSalaryRow: (d: DSM) => void;
   onDownloadSlip?: (d: DSM, month?: string) => void;
 }) {
-  const { activations } = useDSOData();
+  const { activations, importVerifications } = useDSOData();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [calcMonth, setCalcMonth] = useState(new Date().toISOString().slice(0, 7));
   const [showFormula, setShowFormula] = useState(false);
@@ -840,35 +840,72 @@ function SalaryTab({
       const aMonth = a.createdAt?.slice(0, 7);
       return a.dsoId === dsmId && aMonth === month && a.status === "Completed";
     });
+    const pick = (impV: string | undefined, actV: string) =>
+      impV === "1" ? "1" : actV === "0" ? "0" : impV === "0" ? "0" : "X";
+    const actBvs = (a: any) => a.bvsStatus === "Completed" ? "0" : "X";
+    const actFca = (a: any) => a.fcaStatus === "Completed" ? "0" : "X";
+    const actIfca = (a: any) => a.ifcaStatus === "Completed" ? "0" : "X";
+    let newSimBvs = 0, newSimFca = 0, newSimIfca = 0;
+    let mnpBvs = 0, mnpFca = 0, mnpIfca = 0;
+    let replBvs = 0, replFca = 0, replIfca = 0;
+    let bynBvs = 0, bynFca = 0, bynIfca = 0;
+    let bvsCount = 0, fcaCount = 0, ifcaCount = 0;
+    dsmActivations.forEach((a) => {
+      const iv = importVerifications?.[a.simNumber];
+      const bv = pick(iv?.bvs, actBvs(a));
+      const fc = pick(iv?.fca, actFca(a));
+      const ic = pick(iv?.ifca, actIfca(a));
+      if (bv === "1") bvsCount++;
+      if (fc === "1") fcaCount++;
+      if (ic === "1") ifcaCount++;
+      if (a.type === "New SIM") {
+        if (bv === "1") newSimBvs++;
+        if (fc === "1") newSimFca++;
+        if (ic === "1") newSimIfca++;
+      } else if (a.type === "MNP") {
+        if (bv === "1") mnpBvs++;
+        if (fc === "1") mnpFca++;
+        if (ic === "1") mnpIfca++;
+      } else if (a.type === "Replacement") {
+        if (bv === "1") replBvs++;
+        if (fc === "1") replFca++;
+        if (ic === "1") replIfca++;
+      } else if (a.type === "BYN") {
+        if (bv === "1") bynBvs++;
+        if (fc === "1") bynFca++;
+        if (ic === "1") bynIfca++;
+      }
+    });
     return {
       newSIM: dsmActivations.filter((a) => a.type === "New SIM").length,
       mnp: dsmActivations.filter((a) => a.type === "MNP").length,
       replacement: dsmActivations.filter((a) => a.type === "Replacement").length,
       byn: dsmActivations.filter((a) => a.type === "BYN").length,
-      bvs: dsmActivations.filter((a) => a.bvsStatus === "Completed").length,
-      fca: dsmActivations.filter((a) => a.fcaStatus === "Completed").length,
-      ifca: dsmActivations.filter((a) => a.ifcaStatus === "Completed").length,
       total: dsmActivations.length,
+      bvs: bvsCount, fca: fcaCount, ifca: ifcaCount,
+      newSimBvs, newSimFca, newSimIfca,
+      mnpBvs, mnpFca, mnpIfca,
+      replBvs, replFca, replIfca,
+      bynBvs, bynFca, bynIfca,
     };
   };
 
-  const calcEarnings = (d: DSM, acts: { newSIM: number; mnp: number; replacement: number; byn: number; bvs: number; fca: number; ifca: number }) => {
+  const calcEarnings = (d: DSM, acts: ReturnType<typeof getActivationsForDSM>) => {
     const v = (f: string) => getSalaryValue(d, f);
     const basic = v("salary");
     const fuel = v("fuelAllowance");
     const mobile = v("mobileAllowance");
     const daily = v("dailyAllowance");
     const residence = v("residenceAllowance");
-    const newSimComm = acts.newSIM * (v("newSimBvs") + v("newSimFca") + v("newSimIfca"));
-    const mnpComm = acts.mnp * (v("mnpBvs") + v("mnpFca") + v("mnpIfca"));
-    const replComm = acts.replacement * (v("replacementBvs") + v("replacementFca") + v("replacementIfca"));
-    const bynComm = acts.byn * (v("bynBvs") + v("bynFca") + v("bynIfca"));
-    const bvsComm = 0; const fcaComm = 0; const ifcaComm = 0;
+    const newSimComm = acts.newSimBvs * v("newSimBvs") + acts.newSimFca * v("newSimFca") + acts.newSimIfca * v("newSimIfca");
+    const mnpComm = acts.mnpBvs * v("mnpBvs") + acts.mnpFca * v("mnpFca") + acts.mnpIfca * v("mnpIfca");
+    const replComm = acts.replBvs * v("replacementBvs") + acts.replFca * v("replacementFca") + acts.replIfca * v("replacementIfca");
+    const bynComm = acts.bynBvs * v("bynBvs") + acts.bynFca * v("bynFca") + acts.bynIfca * v("bynIfca");
     const hikeComm = v("hikeCommission");
     const otherComm = v("otherCommission");
     const targetBonus = v("targetBonus");
     const bonus = v("bonus");
-    const totalCommission = newSimComm + mnpComm + replComm + bynComm + bvsComm + fcaComm + ifcaComm + hikeComm + otherComm;
+    const totalCommission = newSimComm + mnpComm + replComm + bynComm + hikeComm + otherComm;
     const totalAllowances = fuel + mobile + daily + residence;
     const grossEarnings = basic + totalAllowances + totalCommission + targetBonus + bonus;
     const advance = v("advanceSalary");
@@ -876,7 +913,7 @@ function SalaryTab({
     const otherDed = v("otherDeduction");
     const totalDeductions = advance + loan + otherDed;
     const netSalary = grossEarnings - totalDeductions;
-    return { basic, fuel, mobile, daily, newSimComm, mnpComm, replComm, bynComm, bvsComm, fcaComm, ifcaComm, hikeComm, otherComm, totalCommission, totalAllowances, targetBonus, bonus, grossEarnings, advance, loan, otherDed, totalDeductions, netSalary, acts };
+    return { basic, fuel, mobile, daily, newSimComm, mnpComm, replComm, bynComm, hikeComm, otherComm, totalCommission, totalAllowances, targetBonus, bonus, grossEarnings, advance, loan, otherDed, totalDeductions, netSalary, acts };
   };
 
   const totalStats = useMemo(() => {
@@ -890,7 +927,7 @@ function SalaryTab({
       totalNet += e.netSalary;
     });
     return { totalBasic, totalCommission, totalGross, totalNet };
-  }, [data, calcMonth, activations]);
+  }, [data, calcMonth, activations, importVerifications]);
 
   const filtered = data.filter((d) => {
     if (!search) return true;
@@ -969,7 +1006,7 @@ function SalaryTab({
                 <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">
                   <div className="flex flex-col items-center">
                     <span>Activations</span>
-                    <span className="text-[9px] text-gray-400 font-normal">New|MNP|Repl|BYN</span>
+                    <span className="text-[9px] text-gray-400 font-normal">Tot|BVS|FCA|IFCA</span>
                   </div>
                 </th>
                 <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Commission</th>
@@ -1009,10 +1046,10 @@ function SalaryTab({
                       </td>
                       <td className="px-3 py-2 text-center hidden xl:table-cell">
                         <div className="flex items-center justify-center gap-1 text-[10px]">
-                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded font-bold">{acts.newSIM}</span>
-                          <span className="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-bold">{acts.mnp}</span>
-                          <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded font-bold">{acts.replacement}</span>
-                          <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded font-bold">{acts.byn}</span>
+                          <span className="px-1.5 py-0.5 bg-gray-900 text-white rounded font-bold" title="Total">{acts.total}</span>
+                          <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded font-bold" title="BVS">{acts.bvs}</span>
+                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-bold" title="FCA">{acts.fca}</span>
+                          <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold" title="IFCA">{acts.ifca}</span>
                         </div>
                       </td>
                       <td className="px-3 py-2 text-right hidden 2xl:table-cell">
@@ -1140,10 +1177,14 @@ function SalaryTab({
                                 <div className="flex justify-between"><span className="text-white/60">Basic Salary</span><span className="font-medium">PKR {e.basic.toLocaleString()}</span></div>
                                 <div className="flex justify-between"><span className="text-white/60">Allowances</span><span className="font-medium">PKR {e.totalAllowances.toLocaleString()}</span></div>
                                 <div className="border-t border-white/10 pt-2">
-                                  <div className="flex justify-between"><span className="text-white/60">New SIM ({acts.newSIM} × Rs.{getSalaryValue(d, "newSimCommission")})</span><span className="font-medium text-green-300">PKR {e.newSimComm.toLocaleString()}</span></div>
-                                  <div className="flex justify-between"><span className="text-white/60">MNP ({acts.mnp} × Rs.{getSalaryValue(d, "mnpCommission")})</span><span className="font-medium text-green-300">PKR {e.mnpComm.toLocaleString()}</span></div>
-                                  <div className="flex justify-between"><span className="text-white/60">Replacement ({acts.replacement} × Rs.{getSalaryValue(d, "replacementCommission")})</span><span className="font-medium text-green-300">PKR {e.replComm.toLocaleString()}</span></div>
-                                  <div className="flex justify-between"><span className="text-white/60">BYN ({acts.byn} × Rs.{getSalaryValue(d, "bynCommission")})</span><span className="font-medium text-green-300">PKR {e.bynComm.toLocaleString()}</span></div>
+                                  <div className="flex justify-between"><span className="text-white/60">New SIM</span><span className="font-medium text-green-300">PKR {e.newSimComm.toLocaleString()}</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.newSimBvs}×{getSalaryValue(d, "newSimBvs")}) + FCA({acts.newSimFca}×{getSalaryValue(d, "newSimFca")}) + IFCA({acts.newSimIfca}×{getSalaryValue(d, "newSimIfca")})</span></div>
+                                  <div className="flex justify-between"><span className="text-white/60">MNP</span><span className="font-medium text-green-300">PKR {e.mnpComm.toLocaleString()}</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.mnpBvs}×{getSalaryValue(d, "mnpBvs")}) + FCA({acts.mnpFca}×{getSalaryValue(d, "mnpFca")}) + IFCA({acts.mnpIfca}×{getSalaryValue(d, "mnpIfca")})</span></div>
+                                  <div className="flex justify-between"><span className="text-white/60">Replacement</span><span className="font-medium text-green-300">PKR {e.replComm.toLocaleString()}</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.replBvs}×{getSalaryValue(d, "replacementBvs")}) + FCA({acts.replFca}×{getSalaryValue(d, "replacementFca")}) + IFCA({acts.replIfca}×{getSalaryValue(d, "replacementIfca")})</span></div>
+                                  <div className="flex justify-between"><span className="text-white/60">BYN</span><span className="font-medium text-green-300">PKR {e.bynComm.toLocaleString()}</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.bynBvs}×{getSalaryValue(d, "bynBvs")}) + FCA({acts.bynFca}×{getSalaryValue(d, "bynFca")}) + IFCA({acts.bynIfca}×{getSalaryValue(d, "bynIfca")})</span></div>
                                   <div className="flex justify-between"><span className="text-white/60">Hike + Other</span><span className="font-medium text-green-300">PKR {(e.hikeComm + e.otherComm).toLocaleString()}</span></div>
                                 </div>
                                 <div className="border-t border-white/10 pt-2">
