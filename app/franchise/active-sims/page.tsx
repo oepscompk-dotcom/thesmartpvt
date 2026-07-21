@@ -216,16 +216,9 @@ export default function ActiveSIMsPage() {
   const getDisplayStatus = (sim: any): { status: string; bvs: string; fca: string; ifca: string } => {
     const imp = importVerifications[sim.simNumber];
     const activation = getActivationForSIM(sim.simNumber);
-    const actBvs = activation ? vcFromActivation(activation.bvsStatus) : "X";
-    const actFca = activation ? vcFromActivation(activation.fcaStatus) : "X";
-    const actIfca = activation ? vcFromActivation(activation.ifcaStatus) : "X";
-    const impBvs = imp?.bvs || "X";
-    const impFca = imp?.fca || "X";
-    const impIfca = imp?.ifca || "X";
-    const best = (a: string, b: string) => a === "0" || b === "0" ? "0" : a === "1" || b === "1" ? "1" : "X";
-    let bvs = best(actBvs, impBvs);
-    let fca = best(actFca, impFca);
-    let ifcaV = best(actIfca, impIfca);
+    let bvs = imp?.bvs || (activation ? vcFromActivation(activation.bvsStatus) : "X");
+    let fca = imp?.fca || (activation ? vcFromActivation(activation.fcaStatus) : "X");
+    let ifcaV = imp?.ifca || (activation ? vcFromActivation(activation.ifcaStatus) : "X");
     const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
     const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
     const oneItems = Object.entries(vals).filter(([, v]) => v === "1").map(([k]) => k);
@@ -372,9 +365,9 @@ export default function ActiveSIMsPage() {
       const simNum = row.matchedSimNumber || row.simNumber;
       if (!simNum) continue;
       const prev = localVerifications[simNum] || { bvs: "X", fca: "X", ifca: "X" };
-      const newBvs = row.bvs === "0" || row.bvs === "1" ? row.bvs : (prev.bvs || "X");
-      const newFca = row.fca === "0" || row.fca === "1" ? row.fca : (prev.fca || "X");
-      const newIfca = row.ifca === "0" || row.ifca === "1" ? row.ifca : (prev.ifca || "X");
+      const newBvs = row.bvs === "0" || row.bvs === "1" || row.bvs === "X" ? row.bvs : (prev.bvs || "X");
+      const newFca = row.fca === "0" || row.fca === "1" || row.fca === "X" ? row.fca : (prev.fca || "X");
+      const newIfca = row.ifca === "0" || row.ifca === "1" || row.ifca === "X" ? row.ifca : (prev.ifca || "X");
       try {
         const result = await apiSave("franchiseSimVerification", {
           id: simNum,
