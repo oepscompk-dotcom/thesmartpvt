@@ -9,8 +9,15 @@ export default function FranchiseAuthGuard({ children }: { children: React.React
   const router = useRouter();
 
   useEffect(() => {
+    const hasCookie = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("auth-token="));
+    if (!hasCookie) {
+      router.replace("/franchise-admin");
+      return;
+    }
     if (hydrated && !auth.loggedIn) {
-      router.push("/franchise-admin");
+      router.replace("/franchise-admin");
     }
   }, [hydrated, auth.loggedIn, router]);
 

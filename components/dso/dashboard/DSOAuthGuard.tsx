@@ -9,7 +9,14 @@ export default function DSOAuthGuard({ children }: { children: React.ReactNode }
   const router = useRouter();
 
   useEffect(() => {
-    if (hydrated && !auth.loggedIn) router.push("/dso-login");
+    const hasCookie = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("auth-token="));
+    if (!hasCookie) {
+      router.replace("/dso-login");
+      return;
+    }
+    if (hydrated && !auth.loggedIn) router.replace("/dso-login");
   }, [hydrated, auth.loggedIn, router]);
 
   if (!hydrated) return (

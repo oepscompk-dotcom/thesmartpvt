@@ -9,8 +9,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    const hasCookie = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("auth-token="));
+    if (!hasCookie) {
+      router.replace("/super-admin");
+      return;
+    }
     if (!loading && !isAuthenticated) {
-      router.push("/super-admin");
+      router.replace("/super-admin");
     }
   }, [isAuthenticated, loading, router]);
 

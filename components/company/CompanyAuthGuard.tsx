@@ -9,8 +9,15 @@ export default function CompanyAuthGuard({ children }: { children: React.ReactNo
   const router = useRouter();
 
   useEffect(() => {
+    const hasCookie = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("auth-token="));
+    if (!hasCookie) {
+      router.replace("/company-login");
+      return;
+    }
     if (!loading && (!isAuthenticated || user?.role !== "company")) {
-      router.push("/company-login");
+      router.replace("/company-login");
     }
   }, [isAuthenticated, loading, router, user?.role]);
 

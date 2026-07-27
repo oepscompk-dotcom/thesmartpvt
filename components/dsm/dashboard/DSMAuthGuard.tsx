@@ -9,7 +9,14 @@ export default function DSMAuthGuard({ children }: { children: React.ReactNode }
   const router = useRouter();
 
   useEffect(() => {
-    if (hydrated && !auth.loggedIn) router.push("/dsm-login");
+    const hasCookie = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("auth-token="));
+    if (!hasCookie) {
+      router.replace("/dsm-login");
+      return;
+    }
+    if (hydrated && !auth.loggedIn) router.replace("/dsm-login");
   }, [hydrated, auth.loggedIn, router]);
 
   if (!hydrated) return (
