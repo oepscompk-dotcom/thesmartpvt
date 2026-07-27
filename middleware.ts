@@ -23,10 +23,7 @@ export function middleware(request: NextRequest) {
   const authCookie = request.cookies.get("auth-token");
 
   if (!authCookie || authCookie.value !== "true") {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/super-admin";
-    loginUrl.search = "";
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(`${request.nextUrl.origin}/super-admin`);
   }
 
   return NextResponse.next();
