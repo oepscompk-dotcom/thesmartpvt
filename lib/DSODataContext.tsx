@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
+import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
 
 export interface DSOAuth {
   dsoId: string; dsoName: string; franchiseId: string; loggedIn: boolean;
@@ -157,6 +158,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         const newAuth = { dsoId: dsoRecord.id, dsoName: dsoRecord.name, franchiseId: dsoRecord.franchiseId, loggedIn: true };
         setAuth(newAuth);
         await apiSave("franchiseData", { id: "dso-auth", data: JSON.stringify(newAuth) });
+        setAuthCookie();
         return true;
       }
     } catch (e) { console.error("DSO login error:", e); }
@@ -166,6 +168,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   const dsoLogout = async () => {
     const empty = { dsoId: "", dsoName: "", franchiseId: "", loggedIn: false };
     setAuth(empty);
+    clearAuthCookie();
     try { await apiUpdate("franchiseData", "dso-auth", { data: "" }); } catch {}
   };
 

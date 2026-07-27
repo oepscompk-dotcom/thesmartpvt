@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { apiLoad, apiLoadById, apiSave, apiDelete } from "@/lib/api";
+import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
 
 interface User {
   email: string;
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(userData);
       await apiSave("franchiseData", { id: "authUser", data: JSON.stringify(userData) });
+      setAuthCookie();
       return true;
     }
 
@@ -79,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
           setUser(userData);
           await apiSave("franchiseData", { id: "authUser", data: JSON.stringify(userData) });
+          setAuthCookie();
           return true;
         }
       } catch {
@@ -91,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     setUser(null);
+    clearAuthCookie();
     try {
       await apiDelete("franchiseData", "authUser");
     } catch {

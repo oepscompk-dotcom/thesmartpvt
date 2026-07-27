@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
+import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
 
 export interface DSMAuth {
   dsmId: string; dsmName: string; franchiseId: string; loggedIn: boolean;
@@ -178,6 +179,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
         const newAuth = { dsmId: user.id, dsmName: user.name, franchiseId: user.franchiseId, loggedIn: true };
         setAuth(newAuth);
         await apiSave("franchiseData", { id: "dsm-auth", data: JSON.stringify(newAuth) });
+        setAuthCookie();
         return true;
       }
     } catch (e) { console.error("DSM login error:", e); }
@@ -187,6 +189,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   const dsmLogout = async () => {
     const empty = { dsmId: "", dsmName: "", franchiseId: "", loggedIn: false };
     setAuth(empty);
+    clearAuthCookie();
     try { await apiUpdate("franchiseData", "dsm-auth", { data: JSON.stringify(empty) }); } catch {}
   };
 

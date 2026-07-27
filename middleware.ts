@@ -9,32 +9,20 @@ const PUBLIC_PATHS = [
   "/dso-login",
   "/_next/static",
   "/_next/image",
-  "/api/auth/session-check",
+  "/api/",
   "/favicon.ico",
 ];
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p) || pathname === p)) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
-  }
+  const authCookie = request.cookies.get("auth-token");
 
-  try {
-    const baseUrl = request.nextUrl.origin;
-    const res = await fetch(`${baseUrl}/api/auth/session-check`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(5000),
-    });
-    const data = await res.json();
-    if (!data.authenticated) {
-      return NextResponse.redirect(new URL("/super-admin", request.url));
-    }
-  } catch {
+  if (!authCookie || authCookie.value !== "true") {
     return NextResponse.redirect(new URL("/super-admin", request.url));
   }
 

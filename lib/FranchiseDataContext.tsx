@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiSaveMany, apiUpdate, apiUpdateMany, apiDelete, apiDeleteMany } from "@/lib/api";
+import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
 
 export interface DSM {
   id: string; name: string; fatherName: string; cnic: string; mobile: string; email: string;
@@ -337,6 +338,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
         const newAuth = { franchiseId: franchise.id, franchiseName: franchise.name, loggedIn: true };
         setAuth(newAuth);
         await apiSave("franchiseData", { id: "auth", data: JSON.stringify(newAuth) });
+        setAuthCookie();
         return true;
       }
     } catch (e) { console.error("Franchise login error:", e); }
@@ -345,6 +347,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     setAuth({ franchiseId: "", franchiseName: "", loggedIn: false });
+    clearAuthCookie();
     await apiDelete("franchiseData", "auth").catch(() => {});
   };
 

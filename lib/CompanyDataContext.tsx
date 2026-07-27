@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
+import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
 
 export interface CompanyAuth {
   companyId: string;
@@ -215,6 +216,7 @@ export function CompanyDataProvider({ children }: { children: ReactNode }) {
       if (company) {
         setAuth({ companyId: company.id, companyName: company.name, loggedIn: true });
         await apiSave("franchiseData", { id: "company-auth", data: JSON.stringify({ companyId: company.id, companyName: company.name }) });
+        setAuthCookie();
         return true;
       }
     } catch (e) { console.error("Company login error:", e); }
@@ -223,6 +225,7 @@ export function CompanyDataProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     setAuth({ companyId: "", companyName: "", loggedIn: false });
+    clearAuthCookie();
     try {
       await apiUpdate("franchiseData", "company-auth", { data: "" });
     } catch {}
