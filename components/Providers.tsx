@@ -6,6 +6,7 @@ import { FranchiseDataProvider } from "@/lib/FranchiseDataContext";
 import { DSODataProvider } from "@/lib/DSODataContext";
 import { DSMDataProvider } from "@/lib/DSMDataContext";
 import { CompanyDataProvider } from "@/lib/CompanyDataContext";
+import AuthGate from "@/components/AuthGate";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -14,7 +15,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <CompanyDataProvider>
           <FranchiseDataProvider>
             <DSODataProvider>
-              <DSMDataProvider>{children}</DSMDataProvider>
+              <DSMDataProvider>
+                <AuthGate>{children}</AuthGate>
+              </DSMDataProvider>
             </DSODataProvider>
           </FranchiseDataProvider>
         </CompanyDataProvider>
