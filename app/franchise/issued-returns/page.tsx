@@ -25,13 +25,24 @@ export default function IssuedReturnsPage() {
   const [retailerId, setRetailerId] = useState("");
   const [simTab, setSimTab] = useState<"new" | "hlr">("new");
   const [bulkCount, setBulkCount] = useState(10);
+  const [simSearch, setSimSearch] = useState("");
 
   const people = issueType === "DSO" ? dso : dsms;
   const selectedPerson = people.find((p) => p.id === selectedPersonId);
 
   const availableSIMs = useMemo(() => sims.filter((s) => s.status === "In Stock"), [sims]);
   const filteredByTab = useMemo(() => availableSIMs.filter((s) => s.type === simTab), [availableSIMs, simTab]);
-  const visibleSIMs = useMemo(() => filteredByTab.slice(0, bulkCount), [filteredByTab, bulkCount]);
+  const simSearchResults = useMemo(() => {
+    if (!simSearch.trim()) return filteredByTab;
+    const q = simSearch.toLowerCase();
+    return filteredByTab.filter((s) =>
+      (s.iccid || "").toLowerCase().includes(q) ||
+      (s.simNumber || "").toLowerCase().includes(q) ||
+      (s.id || "").toLowerCase().includes(q) ||
+      (s.network || "").toLowerCase().includes(q)
+    );
+  }, [filteredByTab, simSearch]);
+  const visibleSIMs = useMemo(() => simSearchResults.slice(0, bulkCount), [simSearchResults, bulkCount]);
 
   const toggleSim = (id: string) => {
     setSelectedSimIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
@@ -99,6 +110,7 @@ export default function IssuedReturnsPage() {
     setRetailerId("");
     setSimTab("new");
     setBulkCount(10);
+    setSimSearch("");
     setShowIssueModal(true);
   };
 
@@ -421,6 +433,15 @@ export default function IssuedReturnsPage() {
                     </button>
                   </div>
 
+                  {/* SIM Search */}
+                  <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
+                    <Search size={16} className="text-gray-400" />
+                    <input type="text" value={simSearch} onChange={(e) => setSimSearch(e.target.value)}
+                      placeholder="Search by ICCID, SIM number, network or ID..."
+                      className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
+                    {simSearch && <button onClick={() => setSimSearch("")} className="text-gray-400 hover:text-gray-600 flex-shrink-0"><X size={14} /></button>}
+                  </div>
+
                   {/* SIM List */}
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {visibleSIMs.map((s) => (
@@ -431,20 +452,23 @@ export default function IssuedReturnsPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-gray-900 text-sm font-medium">{s.simNumber}</p>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${s.network === "Jazz" ? "bg-red-50 text-red-600" : s.network === "Telenor" ? "bg-blue-50 text-blue-600" : s.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{s.network}</span>
+                            <p className="text-gray-900 text-sm font-mono font-medium truncate">{s.iccid || "\u2014"}</p>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${s.network === "Jazz" ? "bg-red-50 text-red-600" : s.network === "Telenor" ? "bg-blue-50 text-blue-600" : s.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{s.network}</span>
                           </div>
-                          <p className="text-gray-400 text-xs font-mono">{s.id}</p>
+                          <p className="text-gray-400 text-xs font-mono mt-0.5 truncate">{s.simNumber} <span className="text-gray-300">|</span> {s.id}</p>
                         </div>
                       </button>
                     ))}
                     {visibleSIMs.length === 0 && (
                       <div className="text-center py-8">
                         <Package size={24} className="text-gray-300 mx-auto mb-2" />
-                        <p className="text-gray-400 text-sm">No {simTab === "new" ? "New" : "HLR"} SIMs in stock</p>
+                        <p className="text-gray-400 text-sm">{simSearch ? "No SIMs match your search" : `No ${simTab === "new" ? "New" : "HLR"} SIMs in stock`}</p>
                       </div>
                     )}
                   </div>
+                  {simSearch && (
+                    <p className="text-gray-400 text-xs">{simSearchResults.length} SIM(s) match "{simSearch}"</p>
+                  )}
                   {selectedSimIds.length > 0 && (
                     <p className="text-[#0A2647] text-xs font-medium">{selectedSimIds.length} SIM(s) selected</p>
                   )}
