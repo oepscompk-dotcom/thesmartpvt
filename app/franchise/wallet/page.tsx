@@ -10,6 +10,19 @@ import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
 type Tab = "package" | "loan";
 
+const PAKISTAN_BANKS = [
+  "Abhi Microfinance Bank", "Al Baraka Bank Pakistan", "Allied Bank Limited (ABL)", "APNA Microfinance Bank",
+  "ASA Microfinance Bank", "Askari Bank", "Bank Al Habib", "Bank Alfalah", "BankIslami Pakistan",
+  "Bank Makramah Limited", "Bank of China Pakistan", "Bank of Khyber", "Citi Bank Pakistan",
+  "Dubai Islamic Bank Pakistan", "Easypaisa", "Easypaisa Digital Bank", "Faysal Bank", "FINCA Microfinance Bank",
+  "Finja", "First Women Bank", "Habib Bank Limited (HBL)", "Habib Metropolitan Bank",
+  "Industrial and Commercial Bank of China (ICBC) Pakistan", "JS Bank", "JazzCash", "Khushhali Microfinance Bank",
+  "MCB Bank", "MCB Islamic Bank", "Meezan Bank", "Mobilink Bank", "National Bank of Pakistan (NBP)",
+  "NayaPay", "NRSP Microfinance Bank", "OPay", "Raqami Islamic Digital Bank", "SadaPay", "Sindh Bank",
+  "Soneri Bank", "Standard Chartered Bank Pakistan", "The Bank of Punjab (BOP)", "United Bank Limited (UBL)",
+  "U Microfinance Bank", "Zarai Taraqiati Bank Limited (ZTBL)", "Zindigi",
+];
+
 export default function WalletPage() {
   const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment } = useFranchiseData();
   const [tab, setTab] = useState<Tab>("package");
@@ -403,12 +416,17 @@ export default function WalletPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank / Account Title (Optional)</label>
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank</label>
                     <div className="flex gap-2">
                       <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 flex-1">
                         <Landmark size={16} className="text-gray-400" />
-                        <input type="text" value={bank} onChange={(e) => setBank(e.target.value)} placeholder="e.g. Meezan Bank"
-                          className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+                        <select value={bank} onChange={(e) => setBank(e.target.value)}
+                          className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer">
+                          <option value="">Select Bank</option>
+                          {PAKISTAN_BANKS.map((b) => (
+                            <option key={b} value={b}>{b}</option>
+                          ))}
+                        </select>
                       </div>
                       <input type="text" value={accountTitle} onChange={(e) => setAccountTitle(e.target.value)} placeholder="Account Title"
                         className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
