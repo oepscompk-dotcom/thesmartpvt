@@ -579,7 +579,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const addAuditLog = async (log: AuditLog) => {
-    await apiSave("auditLog", log);
+    await apiSave("auditLog", { ...log, id: "LOG-" + Date.now() });
     setAuditLogs((prev) => [log, ...prev]);
   };
 
