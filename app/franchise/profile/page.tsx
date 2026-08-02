@@ -5,6 +5,16 @@ import { User, Save, Lock, Mail, Phone, Building2, MapPin, CheckCircle2, CreditC
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { useData } from "@/lib/DataContext";
 
+const PAKISTAN_CITIES: Record<string, string[]> = {
+  "Punjab": ["Attock", "Bahawalnagar", "Bahawalpur", "Chakwal", "Dera Ghazi Khan", "Faisalabad", "Gujranwala", "Gujrat", "Hafizabad", "Jhang", "Jhelum", "Kasur", "Khanewal", "Khushab", "Lahore", "Layyah", "Lodhran", "Mandi Bahauddin", "Mianwali", "Multan", "Muzaffargarh", "Narowal", "Nankana Sahib", "Okara", "Pakpattan", "Rahim Yar Khan", "Rajanpur", "Rawalpindi", "Sahiwal", "Sargodha", "Sheikhupura", "Sialkot", "Toba Tek Singh", "Vehari"],
+  "Sindh": ["Karachi", "Hyderabad", "Sukkur", "Larkana", "Mirpur Khas", "Nawabshah", "Jacobabad", "Khairpur", "Dadu", "Thatta", "Badin", "Sanghar", "Umerkot", "Shikarpur", "Ghotki"],
+  "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad", "Mardan", "Swat (Mingora)", "Kohat", "Bannu", "Dera Ismail Khan", "Haripur", "Mansehra", "Nowshera", "Charsadda", "Swabi"],
+  "Balochistan": ["Quetta", "Gwadar", "Turbat", "Khuzdar", "Chaman", "Sibi", "Zhob", "Hub", "Loralai"],
+  "Islamabad Capital Territory": ["Islamabad"],
+  "Gilgit-Baltistan": ["Gilgit", "Skardu", "Hunza", "Chilas", "Ghanche"],
+  "Azad Jammu & Kashmir": ["Muzaffarabad", "Mirpur", "Kotli", "Rawalakot", "Bagh"],
+};
+
 export default function ProfilePage() {
   const { settings, auth, updateSettings } = useFranchiseData();
   const { franchises, updateFranchise } = useData();
@@ -13,6 +23,8 @@ export default function ProfilePage() {
     ownerName: "",
     email: "",
     phone: "",
+    province: "",
+    city: "",
     address: "",
   });
   const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
@@ -32,7 +44,9 @@ export default function ProfilePage() {
       ownerName: franchise?.owner || settings.ownerName || "",
       email: franchise?.email || settings.email || "",
       phone: franchise?.mobile || settings.phone || "",
-      address: `${franchise?.city || ""}${franchise?.city && franchise?.province ? ", " : ""}${franchise?.province || ""}` || settings.address || "",
+      province: franchise?.province || "",
+      city: franchise?.city || "",
+      address: settings.address || "",
     });
     setMounted(true);
   }, [franchise, settings]);
@@ -46,6 +60,8 @@ export default function ProfilePage() {
           owner: form.ownerName,
           email: form.email,
           mobile: form.phone,
+          province: form.province,
+          city: form.city,
         });
       }
       await updateSettings({
@@ -54,7 +70,7 @@ export default function ProfilePage() {
         ownerName: form.ownerName,
         email: form.email,
         phone: form.phone,
-        address: form.address,
+        address: form.address || (form.city && form.province ? `${form.city}, ${form.province}` : form.city || form.province || ""),
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -192,11 +208,40 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Address</label>
+            <label className="block text-gray-500 text-xs font-medium mb-1.5">Province</label>
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
+              <MapPinned size={16} className="text-gray-400 flex-shrink-0" />
+              <select value={form.province} onChange={(e) => setForm((p) => ({ ...p, province: e.target.value, city: "" }))}
+                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer">
+                <option value="">Select Province</option>
+                {Object.keys(PAKISTAN_CITIES).map((prov) => (
+                  <option key={prov} value={prov}>{prov}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-500 text-xs font-medium mb-1.5">City</label>
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
+              <MapPin size={16} className="text-gray-400 flex-shrink-0" />
+              <select value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
+                disabled={!form.province}
+                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed">
+                <option value="">{form.province ? "Select City" : "Select Province first"}</option>
+                {(PAKISTAN_CITIES[form.province] || []).map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-500 text-xs font-medium mb-1.5">Address (Optional)</label>
             <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
               <MapPin size={16} className="text-gray-400" />
               <input type="text" value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
-                placeholder="Enter address"
+                placeholder="Enter street address"
                 className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
             </div>
           </div>
