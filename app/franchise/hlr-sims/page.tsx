@@ -434,29 +434,65 @@ export default function HLRSIMsPage() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">{editing ? "Edit HLR SIM" : "Add HLR SIM"}</h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0A2647]/10 flex items-center justify-center"><Smartphone size={18} className="text-[#0A2647]" /></div>
+                <div>
+                  <h3 className="text-gray-900 font-bold text-sm">{editing ? "Edit HLR SIM" : "Add HLR SIM"}</h3>
+                  <p className="text-gray-400 text-xs mt-0.5">{editing ? `Editing ${editing.id}` : "Fill in HLR SIM details"}</p>
+                </div>
+              </div>
               <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-4">
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">HLR ID</label><input type="text" value={form.id} onChange={(e) => setField("id", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Network</label><select value={form.network} onChange={(e) => setField("network", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["Telenor", "Jazz", "Ufone", "Zong"].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">SIM Number</label><input type="text" value={form.simNumber} onChange={(e) => setField("simNumber", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">ICCID</label><input type="text" value={form.iccid} onChange={(e) => setField("iccid", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Device ID</label>
-                <select value={form.deviceId} onChange={(e) => setField("deviceId", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
-                  <option value="">None</option>
-                  {devices.map((d) => <option key={d.id} value={d.id}>{d.id}</option>)}
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">HLR ID *</label>
+                  <input type="text" value={form.id} onChange={(e) => setField("id", e.target.value)} disabled={!!editing} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50 disabled:opacity-60" />
+                </div>
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Network *</label>
+                  <select value={form.network} onChange={(e) => setField("network", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                    {["Telenor", "Jazz", "Ufone", "Zong"].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
               </div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Status</label><select value={form.status} onChange={(e) => setField("status", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["In Stock", "Used", "Issued", "Returned"].map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Receive Date</label><input type="date" value={form.receiveDate} onChange={(e) => setField("receiveDate", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">SIM Number *</label>
+                  <input type="text" value={form.simNumber} onChange={(e) => setField("simNumber", e.target.value)} placeholder="03XX-XXXXXXX" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
+                </div>
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">ICCID</label>
+                  <input type="text" value={form.iccid} onChange={(e) => setField("iccid", e.target.value)} placeholder="89..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Device ID</label>
+                  <select value={form.deviceId} onChange={(e) => setField("deviceId", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                    <option value="">None</option>
+                    {devices.map((d) => <option key={d.id} value={d.id}>{d.id}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Status *</label>
+                  <select value={form.status} onChange={(e) => setField("status", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                    {["In Stock", "Used", "Issued", "Returned"].map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Receive Date</label>
+                <input type="date" value={form.receiveDate} onChange={(e) => setField("receiveDate", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+              </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowForm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center justify-center gap-2"><Save size={14} /> {editing ? "Update" : "Add"}</button>
+              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] inline-flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02]">
+                <Save size={14} /> {editing ? "Update HLR SIM" : "Add HLR SIM"}
+              </button>
             </div>
           </div>
         </div>
