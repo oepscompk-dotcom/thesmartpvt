@@ -1,19 +1,17 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Wallet, Plus, ArrowDown, ArrowUp, X, Receipt, Smartphone, Landmark, Send } from "lucide-react";
+import { Wallet, Plus, ArrowDown, ArrowUp, X, Receipt, Smartphone, Landmark, Send, Copy, CheckCircle2 } from "lucide-react";
 import { useDSOData } from "@/lib/DSODataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
 export default function DSOWalletPage() {
-  const { wallet, auth, staffWalletPayments, paymentRequests, submitPaymentRequest } = useDSOData();
+  const { wallet, auth, staffWalletPayments, paymentRequests, submitPaymentRequest, bankAccounts } = useDSOData();
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState("");
   const [amount, setAmount] = useState(0);
-  const [bank, setBank] = useState("");
-  const [accountTitle, setAccountTitle] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
+  const [selectedAccountId, setSelectedAccountId] = useState("");
   const [transactionId, setTransactionId] = useState("");
   const [note, setNote] = useState("");
 
@@ -32,9 +30,7 @@ export default function DSOWalletPage() {
   const openModal = () => {
     setSelectedPaymentId("");
     setAmount(0);
-    setBank("");
-    setAccountTitle("");
-    setAccountNumber("");
+    setSelectedAccountId("");
     setTransactionId("");
     setNote("");
     setShowModal(true);
@@ -43,6 +39,8 @@ export default function DSOWalletPage() {
   const handleSubmit = async () => {
     const payment = myLoans.find((p) => p.id === selectedPaymentId);
     if (!payment || amount <= 0 || amount > payment.amount) return;
+    const account = bankAccounts.find((a) => a.id === selectedAccountId);
+    if (!account) return;
     setSending(true);
     try {
       await submitPaymentRequest({
@@ -52,9 +50,9 @@ export default function DSOWalletPage() {
         paymentId: payment.id,
         paymentType: payment.type as "Loan" | "Advance",
         amount,
-        bank: bank || undefined,
-        accountTitle: accountTitle || undefined,
-        accountNumber: accountNumber || undefined,
+        bank: account.name,
+        accountTitle: account.accountTitle,
+        accountNumber: account.accountNumber,
         transactionId: transactionId || undefined,
         note: note || undefined,
         paymentDate: new Date().toISOString().split("T")[0],
@@ -76,7 +74,8 @@ export default function DSOWalletPage() {
           <p className="text-gray-500 text-sm mt-1">Your balance, transactions and loan/advance repayments</p>
         </div>
         {myOutstanding > 0 && (
-          <button onClick={openModal} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
+          <button onClick={openModal} disabled={bankAccounts.length === 0}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed">
             <Plus size={16} /> Submit Loan / Advance Payment
           </button>
         )}
@@ -117,7 +116,7 @@ export default function DSOWalletPage() {
                   <div>
                     <p className="text-gray-900 text-sm font-medium">{r.paymentType} Repayment</p>
                     <p className="text-gray-400 text-xs">
-                      {formatDateDDMMYYYY(r.paymentDate)} {r.bank ? ` \u00b7 ${r.bank}` : ""} {r.transactionId ? ` \u00b7 ${r.transactionId}` : ""}
+                      Ref: <span className="font-mono">{r.paymentId}</span> {formatDateDDMMYYYY(r.paymentDate)} {r.bank ? ` \u00b7 ${r.bank}` : ""} {r.transactionId ? ` \u00b7 ${r.transactionId}` : ""}
                     </p>
                   </div>
                 </div>
@@ -255,27 +254,50 @@ export default function DSOWalletPage() {
                 <input type="number" value={amount || ""} onChange={(e) => setAmount(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank</label>
-                <input type="text" value={bank} onChange={(e) => setBank(e.target.value)} placeholder="e.g. Meezan Bank"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                <label className="block text-gray-500 text-xs font-medium mb-2">Pay Into (Company Account)</label>
+                {bankAccounts.length > 0 ? (
+                  <div className="space-y-2 max-h-44 overflow-y-auto">
+                    {bankAccounts.map((a) => (
+                      <button key={a.id} onClick={() => setSelectedAccountId(a.id)}
+                        className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${selectedAccountId === a.id ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                        <div className="flex-shrink-0">
+                          {selectedAccountId === a.id ? <CheckCircle2 size={18} className="text-[#0A2647]" /> : <span className="w-5 h-5 rounded-full border-2 border-gray-300" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-gray-900 text-sm font-medium">{a.name || "Unnamed Account"}</p>
+                          <p className="text-gray-400 text-xs font-mono truncate">{a.accountNumber || a.accountTitle || "\u2014"}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center">
+                    <Landmark size={24} className="text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-400 text-sm">No company accounts configured</p>
+                  </div>
+                )}
+                {selectedAccountId && (
+                  <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-1">
+                    {(() => { const a = bankAccounts.find((x) => x.id === selectedAccountId); return a ? <>
+                      <div className="flex items-center justify-between"><span className="text-emerald-700 text-xs font-medium">Bank / Digital</span><span className="text-gray-900 text-xs">{a.name}</span></div>
+                      <div className="flex items-center justify-between"><span className="text-emerald-700 text-xs font-medium">Account Title</span><span className="text-gray-900 text-xs">{a.accountTitle}</span></div>
+                      <div className="flex items-center justify-between"><span className="text-emerald-700 text-xs font-medium">Account Number</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-900 text-xs font-mono">{a.accountNumber}</span>
+                          <button type="button" onClick={() => { navigator.clipboard.writeText(a.accountNumber); }} className="text-emerald-600 hover:text-emerald-800" title="Copy"><Copy size={12} /></button>
+                        </div>
+                      </div>
+                    </> : null; })()}
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Title</label>
-                <input type="text" value={accountTitle} onChange={(e) => setAccountTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
-              </div>
-              <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number / IBAN</label>
-                <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
-              </div>
-              <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Transaction ID</label>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Transaction ID (Optional)</label>
                 <input type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="e.g. TID-83920"
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Note</label>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Note (Optional)</label>
                 <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Paid via bank transfer"
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
               </div>
@@ -288,7 +310,7 @@ export default function DSOWalletPage() {
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSubmit} disabled={!selectedPaymentId || amount <= 0 || amount > (myLoans.find((p) => p.id === selectedPaymentId)?.amount || 0) || sending}
+              <button onClick={handleSubmit} disabled={!selectedPaymentId || !selectedAccountId || amount <= 0 || amount > (myLoans.find((p) => p.id === selectedPaymentId)?.amount || 0) || sending}
                 className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed">
                 {sending ? "Submitting..." : "Submit for Verification"}
               </button>

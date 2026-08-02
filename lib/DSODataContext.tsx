@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
-import type { StaffWalletPayment, StaffPaymentRequest } from "@/lib/FranchiseDataContext";
+import type { StaffWalletPayment, StaffPaymentRequest, FranchiseBankAccount } from "@/lib/FranchiseDataContext";
 
 export interface DSOAuth {
   dsoId: string; dsoName: string; franchiseId: string; loggedIn: boolean;
@@ -73,6 +73,7 @@ interface DSODataContextType {
   staffWalletPayments: StaffWalletPayment[];
   paymentRequests: StaffPaymentRequest[];
   submitPaymentRequest: (r: Omit<StaffPaymentRequest, "id" | "status" | "receivedAt" | "createdAt" | "franchiseId">) => Promise<void>;
+  bankAccounts: FranchiseBankAccount[];
   targets: DSOTarget; updateTargets: (t: Partial<DSOTarget>) => void;
   device: DSODevice | null;
   sims: DSOSim[];
@@ -103,6 +104,8 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   const [importVerifications, setImportVerifications] = useState<Record<string, { bvs: string; fca: string; ifca: string }>>({});
   const [mounted, setMounted] = useState(false);
   const [settingsData, setSettingsData] = useState({ companyName: "THE SMART ERP", logo: "", franchiseName: "" });
+  const [bankAccounts, setBankAccounts] = useState<FranchiseBankAccount[]>([]);
+
 
   const fid = auth.franchiseId || "";
 
@@ -122,7 +125,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet, loadedPaymentRequests] = await Promise.all([
+      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet, loadedPaymentRequests, loadedSettings] = await Promise.all([
         apiLoad("dsoActivation", fid),
         apiLoad("dsoAttendance", fid),
         apiLoad("leaveRequest", fid),
@@ -136,6 +139,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         apiLoad("franchiseSimVerification").catch(() => []),
         apiLoadById("franchiseData", "staffWallet-" + fid).catch(() => null),
         apiLoadById("franchiseData", "paymentRequests-" + fid).catch(() => null),
+        apiLoadById("franchiseData", "settings-" + fid).catch(() => null),
       ]);
       setActivations(loadedActivations || []);
       setAttendance(loadedAttendance || []);
@@ -152,6 +156,19 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         try {
           const parsed = JSON.parse(loadedPaymentRequests.data);
           setPaymentRequests(Array.isArray(parsed) ? parsed : []);
+        } catch {}
+      }
+      if (loadedSettings?.data) {
+        try {
+          const parsed = JSON.parse(loadedSettings.data);
+          const list = Array.isArray(parsed?.bankAccounts) ? parsed.bankAccounts : [];
+          const fallback = [];
+          if (parsed?.bankName || parsed?.bankAccountTitle || parsed?.bankAccountNumber) {
+            fallback.push({
+              id: "ACC-1", name: parsed.bankName || "", accountTitle: parsed.bankAccountTitle || "", accountNumber: parsed.bankAccountNumber || "",
+            });
+          }
+          setBankAccounts(list.length > 0 ? list : fallback);
         } catch {}
       }
       setTargets((loadedTargets.length > 0 ? loadedTargets[0] : defaultTargets) as DSOTarget);
@@ -288,6 +305,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       wallet, addWalletEntry, targets, updateTargets,
       staffWalletPayments,
       paymentRequests, submitPaymentRequest,
+      bankAccounts,
       device, sims, importVerifications, notifications, markNotificationRead, settings,
     }}>
       {children}
@@ -300,3 +318,5 @@ export function useDSOData() {
   if (!ctx) throw new Error("useDSOData must be used within DSODataProvider");
   return ctx;
 }
+
+
