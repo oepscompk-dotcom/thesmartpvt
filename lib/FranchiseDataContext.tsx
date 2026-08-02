@@ -230,6 +230,8 @@ interface FranchiseDataContextType {
   issueRecords: SIMIssueRecord[];
   issueSIMs: (record: Omit<SIMIssueRecord, "id">) => Promise<void>;
   returnSIMs: (issueId: string) => Promise<void>;
+  returnSelectedSIMs: (issueId: string, simIds: string[]) => Promise<void>;
+  forwardSIMs: (issueId: string, simIds: string[], toPerson: { id: string; name: string; role: string }, retailerId: string) => Promise<void>;
   deleteIssueRecords: (ids: string[]) => Promise<void>;
 }
 
@@ -613,6 +615,79 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     setSIMs(returnedSIMs);
   };
 
+  const returnSelectedSIMs = async (issueId: string, simIds: string[]) => {
+    const record = issueRecords.find((r) => r.id === issueId);
+    if (!record || simIds.length === 0) return;
+    const today = new Date().toISOString().split("T")[0];
+    const remaining = record.simIds.filter((id) => !simIds.includes(id));
+    const freshSims = await apiLoad("sim", record.franchiseId);
+    const affected = (Array.isArray(freshSims) ? freshSims : []).filter((s: any) => simIds.includes(s.id));
+    await Promise.all(affected.map((s: any) =>
+      apiUpdate("sim", s.id, {
+        status: "In Stock",
+        issuedToId: "",
+        issuedToName: "",
+        issuedToRole: "",
+        statusDate: today,
+        statusChangedFrom: s.status,
+      })
+    ));
+    setSIMs((prev) => prev.map((s) => simIds.includes(s.id)
+      ? { ...s, status: "In Stock", issuedToId: "", issuedToName: "", issuedToRole: "", statusDate: today, statusChangedFrom: s.status }
+      : s));
+    if (remaining.length === 0) {
+      await apiUpdate("simIssueRecord", issueId, { status: "Returned", returnDate: today, simIds: remaining });
+      setIssueRecords((prev) => prev.map((r) => r.id === issueId ? { ...r, status: "Returned", returnDate: today, simIds: remaining } : r));
+    } else {
+      await apiUpdate("simIssueRecord", issueId, { simIds: remaining });
+      setIssueRecords((prev) => prev.map((r) => r.id === issueId ? { ...r, simIds: remaining } : r));
+    }
+  };
+
+  const forwardSIMs = async (issueId: string, simIds: string[], toPerson: { id: string; name: string; role: string }, retailerId: string) => {
+    const record = issueRecords.find((r) => r.id === issueId);
+    if (!record || simIds.length === 0) return;
+    const today = new Date().toISOString().split("T")[0];
+    const remaining = record.simIds.filter((id) => !simIds.includes(id));
+    const freshSims = await apiLoad("sim", record.franchiseId);
+    const affected = (Array.isArray(freshSims) ? freshSims : []).filter((s: any) => simIds.includes(s.id));
+    await Promise.all(affected.map((s: any) =>
+      apiUpdate("sim", s.id, {
+        status: "Issued",
+        issuedToId: toPerson.id,
+        issuedToName: toPerson.name,
+        issuedToRole: toPerson.role,
+        statusDate: today,
+        statusChangedFrom: s.status,
+      })
+    ));
+    setSIMs((prev) => prev.map((s) => simIds.includes(s.id)
+      ? { ...s, status: "Issued", issuedToId: toPerson.id, issuedToName: toPerson.name, issuedToRole: toPerson.role, statusDate: today, statusChangedFrom: s.status }
+      : s));
+    if (remaining.length === 0) {
+      await apiUpdate("simIssueRecord", issueId, { simIds: remaining });
+      setIssueRecords((prev) => prev.map((r) => r.id === issueId ? { ...r, simIds: remaining } : r));
+    } else {
+      await apiUpdate("simIssueRecord", issueId, { simIds: remaining });
+      setIssueRecords((prev) => prev.map((r) => r.id === issueId ? { ...r, simIds: remaining } : r));
+    }
+    const newRecord: SIMIssueRecord = {
+      id: `ISU-${Date.now()}`,
+      simIds,
+      issuedTo: toPerson.name,
+      issuedToRole: toPerson.role,
+      issuedById: toPerson.id,
+      retailerId,
+      franchiseId: record.franchiseId,
+      issueDate: today,
+      returnDate: "",
+      status: "Issued",
+      notes: `Forwarded from ${record.issuedTo} (${record.id})`,
+    };
+    await apiSave("simIssueRecord", newRecord);
+    setIssueRecords((p) => [newRecord, ...p]);
+  };
+
   const deleteIssueRecords = async (ids: string[]) => {
     const today = new Date().toISOString().split("T")[0];
     const allSimIdsToRestore: string[] = [];
@@ -663,7 +738,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       addTarget, updateTarget, getTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
       addExpense, deleteExpense, updateExpense, addAccountEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
-      issueRecords, issueSIMs, returnSIMs, deleteIssueRecords,
+      issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,
     }}>
       {children}
     </FranchiseDataContext.Provider>

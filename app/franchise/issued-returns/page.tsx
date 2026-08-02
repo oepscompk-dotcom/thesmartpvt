@@ -6,15 +6,22 @@ import { useFranchiseData, SIMIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
 export default function IssuedReturnsPage() {
-  const { sims, dso, dsms, issueRecords, issueSIMs, returnSIMs, deleteIssueRecords, devices } = useFranchiseData();
+  const { sims, dso, dsms, issueRecords, issueSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords, devices } = useFranchiseData();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState<SIMIssueRecord | null>(null);
-  const [showReturnConfirm, setShowReturnConfirm] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Return / Forward action modal states
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionRecord, setActionRecord] = useState<SIMIssueRecord | null>(null);
+  const [actionMode, setActionMode] = useState<"return" | "forward">("return");
+  const [actionSimIds, setActionSimIds] = useState<string[]>([]);
+  const [forwardType, setForwardType] = useState<"DSO" | "DSM">("DSO");
+  const [forwardPersonId, setForwardPersonId] = useState("");
 
   // Issue modal states
   const [step, setStep] = useState(1);
@@ -154,6 +161,68 @@ export default function IssuedReturnsPage() {
     } catch (e) {
       console.error("Failed to issue SIMs:", e);
       alert("Failed to issue SIMs. Please try again.");
+    }
+  };
+
+  const computeForwardRetailerId = (person: { id: string; name: string; mobile: string }) => {
+    const base = getMobileDigits(person.mobile);
+    const existing = issueRecords.filter((r) => r.issuedById === person.id && r.status === "Issued");
+    if (existing.length === 0) return base;
+    const maxSuffix = existing.reduce((max, r) => {
+      const parts = r.retailerId.split("-");
+      if (parts.length > 1) {
+        const num = parseInt(parts[parts.length - 1], 10);
+        return num > max ? num : max;
+      }
+      return max;
+    }, 0);
+    return `${base}-${maxSuffix + 1}`;
+  };
+
+  const openActionModal = (r: SIMIssueRecord, mode: "return" | "forward") => {
+    setActionRecord(r);
+    setActionMode(mode);
+    setActionSimIds([...r.simIds]);
+    setForwardType("DSO");
+    setForwardPersonId("");
+    setShowActionModal(true);
+  };
+
+  const toggleActionSim = (id: string) => {
+    setActionSimIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
+  const toggleAllActionSims = () => {
+    setActionSimIds((prev) => (actionRecord && prev.length === actionRecord.simIds.length) ? [] : (actionRecord ? [...actionRecord.simIds] : prev));
+  };
+
+  const handleReturnConfirm = async () => {
+    if (!actionRecord || actionSimIds.length === 0) return;
+    try {
+      await returnSelectedSIMs(actionRecord.id, actionSimIds);
+      setShowActionModal(false);
+      setActionRecord(null);
+      setActionSimIds([]);
+      setForwardPersonId("");
+    } catch (e) {
+      console.error("Failed to return SIMs:", e);
+      alert("Failed to return SIMs. Please try again.");
+    }
+  };
+
+  const handleForwardConfirm = async () => {
+    if (!actionRecord || actionSimIds.length === 0 || !forwardPersonId) return;
+    const person = (forwardType === "DSO" ? dso : dsms).find((p) => p.id === forwardPersonId);
+    if (!person) return;
+    try {
+      await forwardSIMs(actionRecord.id, actionSimIds, { id: person.id, name: person.name, role: forwardType }, computeForwardRetailerId(person));
+      setShowActionModal(false);
+      setActionRecord(null);
+      setActionSimIds([]);
+      setForwardPersonId("");
+    } catch (e) {
+      console.error("Failed to forward SIMs:", e);
+      alert("Failed to forward SIMs. Please try again.");
     }
   };
 
@@ -304,7 +373,7 @@ export default function IssuedReturnsPage() {
                     <div className="flex items-center justify-end gap-1">
                       <button onClick={() => setShowViewModal(r)} className="p-2 text-gray-400 hover:text-[#0A2647] hover:bg-[#0A2647]/5 rounded-lg transition-all" title="View Details"><Eye size={14} /></button>
                       {r.status === "Issued" && (
-                        <button onClick={() => setShowReturnConfirm(r.id)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Return SIMs"><RotateCcw size={14} /></button>
+                        <button onClick={() => openActionModal(r, "return")} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Return / Forward SIMs"><RotateCcw size={14} /></button>
                       )}
                     </div>
                   </td>
@@ -627,16 +696,133 @@ export default function IssuedReturnsPage() {
         </div>
       )}
 
-      {/* Return Confirmation Modal */}
-      {showReturnConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowReturnConfirm(null)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mx-auto mb-4"><RotateCcw size={20} className="text-green-600" /></div>
-            <h3 className="text-gray-900 font-bold mb-2">Return SIMs?</h3>
-            <p className="text-gray-500 text-sm mb-6">All SIMs in this issue will be marked as returned and set back to stock.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowReturnConfirm(null)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={() => { returnSIMs(showReturnConfirm); setShowReturnConfirm(null); }} className="flex-1 py-2.5 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 inline-flex items-center justify-center gap-2"><RotateCcw size={14} /> Return</button>
+      {/* Return / Forward Action Modal */}
+      {showActionModal && actionRecord && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowActionModal(false)}>
+          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${actionMode === "forward" ? "bg-blue-50" : "bg-green-50"}`}>
+                  {actionMode === "forward" ? <ArrowRight size={18} className="text-blue-600" /> : <RotateCcw size={18} className="text-green-600" />}
+                </div>
+                <div>
+                  <h3 className="text-gray-900 font-bold">{actionMode === "forward" ? "Forward SIMs" : "Return SIMs"}</h3>
+                  <p className="text-gray-400 text-xs mt-0.5">Issued to {actionRecord.issuedTo} ({actionRecord.issuedToRole}) &middot; {actionRecord.id}</p>
+                </div>
+              </div>
+              <button onClick={() => setShowActionModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {actionMode === "forward" ? (
+                <>
+                  <div>
+                    <label className="block text-gray-500 text-xs font-medium mb-2">Forward To</label>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      {(["DSO", "DSM"] as const).map((t) => (
+                        <button key={t} onClick={() => { setForwardType(t); setForwardPersonId(""); }}
+                          className={`p-3 rounded-xl border-2 text-left transition-all ${forwardType === t ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${forwardType === t ? "bg-[#0A2647] text-white" : "bg-gray-100 text-gray-500"}`}>
+                              {t === "DSO" ? <Smartphone size={14} /> : <User size={14} />}
+                            </div>
+                            <div>
+                              <p className="text-gray-900 text-xs font-bold">{t}</p>
+                              <p className="text-gray-400 text-[10px]">{t === "DSO" ? "Sales Officer" : "Sales Manager"}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {(forwardType === "DSO" ? dso : dsms).filter((p) => p.status === "Active").map((p) => (
+                        <button key={p.id} onClick={() => setForwardPersonId(p.id)}
+                          className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${forwardPersonId === p.id ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold flex-shrink-0">
+                            {p.name.split(" ").map((n) => n[0]).join("")}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-gray-900 text-sm font-medium truncate">{p.name}</p>
+                            <p className="text-gray-400 text-xs font-mono">{p.id}</p>
+                          </div>
+                          {forwardPersonId === p.id && <Check size={16} className="text-[#0A2647] flex-shrink-0" />}
+                        </button>
+                      ))}
+                      {(forwardType === "DSO" ? dso : dsms).filter((p) => p.status === "Active").length === 0 && (
+                        <p className="text-gray-400 text-sm text-center py-4">No active {forwardType} found</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                    <div className="flex items-start gap-2">
+                      <Smartphone size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-blue-800 text-sm font-medium">Forwarding {actionSimIds.length} SIM(s)</p>
+                        <p className="text-blue-600 text-xs mt-1">The selected SIMs will be transferred to the person above with a new retailer ID. A new issue record will be created.</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-500 text-xs font-medium">Select SIMs to return</p>
+                    <button onClick={toggleAllActionSims} className="text-xs font-medium text-[#0A2647] hover:underline">
+                      {actionSimIds.length === actionRecord.simIds.length ? "Deselect All" : "Select All"}
+                    </button>
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {actionRecord.simIds.map((simId) => {
+                      const sim = sims.find((s) => s.id === simId);
+                      return (
+                        <button key={simId} onClick={() => toggleActionSim(simId)}
+                          className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${actionSimIds.includes(simId) ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                          <div className="flex-shrink-0">
+                            {actionSimIds.includes(simId) ? <CheckSquare size={18} className="text-[#0A2647]" /> : <Square size={18} className="text-gray-300" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-gray-900 text-sm font-mono font-medium truncate">{sim?.iccid || simId}</p>
+                              {sim?.network && (
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
+                              )}
+                            </div>
+                            <p className="text-gray-400 text-xs font-mono mt-0.5 truncate">{sim?.simNumber || ""}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-gray-400 text-xs">{actionSimIds.length} of {actionRecord.simIds.length} SIM(s) selected</p>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
+              {actionMode === "return" ? (
+                <>
+                  <button onClick={() => setShowActionModal(false)} className="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
+                  <div className="flex-1" />
+                  <button onClick={() => { setActionMode("forward"); setForwardPersonId(""); }} disabled={actionSimIds.length === 0}
+                    className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <ArrowRight size={14} /> Forward Selected ({actionSimIds.length})
+                  </button>
+                  <button onClick={handleReturnConfirm} disabled={actionSimIds.length === 0}
+                    className="px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <RotateCcw size={14} /> {actionSimIds.length === actionRecord.simIds.length ? "Return All" : "Return Selected"} ({actionSimIds.length})
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setActionMode("return")} className="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Back</button>
+                  <div className="flex-1" />
+                  <button onClick={handleForwardConfirm} disabled={!forwardPersonId || actionSimIds.length === 0}
+                    className="px-4 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <Check size={14} /> Confirm Forward ({actionSimIds.length})
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
