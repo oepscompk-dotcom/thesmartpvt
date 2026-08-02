@@ -13,7 +13,7 @@ import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 type Tab = "generate" | "list";
 
 export default function PayrollPage() {
-  const { auth, payroll, dsms, dso, addPayroll, updatePayroll, deletePayroll, addExpense } = useFranchiseData();
+  const { auth, payroll, dsms, dso, addPayroll, updatePayroll, deletePayroll, addExpense, settleStaffWalletPayments } = useFranchiseData();
   const { activations, importVerifications } = useDSOData();
 
   const [tab, setTab] = useState<Tab>("generate");
@@ -219,13 +219,13 @@ export default function PayrollPage() {
     setTab("list");
   };
 
-  const handleMarkPaid = (ids: string[]) => {
+  const handleMarkPaid = async (ids: string[]) => {
     const today = new Date().toISOString().split("T")[0];
-    ids.forEach((id) => {
+    for (const id of ids) {
       const rec = payroll.find((p) => p.id === id);
       if (rec && !rec.paid) {
-        updatePayroll(id, { ...rec, paid: true, status: "Paid", paidDate: today });
-        addExpense({
+        await updatePayroll(id, { ...rec, paid: true, status: "Paid", paidDate: today });
+        await addExpense({
           id: `EXP-PAY-${Date.now()}-${rec.employeeId}`,
           type: "Salary",
           category: "Payroll",
@@ -235,8 +235,9 @@ export default function PayrollPage() {
           note: `Payroll ID: ${rec.id}`,
           franchiseId: auth.franchiseId,
         });
+        await settleStaffWalletPayments(rec.employeeId, rec.role, rec.month);
       }
-    });
+    }
     setSelectedPayroll([]);
   };
 

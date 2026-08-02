@@ -3,16 +3,21 @@
 import { useState } from "react";
 import { useDSMData } from "@/lib/DSMDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
-import { Wallet, ArrowUpRight, ArrowDownLeft, Search, Filter, CreditCard } from "lucide-react";
+import { Wallet, ArrowUpRight, ArrowDownLeft, Search, Filter, CreditCard, Receipt, Smartphone, Landmark } from "lucide-react";
 
 export default function WalletPage() {
-  const { wallet } = useDSMData();
+  const { wallet, staffWalletPayments, auth } = useDSMData();
   const [filter, setFilter] = useState<"all" | "Credit" | "Debit">("all");
   const [search, setSearch] = useState("");
 
   const totalCredits = wallet.filter((t) => t.type === "Credit").reduce((sum, t) => sum + t.amount, 0);
   const totalDebits = wallet.filter((t) => t.type === "Debit").reduce((sum, t) => sum + t.amount, 0);
   const netBalance = totalCredits - totalDebits;
+
+  const myPayments = staffWalletPayments.filter((p) => p.role === "DSM" && p.staffId === auth.dsmId);
+  const myLoans = myPayments.filter((p) => p.type !== "Package");
+  const myPackages = myPayments.filter((p) => p.type === "Package");
+  const myOutstanding = myLoans.filter((p) => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
 
   const filtered = wallet
     .filter((t) => filter === "all" || t.type === filter)
@@ -52,6 +57,56 @@ export default function WalletPage() {
             </div>
           </div>
         </div>
+
+        {/* Loan / Advance & Package Earnings */}
+        {(myLoans.length > 0 || myPackages.length > 0) && (
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-6">
+            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
+              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Receipt size={16} className="text-[#0057FF]" /> Loan / Advance &amp; Package Earnings</h3>
+              {myOutstanding > 0 && (
+                <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold">Outstanding: PKR {myOutstanding.toLocaleString()}</span>
+              )}
+            </div>
+            <div className="divide-y divide-gray-50">
+              {[...myLoans].reverse().map((p) => (
+                <div key={p.id} className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                      {p.type === "Advance" ? <Wallet size={18} className="text-purple-600" /> : <Landmark size={18} className="text-purple-600" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{p.type} Payment</p>
+                      <p className="text-xs text-gray-400">{formatDateDDMMYYYY(p.paymentDate)}{p.note ? ` \u00b7 ${p.note}` : ""}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-green-600">+PKR {p.amount.toLocaleString()}</p>
+                    <span className={`inline-block mt-0.5 text-[10px] px-2 py-0.5 rounded-full font-medium ${p.status === "Deducted" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                      {p.status === "Deducted" ? "Deducted from Salary" : "Outstanding"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {[...myPackages].reverse().map((p) => (
+                <div key={p.id} className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Smartphone size={18} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">SIM Package</p>
+                      <p className="text-xs text-gray-400 font-mono">{p.iccid || p.simNumber || p.simId || "\u2014"}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-green-600">+PKR {p.amount.toLocaleString()}</p>
+                    <p className="text-[10px] text-gray-400">{formatDateDDMMYYYY(p.paymentDate)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">

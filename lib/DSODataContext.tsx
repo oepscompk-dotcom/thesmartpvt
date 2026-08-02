@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
+import type { StaffWalletPayment } from "@/lib/FranchiseDataContext";
 
 export interface DSOAuth {
   dsoId: string; dsoName: string; franchiseId: string; loggedIn: boolean;
@@ -69,6 +70,7 @@ interface DSODataContextType {
   leaveRequests: LeaveRequest[]; addLeaveRequest: (r: LeaveRequest) => void;
   warnings: AttendanceWarning[];
   wallet: DSOWallet[]; addWalletEntry: (w: DSOWallet) => void;
+  staffWalletPayments: StaffWalletPayment[];
   targets: DSOTarget; updateTargets: (t: Partial<DSOTarget>) => void;
   device: DSODevice | null;
   sims: DSOSim[];
@@ -88,6 +90,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   const [activations, setActivations] = useState<Activation[]>([]);
   const [attendance, setAttendance] = useState<DSOAttendance[]>([]);
   const [wallet, setWallet] = useState<DSOWallet[]>([]);
+  const [staffWalletPayments, setStaffWalletPayments] = useState<StaffWalletPayment[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [warnings, setWarnings] = useState<AttendanceWarning[]>([]);
   const [targets, setTargets] = useState<DSOTarget>(defaultTargets);
@@ -116,7 +119,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord, loadedVerifications] = await Promise.all([
+      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet] = await Promise.all([
         apiLoad("dsoActivation", fid),
         apiLoad("dsoAttendance", fid),
         apiLoad("leaveRequest", fid),
@@ -128,12 +131,19 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         apiLoadById("adminSettings", "admin").catch(() => null),
         apiLoadById("franchise", fid).catch(() => null),
         apiLoad("franchiseSimVerification").catch(() => []),
+        apiLoadById("franchiseData", "staffWallet-" + fid).catch(() => null),
       ]);
       setActivations(loadedActivations || []);
       setAttendance(loadedAttendance || []);
       setLeaveRequests(loadedLeaves || []);
       setWarnings(loadedWarnings || []);
       setWallet(loadedWallet || []);
+      if (loadedStaffWallet?.data) {
+        try {
+          const parsed = JSON.parse(loadedStaffWallet.data);
+          setStaffWalletPayments(Array.isArray(parsed) ? parsed : []);
+        } catch {}
+      }
       setTargets((loadedTargets.length > 0 ? loadedTargets[0] : defaultTargets) as DSOTarget);
       setNotifications(loadedNotifications || []);
       setAllFranchiseSims(loadedSims || []);
@@ -252,6 +262,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       auth, hydrated: mounted, dsoLogin, dsoLogout, activations, addActivation, updateActivation, deleteActivation,
       attendance, addAttendance, updateAttendance, leaveRequests, addLeaveRequest, warnings,
       wallet, addWalletEntry, targets, updateTargets,
+      staffWalletPayments,
       device, sims, importVerifications, notifications, markNotificationRead, settings,
     }}>
       {children}

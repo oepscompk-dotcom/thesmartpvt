@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
+import type { StaffWalletPayment } from "@/lib/FranchiseDataContext";
 
 export interface DSMAuth {
   dsmId: string; dsmName: string; franchiseId: string; loggedIn: boolean;
@@ -93,6 +94,7 @@ interface DSMDataContextType {
   weeklyReports: DSMWeeklyReport[];
   targets: DSMTarget[]; updateTarget: (id: string, t: Partial<DSMTarget>) => Promise<void>; addTarget: (t: DSMTarget) => Promise<void>;
   wallet: DSMWallet[]; addWalletEntry: (w: DSMWallet) => Promise<void>;
+  staffWalletPayments: StaffWalletPayment[];
   notifications: DSMNotification[]; markNotificationRead: (id: string) => Promise<void>;
   reportSubmissions: DSMReportSubmission[]; submitReport: (r: DSMReportSubmission) => Promise<void>;
   teamSize: number; totalSales: number; totalRevenue: number;
@@ -109,6 +111,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   const [weeklyReports, setWeeklyReports] = useState<DSMWeeklyReport[]>([]);
   const [targets, setTargets] = useState<DSMTarget[]>([]);
   const [wallet, setWallet] = useState<DSMWallet[]>([]);
+  const [staffWalletPayments, setStaffWalletPayments] = useState<StaffWalletPayment[]>([]);
   const [notifications, setNotifications] = useState<DSMNotification[]>([]);
   const [reportSubmissions, setReportSubmissions] = useState<DSMReportSubmission[]>([]);
   const [attendance, setAttendance] = useState<DSODAttendance[]>([]);
@@ -136,7 +139,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
     if (!fId || !mounted) return;
     const loadAll = async () => {
       try {
-        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes, adminSettings, franchiseRecord, loadedVerifications] = await Promise.all([
+        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet] = await Promise.all([
           apiLoad("dsmActivation", fId),
           apiLoad("dsmTargetEntry", fId),
           apiLoad("dsmWalletEntry", fId),
@@ -148,10 +151,17 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
           apiLoadById("adminSettings", "admin").catch(() => null),
           apiLoadById("franchise", fId).catch(() => null),
           apiLoad("franchiseSimVerification").catch(() => []),
+          apiLoadById("franchiseData", "staffWallet-" + fId).catch(() => null),
         ]);
         setActivations(actRes);
         setTargets(tgtRes);
         setWallet(wltRes);
+        if (loadedStaffWallet?.data) {
+          try {
+            const parsed = JSON.parse(loadedStaffWallet.data);
+            setStaffWalletPayments(Array.isArray(parsed) ? parsed : []);
+          } catch {}
+        }
         setNotifications(notifRes);
         setReportSubmissions(reportRes);
         setAllFranchiseSims(simRes);
@@ -297,6 +307,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
       leaveRequests, reviewLeaveRequest, warnings,
       dailyReports, weeklyReports, targets, updateTarget, addTarget,
       wallet, addWalletEntry, notifications, markNotificationRead,
+      staffWalletPayments,
       reportSubmissions, submitReport, teamSize, totalSales, totalRevenue, settings,
     }}>
       {children}
