@@ -611,11 +611,11 @@ export default function IssuedReturnsPage() {
                       <div key={simId} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
                         <Package size={14} className="text-gray-400 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-gray-900 text-xs font-medium">{sim?.simNumber || simId}</p>
-                          <p className="text-gray-400 text-[10px] font-mono">{simId}</p>
+                          <p className="text-gray-900 text-xs font-mono font-medium truncate">{sim?.iccid || simId}</p>
+                          <p className="text-gray-400 text-[10px] font-mono truncate">{sim?.simNumber || ""} <span className="text-gray-300">|</span> {simId}</p>
                         </div>
                         {sim && (
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
                         )}
                       </div>
                     );
