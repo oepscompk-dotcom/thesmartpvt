@@ -223,10 +223,15 @@ export interface FranchiseNotification {
   franchiseId: string; date?: string; recipient?: string;
 }
 
+export interface FranchiseBankAccount {
+  id: string; name: string; accountTitle: string; accountNumber: string;
+}
+
 export interface FranchiseSettings {
   franchiseName: string; ownerName: string; email: string; phone: string;
   address: string; logo: string;
   bankName?: string; bankAccountTitle?: string; bankAccountNumber?: string;
+  bankAccounts?: FranchiseBankAccount[];
 }
 
 export interface FranchiseAuth {

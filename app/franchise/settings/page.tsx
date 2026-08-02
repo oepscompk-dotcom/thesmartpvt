@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { Settings as SettingsIcon, Save, Building2, Upload, Clock, Timer, AlertTriangle, Award, Landmark, Wallet, Smartphone } from "lucide-react";
+import { Settings as SettingsIcon, Save, Building2, Upload, Clock, Timer, AlertTriangle, Award, Landmark, Wallet, Smartphone, Plus, Trash2 } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { apiLoadById, apiSave } from "@/lib/api";
 
@@ -45,6 +45,28 @@ export default function FranchiseSettingsPage() {
       await apiSave("franchiseData", { id: "attendance-settings-" + auth.franchiseId, data: JSON.stringify(attSettings) });
     } catch {}
     setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+
+  const bankAccounts = (form.bankAccounts && form.bankAccounts.length > 0)
+    ? form.bankAccounts
+    : (form.bankName || form.bankAccountTitle || form.bankAccountNumber
+        ? [{ id: "ACC-1", name: form.bankName || "", accountTitle: form.bankAccountTitle || "", accountNumber: form.bankAccountNumber || "" }]
+        : []);
+
+  const setBankAccounts = (list: { id: string; name: string; accountTitle: string; accountNumber: string }[]) => {
+    setForm((p) => ({ ...p, bankAccounts: list }));
+  };
+
+  const addBankAccount = () => {
+    setBankAccounts([...bankAccounts, { id: `ACC-${Date.now()}`, name: "", accountTitle: "", accountNumber: "" }]);
+  };
+
+  const updateBankAccount = (id: string, field: "name" | "accountTitle" | "accountNumber", value: string) => {
+    setBankAccounts(bankAccounts.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
+  };
+
+  const removeBankAccount = (id: string) => {
+    setBankAccounts(bankAccounts.filter((a) => a.id !== id));
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,41 +158,62 @@ export default function FranchiseSettingsPage() {
 
       {tab === "bank" && (
         <div className="bg-white rounded-2xl p-6 border border-gray-200">
-          <div className="flex items-center gap-3 mb-1"><div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><Landmark size={18} /></div><h3 className="text-gray-900 font-bold">Company Bank / Digital Account</h3></div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-1">
+            <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><Landmark size={18} /></div><div><h3 className="text-gray-900 font-bold">Company Bank / Digital Account</h3><p className="text-gray-400 text-xs mt-0.5">{bankAccounts.length} account(s) configured</p></div></div>
+            <button onClick={addBankAccount} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all"><Plus size={14} /> Add Account</button>
+          </div>
           <p className="text-gray-500 text-xs mb-4">Company payment account details shared with DSO/DSM for loan/advance repayments and settlements.</p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank / Digital Name</label>
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
-                <Wallet size={16} className="text-gray-400" />
-                <select value={form.bankName || ""} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
-                  className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer pl-1">
-                  <option value="">Select Bank / Digital</option>
-                  {PAKISTAN_BANKS.map((b) => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
-                </select>
+          <div className="space-y-4">
+            {bankAccounts.map((acc, idx) => (
+              <div key={acc.id} className="border border-gray-200 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-gray-900 text-sm font-bold flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-black">{idx + 1}</span> Account {idx + 1}</span>
+                  {bankAccounts.length > 1 && (
+                    <button onClick={() => removeBankAccount(acc.id)} className="text-red-400 hover:text-red-600 p-1" title="Remove account"><Trash2 size={16} /></button>
+                  )}
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank / Digital Name</label>
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                      <Wallet size={16} className="text-gray-400" />
+                      <select value={acc.name} onChange={(e) => updateBankAccount(acc.id, "name", e.target.value)}
+                        className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer pl-1">
+                        <option value="">Select Bank / Digital</option>
+                        {PAKISTAN_BANKS.map((b) => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Title</label>
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                      <Building2 size={16} className="text-gray-400" />
+                      <input type="text" value={acc.accountTitle} onChange={(e) => updateBankAccount(acc.id, "accountTitle", e.target.value)} placeholder="e.g. THE SMART PVT LTD"
+                        className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number / IBAN</label>
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                      <Smartphone size={16} className="text-gray-400" />
+                      <input type="text" value={acc.accountNumber} onChange={(e) => updateBankAccount(acc.id, "accountNumber", e.target.value)} placeholder="e.g. 1234-5678900-01 or 0300-1234567"
+                        className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Title</label>
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
-                <Building2 size={16} className="text-gray-400" />
-                <input type="text" value={form.bankAccountTitle || ""} onChange={(e) => setForm((p) => ({ ...p, bankAccountTitle: e.target.value }))} placeholder="e.g. THE SMART PVT LTD"
-                  className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+            ))}
+            {bankAccounts.length === 0 && (
+              <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center">
+                <Landmark size={28} className="text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-400 text-sm">No accounts yet. Click <b>Add Account</b> to configure company bank/digital payment accounts.</p>
               </div>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number / IBAN</label>
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
-                <Smartphone size={16} className="text-gray-400" />
-                <input type="text" value={form.bankAccountNumber || ""} onChange={(e) => setForm((p) => ({ ...p, bankAccountNumber: e.target.value }))} placeholder="e.g. 1234-5678900-01 or 0300-1234567"
-                  className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
-              </div>
-            </div>
+            )}
           </div>
           <div className="mt-4 bg-emerald-50 rounded-xl p-3 border border-emerald-200">
-            <p className="text-emerald-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> This account detail will be shown to DSO/DSM staff for loan/advance repayment submissions.</p>
+            <p className="text-emerald-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> These account details will be shown to DSO/DSM staff for loan/advance repayment submissions.</p>
           </div>
         </div>
       )}
