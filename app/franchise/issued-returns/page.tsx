@@ -467,7 +467,7 @@ export default function IssuedReturnsPage() {
                     )}
                   </div>
                   {simSearch && (
-                    <p className="text-gray-400 text-xs">{simSearchResults.length} SIM(s) match "{simSearch}"</p>
+                    <p className="text-gray-400 text-xs">{simSearchResults.length} SIM(s) match &quot;{simSearch}&quot;</p>
                   )}
                   {selectedSimIds.length > 0 && (
                     <p className="text-[#0A2647] text-xs font-medium">{selectedSimIds.length} SIM(s) selected</p>
