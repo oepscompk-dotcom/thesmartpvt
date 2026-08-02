@@ -421,7 +421,7 @@ export default function WalletPage() {
                       <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 flex-1">
                         <Landmark size={16} className="text-gray-400" />
                         <select value={bank} onChange={(e) => setBank(e.target.value)}
-                          className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer">
+                          className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer pl-1">
                           <option value="">Select Bank</option>
                           {PAKISTAN_BANKS.map((b) => (
                             <option key={b} value={b}>{b}</option>
