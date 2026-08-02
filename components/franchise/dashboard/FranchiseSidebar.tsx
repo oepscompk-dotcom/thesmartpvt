@@ -36,6 +36,7 @@ const navSections = [
     { label: "Payroll", href: "/franchise/payroll", icon: CreditCard },
     { label: "Salary Detail", href: "/franchise/salary-detail", icon: DollarSign },
     { label: "Accounts", href: "/franchise/accounts", icon: BarChart3 },
+    { label: "Accounting", href: "/franchise/accounting", icon: Receipt },
     { label: "Expenses", href: "/franchise/expenses", icon: Receipt },
   ]},
   { title: "System", items: [

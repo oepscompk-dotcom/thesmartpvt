@@ -216,7 +216,18 @@ export interface Expense {
 export interface AccountEntry {
   id: string; type: "income" | "expense"; category: string; amount: number;
   date: string; description: string; franchiseId: string;
+  staffId?: string; staffName?: string; referenceId?: string;
 }
+
+export interface SIMRateCard {
+  id: string;
+  supplier: string;
+  simType: "New" | "HLR-MNP" | "HLR-Replace" | "HLR-BYN";
+  customerRate: number;
+  isFreeForCustomer: boolean;
+  franchiseId: string;
+}
+
 
 export interface FranchiseNotification {
   id: string; title?: string; message: string; type: string; time: string; read: boolean;
@@ -232,6 +243,7 @@ export interface FranchiseSettings {
   address: string; logo: string;
   bankName?: string; bankAccountTitle?: string; bankAccountNumber?: string;
   bankAccounts?: FranchiseBankAccount[];
+  simRateCards?: SIMRateCard[];
 }
 
 export interface FranchiseAuth {
@@ -274,6 +286,11 @@ interface FranchiseDataContextType {
   addPayroll: (p: PayrollRecord) => Promise<void>; updatePayroll: (id: string, p: PayrollRecord) => Promise<void>; deletePayroll: (id: string) => Promise<void>;
   addExpense: (e: Expense) => Promise<void>; deleteExpense: (id: string) => Promise<void>; updateExpense: (id: string, e: Expense) => Promise<void>;
   addAccountEntry: (a: AccountEntry) => Promise<void>;   addAccount: (a: Account) => Promise<void>; updateAccount: (id: string, a: Account) => Promise<void>; deleteAccount: (id: string) => Promise<void>;
+  addAccountingEntry: (a: Omit<AccountEntry, "id" | "franchiseId">) => Promise<void>;
+  deleteAccountingEntry: (id: string) => Promise<void>;
+  simRateCards: SIMRateCard[];
+  upsertSimRateCard: (card: Omit<SIMRateCard, "franchiseId">) => Promise<void>;
+  deleteSimRateCard: (id: string) => Promise<void>;
   addNotification: (n: FranchiseNotification) => Promise<void>; markNotificationRead: (id: string) => Promise<void>; deleteNotification: (id: string) => Promise<void>;
   updateSettings: (s: FranchiseSettings) => Promise<void>;
   issueRecords: SIMIssueRecord[];
@@ -302,6 +319,16 @@ const emptySettings: FranchiseSettings = {
   phone: "", address: "", logo: "",
 };
 
+const defaultRateCards: SIMRateCard[] = [
+  { id: "RC-New-1", supplier: "Telenor", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-2", supplier: "Jazz", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-3", supplier: "Zong", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-4", supplier: "Ufone", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-HLR-MNP", supplier: "Default", simType: "HLR-MNP", customerRate: 250, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-Replace", supplier: "Default", simType: "HLR-Replace", customerRate: 300, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-BYN", supplier: "Default", simType: "HLR-BYN", customerRate: 200, isFreeForCustomer: false, franchiseId: "" },
+];
+
 export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<FranchiseAuth>({ franchiseId: "", franchiseName: "", loggedIn: false });
   const [dsms, setDSMs] = useState<DSM[]>([]);
@@ -321,6 +348,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const [issueRecords, setIssueRecords] = useState<SIMIssueRecord[]>([]);
   const [staffWalletPayments, setStaffWalletPayments] = useState<StaffWalletPayment[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<StaffPaymentRequest[]>([]);
+  const [simRateCards, setSimRateCards] = useState<SIMRateCard[]>((defaultRateCards));
   const [equipmentItemNames, setEquipmentItemNames] = useState<EquipmentItemName[]>([]);
   const [equipmentIssueRecords, setEquipmentIssueRecords] = useState<EquipmentIssueRecord[]>([]);
   const [deviceIssueRecords, setDeviceIssueRecords] = useState<DeviceIssueRecord[]>([]);
@@ -344,7 +372,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet, loadedPaymentRequests] = await Promise.all([
+      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet, loadedPaymentRequests, loadedRateCards] = await Promise.all([
         apiLoad("dsm", fid),
         apiLoad("dso", fid),
         apiLoad("device", fid),
@@ -366,6 +394,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
         apiLoad("deviceIssueRecord", fid),
         apiLoadById("franchiseData", "staffWallet-" + fid),
         apiLoadById("franchiseData", "paymentRequests-" + fid),
+        apiLoadById("franchiseData", "rateCards-" + fid).catch(() => null),
       ]);
       setDSMs(loadedDSMs || []);
       setDSO(loadedDSO || []);
@@ -398,6 +427,12 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       setNotifications(loadedNotifications || []);
       if (loadedSettings?.data) {
         try { setSettings(JSON.parse(loadedSettings.data)); } catch {}
+      }
+      if (loadedRateCards?.data) {
+        try {
+          const parsed = JSON.parse(loadedRateCards.data);
+          setSimRateCards(Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultRateCards);
+        } catch {}
       }
       setIssueRecords(loadedIssueRecords || []);
       setEquipmentItemNames(loadedEquipmentItemNames || []);
@@ -583,6 +618,32 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const addAccountEntry = async (a: AccountEntry) => {
     await apiSave("accountEntry", a);
     setAccounts((p) => [a, ...p]);
+  };
+  const addAccountingEntry = async (a: Omit<AccountEntry, "id" | "franchiseId">) => {
+    const entry: AccountEntry = { id: `ACC-${Date.now()}`, ...a, franchiseId: fid };
+    await apiSave("accountEntry", entry);
+    setAccounts((p) => [entry, ...p]);
+  };
+  const deleteAccountingEntry = async (id: string) => {
+    await apiDelete("accountEntry", id);
+    setAccounts((p) => p.filter((a) => a.id !== id));
+  };
+  const persistSimRateCards = async (list: SIMRateCard[]) => {
+    await apiSave("franchiseData", { id: `rateCards-${fid}`, data: JSON.stringify(list) });
+  };
+  const upsertSimRateCard = async (card: Omit<SIMRateCard, "franchiseId">) => {
+    const full = { ...card, franchiseId: fid };
+    const exists = simRateCards.find((r) => r.id === card.id);
+    const updated = exists
+      ? simRateCards.map((r) => (r.id === card.id ? full : r))
+      : [...simRateCards, full];
+    setSimRateCards(updated);
+    await persistSimRateCards(updated);
+  };
+  const deleteSimRateCard = async (id: string) => {
+    const updated = simRateCards.filter((r) => r.id !== id);
+    setSimRateCards(updated);
+    await persistSimRateCards(updated);
   };
   const addAccount = async (a: Account) => {
     await apiSave("bankAccount", a);
@@ -808,6 +869,17 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       franchiseId: fid,
       note: `${typeLabel} paid to ${p.staffName} (${p.role})`,
     });
+
+    const expenseCategory = p.type === "Package" ? "SIM Package Cost" : p.type === "Advance" ? "Advance Payment to Staff" : "Loan Payment to Staff";
+    await addAccountingEntry({
+      type: "expense",
+      category: expenseCategory,
+      amount: p.amount,
+      date: today,
+      description: `${typeLabel} to ${p.staffName} (${p.role})${p.iccid ? ` - ${p.iccid}` : ""}${p.note ? ` - ${p.note}` : ""}`,
+      staffId: p.staffId,
+      staffName: p.staffName,
+    });
   };
 
   const settleStaffWalletPayments = async (staffId: string, role: string, month: string) => {
@@ -865,6 +937,16 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       franchiseId: fid,
       note: `Loan/Advance payment received from ${req.staffName} (${req.role}) - ${req.paymentId}`,
     });
+
+    await addAccountingEntry({
+      type: "income",
+      category: "Loan/Advance Repayment",
+      amount: req.amount,
+      date: today,
+      description: `Repayment received from ${req.staffName} (${req.role}) for ${req.paymentType} ${req.paymentId}`,
+      staffId: req.staffId,
+      staffName: req.staffName,
+    });
   };
 
   const deleteIssueRecords = async (ids: string[]) => {
@@ -907,6 +989,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       auth, hydrated: mounted, login, logout, dsms, dso, devices, sims, equipment,
       equipmentItemNames, equipmentIssueRecords, attendance, targets,
       wallet, payroll, expenses, accounts, bankAccounts, notifications, settings,
+      simRateCards, upsertSimRateCard, deleteSimRateCard,
       addDSM, updateDSM, deleteDSM, addDSO, updateDSO, deleteDSO,
       addDevice, updateDevice, deleteDevice, addSIM, addSIMs, updateSIM, deleteSIM, deleteSIMs,
       addEquipment, updateEquipment, deleteEquipment,
@@ -915,7 +998,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       deviceIssueRecords, addDeviceIssueRecord, returnDeviceIssueRecord,
       addAttendance,
       addTarget, updateTarget, getTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
-      addExpense, deleteExpense, updateExpense, addAccountEntry, addAccount, updateAccount, deleteAccount, addNotification,
+      addExpense, deleteExpense, updateExpense, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
       issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,
       staffWalletPayments, sendStaffWalletPayment, settleStaffWalletPayments,
