@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
-import type { StaffWalletPayment } from "@/lib/FranchiseDataContext";
+import type { StaffWalletPayment, StaffPaymentRequest } from "@/lib/FranchiseDataContext";
 
 export interface DSOAuth {
   dsoId: string; dsoName: string; franchiseId: string; loggedIn: boolean;
@@ -71,6 +71,8 @@ interface DSODataContextType {
   warnings: AttendanceWarning[];
   wallet: DSOWallet[]; addWalletEntry: (w: DSOWallet) => void;
   staffWalletPayments: StaffWalletPayment[];
+  paymentRequests: StaffPaymentRequest[];
+  submitPaymentRequest: (r: Omit<StaffPaymentRequest, "id" | "status" | "receivedAt" | "createdAt" | "franchiseId">) => Promise<void>;
   targets: DSOTarget; updateTargets: (t: Partial<DSOTarget>) => void;
   device: DSODevice | null;
   sims: DSOSim[];
@@ -91,6 +93,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   const [attendance, setAttendance] = useState<DSOAttendance[]>([]);
   const [wallet, setWallet] = useState<DSOWallet[]>([]);
   const [staffWalletPayments, setStaffWalletPayments] = useState<StaffWalletPayment[]>([]);
+  const [paymentRequests, setPaymentRequests] = useState<StaffPaymentRequest[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [warnings, setWarnings] = useState<AttendanceWarning[]>([]);
   const [targets, setTargets] = useState<DSOTarget>(defaultTargets);
@@ -119,7 +122,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet] = await Promise.all([
+      const [loadedActivations, loadedAttendance, loadedLeaves, loadedWarnings, loadedWallet, loadedTargets, loadedNotifications, loadedSims, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet, loadedPaymentRequests] = await Promise.all([
         apiLoad("dsoActivation", fid),
         apiLoad("dsoAttendance", fid),
         apiLoad("leaveRequest", fid),
@@ -132,6 +135,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         apiLoadById("franchise", fid).catch(() => null),
         apiLoad("franchiseSimVerification").catch(() => []),
         apiLoadById("franchiseData", "staffWallet-" + fid).catch(() => null),
+        apiLoadById("franchiseData", "paymentRequests-" + fid).catch(() => null),
       ]);
       setActivations(loadedActivations || []);
       setAttendance(loadedAttendance || []);
@@ -142,6 +146,12 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         try {
           const parsed = JSON.parse(loadedStaffWallet.data);
           setStaffWalletPayments(Array.isArray(parsed) ? parsed : []);
+        } catch {}
+      }
+      if (loadedPaymentRequests?.data) {
+        try {
+          const parsed = JSON.parse(loadedPaymentRequests.data);
+          setPaymentRequests(Array.isArray(parsed) ? parsed : []);
         } catch {}
       }
       setTargets((loadedTargets.length > 0 ? loadedTargets[0] : defaultTargets) as DSOTarget);
@@ -235,6 +245,20 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
     setWallet((p) => [w, ...p]);
   };
 
+  const submitPaymentRequest = async (r: Omit<StaffPaymentRequest, "id" | "status" | "receivedAt" | "createdAt" | "franchiseId">) => {
+    const nowStr = new Date().toISOString().split("T")[0];
+    const req: StaffPaymentRequest = {
+      ...r,
+      id: `LPR-${Date.now()}`,
+      status: "Pending",
+      createdAt: nowStr,
+      franchiseId: fid,
+    };
+    const updated = [req, ...paymentRequests];
+    setPaymentRequests(updated);
+    await apiSave("franchiseData", { id: `paymentRequests-${fid}`, data: JSON.stringify(updated) });
+  };
+
   const updateTargets = async (t: Partial<DSOTarget>) => {
     setTargets((prev) => {
       const updated = { ...prev, ...t };
@@ -263,6 +287,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
       attendance, addAttendance, updateAttendance, leaveRequests, addLeaveRequest, warnings,
       wallet, addWalletEntry, targets, updateTargets,
       staffWalletPayments,
+      paymentRequests, submitPaymentRequest,
       device, sims, importVerifications, notifications, markNotificationRead, settings,
     }}>
       {children}

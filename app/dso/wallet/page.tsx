@@ -1,14 +1,21 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Wallet, Plus, ArrowDown, ArrowUp, X, Receipt, Smartphone, Landmark } from "lucide-react";
+import { Wallet, Plus, ArrowDown, ArrowUp, X, Receipt, Smartphone, Landmark, Send } from "lucide-react";
 import { useDSOData } from "@/lib/DSODataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
 export default function DSOWalletPage() {
-  const { wallet, addWalletEntry, auth, staffWalletPayments } = useDSOData();
+  const { wallet, auth, staffWalletPayments, paymentRequests, submitPaymentRequest } = useDSOData();
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ type: "Credit" as "Credit" | "Debit", amount: 0, note: "" });
+  const [sending, setSending] = useState(false);
+  const [selectedPaymentId, setSelectedPaymentId] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [bank, setBank] = useState("");
+  const [accountTitle, setAccountTitle] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [note, setNote] = useState("");
 
   const balance = wallet.length > 0 ? wallet[0].balance : 0;
   const totalCredits = wallet.filter((w) => w.type === "Credit").reduce((s, w) => s + w.amount, 0);
@@ -18,21 +25,47 @@ export default function DSOWalletPage() {
   const myLoans = myPayments.filter((p) => p.type !== "Package");
   const myPackages = myPayments.filter((p) => p.type === "Package");
   const myOutstanding = myLoans.filter((p) => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
+  const outstandingList = myLoans.filter((p) => p.status === "Paid");
 
-  const handleSave = () => {
-    if (form.amount <= 0) return;
-    const newBalance = form.type === "Credit" ? balance + form.amount : balance - form.amount;
-    addWalletEntry({
-      id: `DSW-${String(wallet.length + 1).padStart(3, "0")}`,
-      type: form.type,
-      amount: form.amount,
-      balance: newBalance,
-      note: form.note,
-      date: new Date().toISOString().split("T")[0],
-      franchiseId: auth.franchiseId,
-    });
-    setShowModal(false);
-    setForm({ type: "Credit", amount: 0, note: "" });
+  const myRequests = paymentRequests.filter((r) => r.role === "DSO" && r.staffId === auth.dsoId);
+
+  const openModal = () => {
+    setSelectedPaymentId("");
+    setAmount(0);
+    setBank("");
+    setAccountTitle("");
+    setAccountNumber("");
+    setTransactionId("");
+    setNote("");
+    setShowModal(true);
+  };
+
+  const handleSubmit = async () => {
+    const payment = myLoans.find((p) => p.id === selectedPaymentId);
+    if (!payment || amount <= 0 || amount > payment.amount) return;
+    setSending(true);
+    try {
+      await submitPaymentRequest({
+        role: "DSO",
+        staffId: auth.dsoId,
+        staffName: auth.dsoName,
+        paymentId: payment.id,
+        paymentType: payment.type as "Loan" | "Advance",
+        amount,
+        bank: bank || undefined,
+        accountTitle: accountTitle || undefined,
+        accountNumber: accountNumber || undefined,
+        transactionId: transactionId || undefined,
+        note: note || undefined,
+        paymentDate: new Date().toISOString().split("T")[0],
+      });
+      setShowModal(false);
+    } catch (e) {
+      console.error("Failed to submit payment:", e);
+      alert("Failed to submit payment request. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -40,11 +73,13 @@ export default function DSOWalletPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Wallet</h1>
-          <p className="text-gray-500 text-sm mt-1">Your balance and transactions</p>
+          <p className="text-gray-500 text-sm mt-1">Your balance, transactions and loan/advance repayments</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Plus size={16} /> Add Transaction
-        </button>
+        {myOutstanding > 0 && (
+          <button onClick={openModal} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
+            <Plus size={16} /> Submit Loan / Advance Payment
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -64,6 +99,39 @@ export default function DSOWalletPage() {
           <p className="text-gray-500 text-xs mt-1">Total Debits</p>
         </div>
       </div>
+
+      {/* Payment Requests */}
+      {myRequests.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Send size={16} className="text-[#0A2647]" /> My Payment Requests</h3>
+            <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold">{myRequests.filter((r) => r.status === "Pending").length} Pending</span>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {[...myRequests].reverse().map((r) => (
+              <div key={r.id} className="flex items-center justify-between px-6 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                    {r.paymentType === "Advance" ? <Wallet size={15} className="text-purple-600" /> : <Landmark size={15} className="text-purple-600" />}
+                  </div>
+                  <div>
+                    <p className="text-gray-900 text-sm font-medium">{r.paymentType} Repayment</p>
+                    <p className="text-gray-400 text-xs">
+                      {formatDateDDMMYYYY(r.paymentDate)} {r.bank ? ` \u00b7 ${r.bank}` : ""} {r.transactionId ? ` \u00b7 ${r.transactionId}` : ""}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-gray-900">PKR {r.amount.toLocaleString()}</p>
+                  <span className={`inline-block mt-0.5 text-[10px] px-2 py-0.5 rounded-full font-medium ${r.status === "Received" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                    {r.status === "Received" ? "Received" : "Pending Verification"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Loan / Advance & Package Earnings */}
       {(myLoans.length > 0 || myPackages.length > 0) && (
@@ -147,31 +215,83 @@ export default function DSOWalletPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">Add Transaction</h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                  <Landmark size={18} className="text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-gray-900 font-bold">Submit Loan / Advance Payment</h3>
+                  <p className="text-gray-400 text-xs mt-0.5">Request verification of your repayment</p>
+                </div>
+              </div>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Type</label>
-                <select value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as "Credit" | "Debit" }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
-                  <option value="Credit">Credit</option>
-                  <option value="Debit">Debit</option>
-                </select>
+                <label className="block text-gray-500 text-xs font-medium mb-2">Select Loan / Advance to repay</label>
+                <div className="space-y-2 max-h-44 overflow-y-auto">
+                  {outstandingList.map((p) => (
+                    <button key={p.id} onClick={() => { setSelectedPaymentId(p.id); setAmount(p.amount); }}
+                      className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${selectedPaymentId === p.id ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                      <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                        {p.type === "Advance" ? <Wallet size={15} className="text-purple-600" /> : <Landmark size={15} className="text-purple-600" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-gray-900 text-sm font-medium">{p.type} &middot; {formatDateDDMMYYYY(p.paymentDate)}</p>
+                        <p className="text-gray-400 text-xs">Outstanding: PKR {p.amount.toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-gray-900">PKR {p.amount.toLocaleString()}</p>
+                        <p className="text-[10px] text-gray-400 font-mono">{p.id}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <label className="block text-gray-500 text-xs font-medium mb-1.5">Amount (PKR)</label>
-                <input type="number" value={form.amount || ""} onChange={(e) => setForm((p) => ({ ...p, amount: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                <input type="number" value={amount || ""} onChange={(e) => setAmount(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+              </div>
+              <div>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank</label>
+                <input type="text" value={bank} onChange={(e) => setBank(e.target.value)} placeholder="e.g. Meezan Bank"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+              </div>
+              <div>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Title</label>
+                <input type="text" value={accountTitle} onChange={(e) => setAccountTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+              </div>
+              <div>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number / IBAN</label>
+                <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+              </div>
+              <div>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Transaction ID</label>
+                <input type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="e.g. TID-83920"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
               </div>
               <div>
                 <label className="block text-gray-500 text-xs font-medium mb-1.5">Note</label>
-                <input type="text" value={form.note} onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Paid via bank transfer"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+              </div>
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                <div className="flex items-start gap-2">
+                  <Receipt size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-amber-800 text-sm">This payment will show as <b>Pending</b> until the franchise verifies and marks it received.</p>
+                </div>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSave} disabled={form.amount <= 0} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed">Save</button>
+              <button onClick={handleSubmit} disabled={!selectedPaymentId || amount <= 0 || amount > (myLoans.find((p) => p.id === selectedPaymentId)?.amount || 0) || sending}
+                className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed">
+                {sending ? "Submitting..." : "Submit for Verification"}
+              </button>
             </div>
           </div>
         </div>

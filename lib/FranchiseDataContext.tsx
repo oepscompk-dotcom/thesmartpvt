@@ -118,6 +118,26 @@ export interface StaffWalletPayment {
   createdAt: string;
 }
 
+export interface StaffPaymentRequest {
+  id: string;
+  role: "DSO" | "DSM";
+  staffId: string;
+  staffName: string;
+  paymentId: string;
+  paymentType: "Loan" | "Advance";
+  amount: number;
+  bank?: string;
+  accountTitle?: string;
+  accountNumber?: string;
+  transactionId?: string;
+  note?: string;
+  paymentDate: string;
+  status: "Pending" | "Received";
+  receivedAt?: string;
+  franchiseId: string;
+  createdAt: string;
+}
+
 export interface Equipment {
   id: string; name: string; price: number; condition: string; assignedTo: string;
   issueDate: string; returnDate: string; status: string; franchiseId: string;
@@ -259,6 +279,8 @@ interface FranchiseDataContextType {
   staffWalletPayments: StaffWalletPayment[];
   sendStaffWalletPayment: (p: Omit<StaffWalletPayment, "id" | "status" | "createdAt" | "franchiseId">) => Promise<void>;
   settleStaffWalletPayments: (staffId: string, role: string, month: string) => Promise<void>;
+  paymentRequests: StaffPaymentRequest[];
+  receiveStaffPaymentRequest: (requestId: string) => Promise<void>;
 }
 
 const FranchiseDataContext = createContext<FranchiseDataContextType | undefined>(undefined);
@@ -292,6 +314,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<FranchiseSettings>(emptySettings);
   const [issueRecords, setIssueRecords] = useState<SIMIssueRecord[]>([]);
   const [staffWalletPayments, setStaffWalletPayments] = useState<StaffWalletPayment[]>([]);
+  const [paymentRequests, setPaymentRequests] = useState<StaffPaymentRequest[]>([]);
   const [equipmentItemNames, setEquipmentItemNames] = useState<EquipmentItemName[]>([]);
   const [equipmentIssueRecords, setEquipmentIssueRecords] = useState<EquipmentIssueRecord[]>([]);
   const [deviceIssueRecords, setDeviceIssueRecords] = useState<DeviceIssueRecord[]>([]);
@@ -315,7 +338,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet] = await Promise.all([
+      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet, loadedPaymentRequests] = await Promise.all([
         apiLoad("dsm", fid),
         apiLoad("dso", fid),
         apiLoad("device", fid),
@@ -336,6 +359,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
         apiLoad("equipmentIssueRecord", fid),
         apiLoad("deviceIssueRecord", fid),
         apiLoadById("franchiseData", "staffWallet-" + fid),
+        apiLoadById("franchiseData", "paymentRequests-" + fid),
       ]);
       setDSMs(loadedDSMs || []);
       setDSO(loadedDSO || []);
@@ -377,6 +401,12 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
         try {
           const parsed = JSON.parse(loadedStaffWallet.data);
           setStaffWalletPayments(Array.isArray(parsed) ? parsed : []);
+        } catch {}
+      }
+      if (loadedPaymentRequests?.data) {
+        try {
+          const parsed = JSON.parse(loadedPaymentRequests.data);
+          setPaymentRequests(Array.isArray(parsed) ? parsed : []);
         } catch {}
       }
     };
@@ -792,6 +822,45 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const receiveStaffPaymentRequest = async (requestId: string) => {
+    const today = new Date().toISOString().split("T")[0];
+    const req = paymentRequests.find((r) => r.id === requestId);
+    if (!req || req.status === "Received") return;
+
+    const updatedRequests = paymentRequests.map((r) =>
+      r.id === requestId ? { ...r, status: "Received" as const, receivedAt: today } : r
+    );
+    setPaymentRequests(updatedRequests);
+    await apiSave("franchiseData", { id: `paymentRequests-${fid}`, data: JSON.stringify(updatedRequests) });
+
+    const settledPaymentId = req.paymentId;
+    const updatedPayments = staffWalletPayments.map((p) =>
+      p.id === settledPaymentId && p.type !== "Package" && p.status !== "Deducted"
+        ? { ...p, status: "Deducted" as const, settledMonth: today.slice(0, 7) }
+        : p
+    );
+    setStaffWalletPayments(updatedPayments);
+    await persistStaffWalletPayments(updatedPayments);
+
+    const model = req.role === "DSO" ? "dso" : "dsm";
+    const staffList = req.role === "DSO" ? dso : dsms;
+    const rec = staffList.find((x) => x.id === req.staffId);
+    if (rec && ((rec as any).advanceSalary || (rec as any).loanDeduction)) {
+      await apiUpdate(model, req.staffId, { advanceSalary: 0, loanDeduction: 0 });
+      if (req.role === "DSO") setDSO((prev) => prev.map((x) => x.id === req.staffId ? { ...x, advanceSalary: 0, loanDeduction: 0 } : x));
+      else setDSMs((prev) => prev.map((x) => x.id === req.staffId ? { ...x, advanceSalary: 0, loanDeduction: 0 } : x));
+    }
+
+    await addWalletTransaction({
+      id: `WLT-${Date.now()}`,
+      type: "Deposit",
+      amount: req.amount,
+      date: today,
+      franchiseId: fid,
+      note: `Loan/Advance payment received from ${req.staffName} (${req.role}) - ${req.paymentId}`,
+    });
+  };
+
   const deleteIssueRecords = async (ids: string[]) => {
     const today = new Date().toISOString().split("T")[0];
     const allSimIdsToRestore: string[] = [];
@@ -844,6 +913,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       markNotificationRead, deleteNotification, updateSettings,
       issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,
       staffWalletPayments, sendStaffWalletPayment, settleStaffWalletPayments,
+      paymentRequests, receiveStaffPaymentRequest,
     }}>
       {children}
     </FranchiseDataContext.Provider>

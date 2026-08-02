@@ -24,11 +24,12 @@ const PAKISTAN_BANKS = [
 ];
 
 export default function WalletPage() {
-  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment } = useFranchiseData();
+  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest } = useFranchiseData();
   const [tab, setTab] = useState<Tab>("package");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<"Package" | "Loan" | "Advance">("Package");
   const [sending, setSending] = useState(false);
+  const [receivingId, setReceivingId] = useState("");
 
   // Shared form state
   const [role, setRole] = useState<"DSO" | "DSM">("DSO");
@@ -57,6 +58,20 @@ export default function WalletPage() {
   const packagePayments = staffWalletPayments.filter((p) => p.type === "Package");
   const loanPayments = staffWalletPayments.filter((p) => p.type !== "Package");
   const outstandingLoans = loanPayments.filter((p) => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
+  const pendingRequests = paymentRequests.filter((r) => r.status === "Pending");
+
+  const handleReceive = async (requestId: string) => {
+    if (receivingId) return;
+    setReceivingId(requestId);
+    try {
+      await receiveStaffPaymentRequest(requestId);
+    } catch (e) {
+      console.error("Failed to mark received:", e);
+      alert("Failed to mark payment received. Please try again.");
+    } finally {
+      setReceivingId("");
+    }
+  };
 
   const simResults = useMemo(() => {
     if (!simSearch.trim()) return sims;
@@ -236,6 +251,46 @@ export default function WalletPage() {
 
       {/* Tab: Loan / Advance */}
       {tab === "loan" && (
+        <>
+          {/* Pending Payment Requests */}
+          {pendingRequests.length > 0 && (
+            <div className="bg-white rounded-2xl border border-amber-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-amber-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><AlertTriangle size={16} className="text-amber-600" /> Pending Payment Requests</h3>
+                  <p className="text-gray-400 text-xs mt-0.5">Verify received amount then mark as received to clear the loan/advance</p>
+                </div>
+                <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold">{pendingRequests.length} Pending</span>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {[...pendingRequests].reverse().map((r) => (
+                  <div key={r.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                        {r.paymentType === "Advance" ? <WalletIcon size={16} className="text-purple-600" /> : <Landmark size={16} className="text-purple-600" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-gray-900 text-sm font-medium truncate">{r.staffName} <span className="text-gray-400 text-xs font-normal">({r.role})</span></p>
+                        <p className="text-gray-400 text-xs">{r.paymentType} Repayment &middot; {formatDateDDMMYYYY(r.paymentDate)} &middot; <span className="font-mono">{r.paymentId}</span></p>
+                        {r.bank && <p className="text-gray-500 text-xs mt-0.5 truncate">{r.bank}{r.accountNumber ? ` \u00b7 ${r.accountNumber}` : ""}{r.transactionId ? ` \u00b7 Txn: ${r.transactionId}` : ""}</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      <div className="text-right">
+                        <p className="text-lg font-black text-gray-900">PKR {r.amount.toLocaleString()}</p>
+                        <p className="text-[10px] text-gray-400">Receiving</p>
+                      </div>
+                      <button onClick={() => handleReceive(r.id)} disabled={!!receivingId}
+                        className="px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2">
+                        <CheckCircle2 size={14} /> {receivingId === r.id ? "Verifying..." : "Mark Received"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
@@ -305,6 +360,7 @@ export default function WalletPage() {
             </div>
           )}
         </div>
+        </>
       )}
 
       {/* Send Payment Modal */}
