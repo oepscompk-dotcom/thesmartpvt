@@ -212,7 +212,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
               <MapPinned size={16} className="text-gray-400 flex-shrink-0" />
               <select value={form.province} onChange={(e) => setForm((p) => ({ ...p, province: e.target.value, city: "" }))}
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer">
+                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer pl-2">
                 <option value="">Select Province</option>
                 {Object.keys(PAKISTAN_CITIES).map((prov) => (
                   <option key={prov} value={prov}>{prov}</option>
@@ -227,7 +227,7 @@ export default function ProfilePage() {
               <MapPin size={16} className="text-gray-400 flex-shrink-0" />
               <select value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
                 disabled={!form.province}
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed">
+                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed pl-2">
                 <option value="">{form.province ? "Select City" : "Select Province first"}</option>
                 {(PAKISTAN_CITIES[form.province] || []).map((c) => (
                   <option key={c} value={c}>{c}</option>
