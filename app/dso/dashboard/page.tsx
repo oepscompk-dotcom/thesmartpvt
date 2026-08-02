@@ -103,7 +103,7 @@ export default function DSODashboardPage() {
     return activations.slice(0, 5).map((a) => ({
       icon: a.status === "Completed" ? CheckCircle2 : Clock,
       color: a.status === "Completed" ? "text-green-500 bg-green-50" : "text-amber-500 bg-amber-50",
-      title: `${a.customerName} â€” ${a.type}`,
+      title: `${a.customerName} — ${a.type}`,
       detail: `${a.simNumber} | ${a.network}`,
       time: a.createdAt,
     })).sort((a, b) => b.time.localeCompare(a.time)).slice(0, 6);
@@ -188,19 +188,21 @@ export default function DSODashboardPage() {
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         <div className="relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <Home size={14} className="text-white/60" />
-                  <span className="text-white/60 text-xs font-medium uppercase tracking-wider">DSO Dashboard</span>
+                  <Home size={14} className="text-white/60 flex-shrink-0" />
+                  <span className="text-white/60 text-xs font-medium uppercase tracking-wider truncate">DSO Dashboard</span>
                 </div>
-                <h1 className="text-2xl font-black">Welcome back, {settings.dsoName || auth.dsoName || "DSO"}!</h1>
-                <p className="text-white/70 text-sm mt-1">
-                  {settings.franchiseName || "THE SMART ERP"} | {todayDate} | ID: {auth.dsoId}
+                <h1 className="text-xl sm:text-2xl font-black leading-snug break-words">Welcome back, {settings.dsoName || auth.dsoName || "DSO"}!</h1>
+                <p className="text-white/70 text-xs sm:text-sm mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+                  <span className="truncate">{settings.franchiseName || "THE SMART ERP"}</span>
+                  <span>| {todayDate}</span>
+                  <span>| ID: {auth.dsoId}</span>
                 </p>
               </div>
               <button onClick={() => setShowActivatePopup(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#C8A951] text-[#0A2647] rounded-xl font-bold text-sm hover:bg-[#d4b55e] transition-all shadow-lg">
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#C8A951] text-[#0A2647] rounded-xl font-bold text-sm hover:bg-[#d4b55e] transition-all shadow-lg flex-shrink-0">
                 <Plus size={16} /> Activate
               </button>
             </div>
@@ -254,7 +256,7 @@ export default function DSODashboardPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-3xl font-black text-gray-900">{s.value}</p>
+                <p className="text-xl sm:text-3xl font-black text-gray-900 truncate">{s.value}</p>
                 <p className="text-gray-500 text-xs font-medium mt-0.5">{s.label}</p>
               </div>
             ))}
@@ -361,7 +363,31 @@ export default function DSODashboardPage() {
                   </h3>
                   <span className="text-xs text-gray-400">{filteredActivations.length} records</span>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="md:hidden divide-y divide-gray-50">
+                  {filteredActivations.slice(0, 6).map((a) => (
+                    <div key={a.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
+                          <span className="text-gray-400 text-[10px] font-mono truncate">{a.simNumber}</span>
+                        </div>
+                        <p className="text-gray-900 text-sm font-medium truncate mt-1">{a.customerName}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex-1 max-w-[130px] h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-600">{a.progress}%</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap ${getStatusBadge(a.status)}`}>{a.status}</span>
+                        <span className="text-gray-400 text-[10px]">{formatDateDDMMYYYY(a.createdAt)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {filteredActivations.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No activations found</p>}
+                </div>
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100 bg-gray-50">
@@ -587,7 +613,7 @@ export default function DSODashboardPage() {
                             <Smartphone size={14} className="text-gray-400 flex-shrink-0" />
                             <div className="min-w-0">
                               <p className="text-xs font-bold text-gray-900 truncate">{s.id}</p>
-                              <p className="text-[10px] text-gray-400">{s.network} Â· {s.simNumber}</p>
+                              <p className="text-[10px] text-gray-400">{s.network} · {s.simNumber}</p>
                             </div>
                           </div>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-700">{s.type === "new" ? "New" : "HLR"}</span>
@@ -664,20 +690,47 @@ export default function DSODashboardPage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
                 <BarChart3 size={16} className="text-[#0A2647]" /> All Activations
               </h3>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400">{filteredActivations.length} records</span>
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-1.5">
-                  <Search size={12} className="text-gray-400" />
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-1.5 flex-1 sm:flex-none max-w-[220px]">
+                  <Search size={12} className="text-gray-400 flex-shrink-0" />
                   <input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-transparent border-0 p-0 text-xs focus:outline-none w-24 text-gray-700 placeholder:text-gray-400" />
+                    className="bg-transparent border-0 p-0 text-xs focus:outline-none w-full text-gray-700 placeholder:text-gray-400" />
                 </div>
               </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="md:hidden divide-y divide-gray-50">
+              {filteredActivations.map((a) => (
+                <div key={a.id} className="px-4 py-3">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-gray-400 text-[10px]">{a.id}</span>
+                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
+                    </div>
+                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap ${getStatusBadge(a.status)}`}>{a.status}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-gray-900 text-sm font-medium truncate">{a.customerName}</p>
+                      <p className="text-gray-400 text-[10px] truncate">{a.network} | {a.simNumber}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-600 w-7 text-right">{a.progress}%</span>
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-[10px] mt-1.5">{formatDateDDMMYYYY(a.createdAt)}</p>
+                </div>
+              ))}
+              {filteredActivations.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No activations found</p>}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
@@ -730,7 +783,7 @@ export default function DSODashboardPage() {
                 <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center mb-3`}>
                   <s.icon size={20} className={s.color} />
                 </div>
-                <p className="text-xl font-black text-gray-900">{s.value}</p>
+                <p className="text-lg sm:text-xl font-black text-gray-900 truncate">{s.value}</p>
                 <p className="text-gray-500 text-xs">{s.label}</p>
               </div>
             ))}
@@ -797,9 +850,9 @@ export default function DSODashboardPage() {
                         <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {mySalary.otherDeduction.toLocaleString()}</span></div>
                       </div>
                     </div>
-                    <div className="mt-4 p-3 bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-xl text-white flex items-center justify-between">
+                    <div className="mt-4 p-3 bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-xl text-white flex items-center justify-between gap-3">
                       <span className="text-sm font-semibold">Net Payable</span>
-                      <span className="text-lg font-black">PKR {salarySummary.netPay.toLocaleString()}</span>
+                      <span className="text-lg font-black whitespace-nowrap">PKR {salarySummary.netPay.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>

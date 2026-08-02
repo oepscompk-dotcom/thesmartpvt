@@ -5,7 +5,7 @@ import { useDSOData } from "@/lib/DSODataContext";
 import { VerifyConfirmPopup, VerifySuccessPopup } from "@/lib/VerifyPopup";
 import { apiLoad, apiSave, apiUpdate } from "@/lib/api";
 import {
-  Plus, X, Smartphone, Filter, CheckCircle, Clock, AlertCircle, ArrowRight, ArrowLeft, Trash2,
+  Plus, X, Smartphone, Filter, CheckCircle, Clock, AlertCircle, ArrowRight, ArrowLeft, Trash2, Search,
 } from "lucide-react";
 
 interface ActivationForm {
@@ -52,6 +52,7 @@ export default function NewSIMActivationPage() {
     deviceId: device?.id ?? "",
   });
   const [filter, setFilter] = useState<string>("All");
+  const [simSearch, setSimSearch] = useState("");
   const [simStockList, setSimStockList] = useState<SIMStock[]>([]);
   const [selectedSimId, setSelectedSimId] = useState("");
   const [selectedFranchiseSimId, setSelectedFranchiseSimId] = useState("");
@@ -69,6 +70,14 @@ export default function NewSIMActivationPage() {
   const filteredSims = simStockList.filter(
     (s) => filter === "All" || s.network === filter
   );
+
+  const searchFilteredSims = filteredSims.filter((s) => {
+    if (!simSearch) return true;
+    const q = simSearch.toLowerCase();
+    return (s.iccid || "").toLowerCase().includes(q) ||
+      (s.simNumber || "").toLowerCase().includes(q) ||
+      (s.network || "").toLowerCase().includes(q);
+  });
 
   const handleSimSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const simId = e.target.value;
@@ -438,18 +447,31 @@ export default function NewSIMActivationPage() {
                 {/* Group 1: SIM Stock Selection */}
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Select SIM from Stock *</label>
+                  <div className="relative mb-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      value={simSearch}
+                      onChange={(e) => setSimSearch(e.target.value)}
+                      placeholder="Search by ICCID, SIM number or network..."
+                      className="w-full pl-9 pr-8 py-3 min-h-[48px] rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C8A951]"
+                    />
+                    {simSearch && <X size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onClick={() => setSimSearch("")} />}
+                  </div>
                   <select
                     value={selectedSimId}
                     onChange={handleSimSelect}
                     className="w-full min-h-[56px] px-4 py-3 rounded-xl border-2 border-gray-200 text-sm font-medium focus:outline-none focus:border-[#C8A951] bg-white md:min-h-[40px] md:px-3 md:py-2 md:rounded-lg md:border"
                   >
-                    <option value="">-- Choose a SIM --</option>
-                    {filteredSims.map((s) => (
+                    <option value="">-- {searchFilteredSims.length > 0 ? "Choose a SIM" : "No SIM matches search"} --</option>
+                    {searchFilteredSims.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.simNumber} | {s.network} | {s.iccid}
                       </option>
                     ))}
                   </select>
+                  {simSearch && (
+                    <p className="text-xs text-gray-400 mt-1.5">{searchFilteredSims.length} SIM(s) found</p>
+                  )}
                 </div>
 
                 {/* Selected SIM Info Card */}
