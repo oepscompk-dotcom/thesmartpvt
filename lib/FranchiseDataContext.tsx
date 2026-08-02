@@ -226,6 +226,7 @@ export interface FranchiseNotification {
 export interface FranchiseSettings {
   franchiseName: string; ownerName: string; email: string; phone: string;
   address: string; logo: string;
+  bankName?: string; bankAccountTitle?: string; bankAccountNumber?: string;
 }
 
 export interface FranchiseAuth {

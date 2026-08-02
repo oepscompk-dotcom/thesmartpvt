@@ -1,9 +1,22 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { Settings as SettingsIcon, Save, Building2, Upload, Clock, Timer, AlertTriangle, Award } from "lucide-react";
+import { Settings as SettingsIcon, Save, Building2, Upload, Clock, Timer, AlertTriangle, Award, Landmark, Wallet, Smartphone } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { apiLoadById, apiSave } from "@/lib/api";
+
+const PAKISTAN_BANKS = [
+  "Abhi Microfinance Bank", "Al Baraka Bank Pakistan", "Allied Bank Limited (ABL)", "APNA Microfinance Bank",
+  "ASA Microfinance Bank", "Askari Bank", "Bank Al Habib", "Bank Alfalah", "BankIslami Pakistan",
+  "Bank Makramah Limited", "Bank of China Pakistan", "Bank of Khyber", "Citi Bank Pakistan",
+  "Dubai Islamic Bank Pakistan", "Easypaisa", "Easypaisa Digital Bank", "Faysal Bank", "FINCA Microfinance Bank",
+  "Finja", "First Women Bank", "Habib Bank Limited (HBL)", "Habib Metropolitan Bank",
+  "Industrial and Commercial Bank of China (ICBC) Pakistan", "JS Bank", "JazzCash", "Khushhali Microfinance Bank",
+  "MCB Bank", "MCB Islamic Bank", "Meezan Bank", "Mobilink Bank", "National Bank of Pakistan (NBP)",
+  "NayaPay", "NRSP Microfinance Bank", "OPay", "Raqami Islamic Digital Bank", "SadaPay", "Sindh Bank",
+  "Soneri Bank", "Standard Chartered Bank Pakistan", "The Bank of Punjab (BOP)", "United Bank Limited (UBL)",
+  "U Microfinance Bank", "Zarai Taraqiati Bank Limited (ZTBL)", "Zindigi",
+];
 
 const defaultAttendanceSettings = {
   workStart: "09:00", workEnd: "18:00", lateAfter: "10:00",
@@ -15,6 +28,7 @@ export default function FranchiseSettingsPage() {
   const [form, setForm] = useState(settings);
   const [saved, setSaved] = useState(false);
   const [attSettings, setAttSettings] = useState(defaultAttendanceSettings);
+  const [tab, setTab] = useState<"general" | "bank">("general");
 
   useEffect(() => {
     (async () => {
@@ -49,6 +63,19 @@ export default function FranchiseSettingsPage() {
         <p className="text-gray-500 text-sm mt-1">Franchise settings and preferences</p>
       </div>
 
+      <div className="flex gap-2">
+        <button onClick={() => setTab("general")}
+          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === "general" ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
+          <SettingsIcon size={14} /> General
+        </button>
+        <button onClick={() => setTab("bank")}
+          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === "bank" ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
+          <Landmark size={14} /> Company Bank / Digital
+        </button>
+      </div>
+
+      {tab === "general" && (
+      <>
       <div className="bg-white rounded-2xl p-6 border border-gray-200">
         <h3 className="text-gray-900 font-bold mb-4">Franchise Logo</h3>
         <div className="flex items-center gap-6">
@@ -104,6 +131,49 @@ export default function FranchiseSettingsPage() {
           ))}
         </div>
       </div>
+      </>
+      )}
+
+      {tab === "bank" && (
+        <div className="bg-white rounded-2xl p-6 border border-gray-200">
+          <div className="flex items-center gap-3 mb-1"><div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><Landmark size={18} /></div><h3 className="text-gray-900 font-bold">Company Bank / Digital Account</h3></div>
+          <p className="text-gray-500 text-xs mb-4">Company payment account details shared with DSO/DSM for loan/advance repayments and settlements.</p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank / Digital Name</label>
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                <Wallet size={16} className="text-gray-400" />
+                <select value={form.bankName || ""} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
+                  className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer pl-1">
+                  <option value="">Select Bank / Digital</option>
+                  {PAKISTAN_BANKS.map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Title</label>
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                <Building2 size={16} className="text-gray-400" />
+                <input type="text" value={form.bankAccountTitle || ""} onChange={(e) => setForm((p) => ({ ...p, bankAccountTitle: e.target.value }))} placeholder="e.g. THE SMART PVT LTD"
+                  className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number / IBAN</label>
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                <Smartphone size={16} className="text-gray-400" />
+                <input type="text" value={form.bankAccountNumber || ""} onChange={(e) => setForm((p) => ({ ...p, bankAccountNumber: e.target.value }))} placeholder="e.g. 1234-5678900-01 or 0300-1234567"
+                  className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 bg-emerald-50 rounded-xl p-3 border border-emerald-200">
+            <p className="text-emerald-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> This account detail will be shown to DSO/DSM staff for loan/advance repayment submissions.</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end">
         <button onClick={handleSave} className="px-6 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105 inline-flex items-center gap-2">
