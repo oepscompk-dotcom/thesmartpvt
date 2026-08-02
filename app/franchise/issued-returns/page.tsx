@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, Filter, CheckSquare, Square, User, Smartphone, Trash2, Clock } from "lucide-react";
+import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, CheckCircle2, Filter, CheckSquare, Square, User, Smartphone, Trash2, Clock } from "lucide-react";
 import { useFranchiseData, SIMIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
@@ -179,10 +179,17 @@ export default function IssuedReturnsPage() {
     return `${base}-${maxSuffix + 1}`;
   };
 
+  const isSIMActivated = (id: string) => {
+    const s = sims.find((x) => x.id === id);
+    return !!s && (s.status === "Activated" || s.status === "Active");
+  };
+
+  const actionBalanceIds = actionRecord ? actionRecord.simIds.filter((id) => !isSIMActivated(id)) : [];
+
   const openActionModal = (r: SIMIssueRecord, mode: "return" | "forward") => {
     setActionRecord(r);
     setActionMode(mode);
-    setActionSimIds([...r.simIds]);
+    setActionSimIds(mode === "return" ? r.simIds.filter((id) => !isSIMActivated(id)) : [...r.simIds]);
     setForwardType("DSO");
     setForwardPersonId("");
     setShowActionModal(true);
@@ -193,7 +200,8 @@ export default function IssuedReturnsPage() {
   };
 
   const toggleAllActionSims = () => {
-    setActionSimIds((prev) => (actionRecord && prev.length === actionRecord.simIds.length) ? [] : (actionRecord ? [...actionRecord.simIds] : prev));
+    const ref = actionMode === "return" ? actionBalanceIds : (actionRecord ? actionRecord.simIds : []);
+    setActionSimIds((prev) => prev.length === ref.length && ref.length > 0 ? [] : [...ref]);
   };
 
   const handleReturnConfirm = async () => {
@@ -780,11 +788,18 @@ export default function IssuedReturnsPage() {
                   <div className="flex items-center justify-between">
                     <p className="text-gray-500 text-xs font-medium">Select SIMs to return</p>
                     <button onClick={toggleAllActionSims} className="text-xs font-medium text-[#0A2647] hover:underline">
-                      {actionSimIds.length === actionRecord.simIds.length ? "Deselect All" : "Select All"}
+                      {actionSimIds.length === actionBalanceIds.length && actionBalanceIds.length > 0 ? "Deselect All" : "Select All"}
                     </button>
                   </div>
+                  {actionBalanceIds.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl">
+                      <CheckCircle2 size={24} className="text-green-500 mx-auto mb-2" />
+                      <p className="text-gray-600 text-sm font-medium">All SIMs in this issue are already activated</p>
+                      <p className="text-gray-400 text-xs mt-1">Activated SIMs are delivered to clients and cannot be returned.</p>
+                    </div>
+                  ) : (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {actionRecord.simIds.map((simId) => {
+                    {actionBalanceIds.map((simId) => {
                       const sim = sims.find((s) => s.id === simId);
                       return (
                         <button key={simId} onClick={() => toggleActionSim(simId)}
@@ -805,7 +820,10 @@ export default function IssuedReturnsPage() {
                       );
                     })}
                   </div>
-                  <p className="text-gray-400 text-xs">{actionSimIds.length} of {actionRecord.simIds.length} SIM(s) selected</p>
+                  )}
+                  {actionBalanceIds.length > 0 && (
+                    <p className="text-gray-400 text-xs">{actionSimIds.length} of {actionBalanceIds.length} SIM(s) selected</p>
+                  )}
                 </>
               )}
             </div>
@@ -822,7 +840,7 @@ export default function IssuedReturnsPage() {
                   </button>
                   <button onClick={handleReturnConfirm} disabled={actionSimIds.length === 0}
                     className="px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
-                    <RotateCcw size={14} /> {actionSimIds.length === actionRecord.simIds.length ? "Return All" : "Return Selected"} ({actionSimIds.length})
+                    <RotateCcw size={14} /> {actionSimIds.length === actionBalanceIds.length && actionBalanceIds.length > 0 ? "Return All" : "Return Selected"} ({actionSimIds.length})
                   </button>
                 </>
               ) : (
