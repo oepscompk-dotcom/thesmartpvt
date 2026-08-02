@@ -879,6 +879,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       description: `${typeLabel} to ${p.staffName} (${p.role})${p.iccid ? ` - ${p.iccid}` : ""}${p.note ? ` - ${p.note}` : ""}`,
       staffId: p.staffId,
       staffName: p.staffName,
+      referenceId: payment.id,
     });
   };
 
@@ -938,15 +939,12 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       note: `Loan/Advance payment received from ${req.staffName} (${req.role}) - ${req.paymentId}`,
     });
 
-    await addAccountingEntry({
-      type: "income",
-      category: "Loan/Advance Repayment",
-      amount: req.amount,
-      date: today,
-      description: `Repayment received from ${req.staffName} (${req.role}) for ${req.paymentType} ${req.paymentId}`,
-      staffId: req.staffId,
-      staffName: req.staffName,
-    });
+    // Remove the expense entry created when this loan/advance was issued (repayment clears it)
+    const matchedExpense = accounts.find((a) => a.referenceId === req.paymentId && a.type === "expense");
+    if (matchedExpense) {
+      await apiDelete("accountEntry", matchedExpense.id);
+      setAccounts((prev) => prev.filter((a) => a.id !== matchedExpense.id));
+    }
   };
 
   const deleteIssueRecords = async (ids: string[]) => {
