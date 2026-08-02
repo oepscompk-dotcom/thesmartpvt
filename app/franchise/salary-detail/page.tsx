@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, Fragment } from "react";
 import {
@@ -268,7 +267,7 @@ export default function SalaryDetailPage() {
       </style>
       </head>
       <body>
-        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨 Print</button><button class="btn-close" onclick="window.close()">✕ Close</button></div>
+        <div class="no-print"><button class="btn-print" onclick="window.print()">ðŸ–¨ Print</button><button class="btn-close" onclick="window.close()">âœ• Close</button></div>
         <div class="report-header">
           <h1>Salary Detail Report</h1>
           <div class="meta">
@@ -309,7 +308,7 @@ export default function SalaryDetailPage() {
             </tr>
           </tfoot>
         </table>
-        <div class="footer">THE SMART ERP — Payroll System | Generated on ${dateStr} at ${timeStr}</div>
+        <div class="footer">THE SMART ERP â€” Payroll System | Generated on ${dateStr} at ${timeStr}</div>
       </body></html>
     `);
     printWindow.document.close();
@@ -471,33 +470,33 @@ export default function SalaryDetailPage() {
                                 {c.newSimCount > 0 && (
                                   <>
                                     <div className="flex justify-between"><span className="text-gray-500">New SIM ({c.newSimCount})</span><span className="font-medium text-green-600">PKR {c.newSimComm.toLocaleString()}</span></div>
-                                    {c.newSimBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.newSimBvsCount} × Rs.{c.newSimBvsRate})</span><span className="text-green-600">PKR {c.newSimBvsComm.toLocaleString()}</span></div>}
-                                    {c.newSimFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.newSimFcaCount} × Rs.{c.newSimFcaRate})</span><span className="text-green-600">PKR {c.newSimFcaComm.toLocaleString()}</span></div>}
-                                    {c.newSimIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.newSimIfcaCount} × Rs.{c.newSimIfcaRate})</span><span className="text-green-600">PKR {c.newSimIfcaComm.toLocaleString()}</span></div>}
+                                    {c.newSimBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.newSimBvsCount} Ã— Rs.{c.newSimBvsRate})</span><span className="text-green-600">PKR {c.newSimBvsComm.toLocaleString()}</span></div>}
+                                    {c.newSimFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.newSimFcaCount} Ã— Rs.{c.newSimFcaRate})</span><span className="text-green-600">PKR {c.newSimFcaComm.toLocaleString()}</span></div>}
+                                    {c.newSimIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.newSimIfcaCount} Ã— Rs.{c.newSimIfcaRate})</span><span className="text-green-600">PKR {c.newSimIfcaComm.toLocaleString()}</span></div>}
                                   </>
                                 )}
                                 {c.mnpCount > 0 && (
                                   <>
                                     <div className="flex justify-between"><span className="text-gray-500">MNP ({c.mnpCount})</span><span className="font-medium text-green-600">PKR {c.mnpComm.toLocaleString()}</span></div>
-                                    {c.mnpBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.mnpBvsCount} × Rs.{c.mnpBvsRate})</span><span className="text-green-600">PKR {c.mnpBvsComm.toLocaleString()}</span></div>}
-                                    {c.mnpFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.mnpFcaCount} × Rs.{c.mnpFcaRate})</span><span className="text-green-600">PKR {c.mnpFcaComm.toLocaleString()}</span></div>}
-                                    {c.mnpIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.mnpIfcaCount} × Rs.{c.mnpIfcaRate})</span><span className="text-green-600">PKR {c.mnpIfcaComm.toLocaleString()}</span></div>}
+                                    {c.mnpBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.mnpBvsCount} Ã— Rs.{c.mnpBvsRate})</span><span className="text-green-600">PKR {c.mnpBvsComm.toLocaleString()}</span></div>}
+                                    {c.mnpFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.mnpFcaCount} Ã— Rs.{c.mnpFcaRate})</span><span className="text-green-600">PKR {c.mnpFcaComm.toLocaleString()}</span></div>}
+                                    {c.mnpIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.mnpIfcaCount} Ã— Rs.{c.mnpIfcaRate})</span><span className="text-green-600">PKR {c.mnpIfcaComm.toLocaleString()}</span></div>}
                                   </>
                                 )}
                                 {c.replacementCount > 0 && (
                                   <>
                                     <div className="flex justify-between"><span className="text-gray-500">Replace ({c.replacementCount})</span><span className="font-medium text-green-600">PKR {c.replComm.toLocaleString()}</span></div>
-                                    {c.replacementBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.replacementBvsCount} × Rs.{c.replacementBvsRate})</span><span className="text-green-600">PKR {c.replacementBvsComm.toLocaleString()}</span></div>}
-                                    {c.replacementFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.replacementFcaCount} × Rs.{c.replacementFcaRate})</span><span className="text-green-600">PKR {c.replacementFcaComm.toLocaleString()}</span></div>}
-                                    {c.replacementIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.replacementIfcaCount} × Rs.{c.replacementIfcaRate})</span><span className="text-green-600">PKR {c.replacementIfcaComm.toLocaleString()}</span></div>}
+                                    {c.replacementBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.replacementBvsCount} Ã— Rs.{c.replacementBvsRate})</span><span className="text-green-600">PKR {c.replacementBvsComm.toLocaleString()}</span></div>}
+                                    {c.replacementFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.replacementFcaCount} Ã— Rs.{c.replacementFcaRate})</span><span className="text-green-600">PKR {c.replacementFcaComm.toLocaleString()}</span></div>}
+                                    {c.replacementIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.replacementIfcaCount} Ã— Rs.{c.replacementIfcaRate})</span><span className="text-green-600">PKR {c.replacementIfcaComm.toLocaleString()}</span></div>}
                                   </>
                                 )}
                                 {c.bynCount > 0 && (
                                   <>
                                     <div className="flex justify-between"><span className="text-gray-500">BYN ({c.bynCount})</span><span className="font-medium text-green-600">PKR {c.bynComm.toLocaleString()}</span></div>
-                                    {c.bynBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.bynBvsCount} × Rs.{c.bynBvsRate})</span><span className="text-green-600">PKR {c.bynBvsComm.toLocaleString()}</span></div>}
-                                    {c.bynFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.bynFcaCount} × Rs.{c.bynFcaRate})</span><span className="text-green-600">PKR {c.bynFcaComm.toLocaleString()}</span></div>}
-                                    {c.bynIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.bynIfcaCount} × Rs.{c.bynIfcaRate})</span><span className="text-green-600">PKR {c.bynIfcaComm.toLocaleString()}</span></div>}
+                                    {c.bynBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.bynBvsCount} Ã— Rs.{c.bynBvsRate})</span><span className="text-green-600">PKR {c.bynBvsComm.toLocaleString()}</span></div>}
+                                    {c.bynFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.bynFcaCount} Ã— Rs.{c.bynFcaRate})</span><span className="text-green-600">PKR {c.bynFcaComm.toLocaleString()}</span></div>}
+                                    {c.bynIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.bynIfcaCount} Ã— Rs.{c.bynIfcaRate})</span><span className="text-green-600">PKR {c.bynIfcaComm.toLocaleString()}</span></div>}
                                   </>
                                 )}
                                 <div className="flex justify-between"><span className="text-gray-500">Hike + Other</span><span className="font-medium text-green-600">PKR {(c.hike + c.other).toLocaleString()}</span></div>

@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { Search, Wrench, Clock, CheckCircle, Filter } from "lucide-react";

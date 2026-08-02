@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -236,10 +235,10 @@ export default function DSOSalaryDetailPage() {
       <tr><td class="row-label row-sub">Residence Allowance</td><td class="row-value">PKR ${c.residence.toLocaleString()}</td></tr>
       <tr class="row-total"><td class="row-label">Total Allowances</td><td class="row-value">PKR ${c.totalAllowances.toLocaleString()}</td></tr>
       <tr class="row-divider"><td colspan="2"></td></tr>
-      <tr><td class="row-label">New SIM <span class="act-badge act-blue">${c.newSimCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${c.newSimRate}</span></td><td class="row-value">PKR ${c.newSimComm.toLocaleString()}</td></tr>
-      <tr class="row-alt"><td class="row-label">MNP <span class="act-badge act-purple">${c.mnpCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${c.mnpRate}</span></td><td class="row-value">PKR ${c.mnpComm.toLocaleString()}</td></tr>
-      <tr><td class="row-label">Replacement <span class="act-badge act-orange">${c.replacementCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${c.replacementRate}</span></td><td class="row-value">PKR ${c.replComm.toLocaleString()}</td></tr>
-      <tr class="row-alt"><td class="row-label">BYN <span class="act-badge act-teal">${c.bynCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">× Rs.${c.bynRate}</span></td><td class="row-value">PKR ${c.bynComm.toLocaleString()}</td></tr>
+      <tr><td class="row-label">New SIM <span class="act-badge act-blue">${c.newSimCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">Ã— Rs.${c.newSimRate}</span></td><td class="row-value">PKR ${c.newSimComm.toLocaleString()}</td></tr>
+      <tr class="row-alt"><td class="row-label">MNP <span class="act-badge act-purple">${c.mnpCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">Ã— Rs.${c.mnpRate}</span></td><td class="row-value">PKR ${c.mnpComm.toLocaleString()}</td></tr>
+      <tr><td class="row-label">Replacement <span class="act-badge act-orange">${c.replacementCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">Ã— Rs.${c.replacementRate}</span></td><td class="row-value">PKR ${c.replComm.toLocaleString()}</td></tr>
+      <tr class="row-alt"><td class="row-label">BYN <span class="act-badge act-teal">${c.bynCount} act.</span><span style="font-size:9px;color:#94a3b8;margin-left:4px;">Ã— Rs.${c.bynRate}</span></td><td class="row-value">PKR ${c.bynComm.toLocaleString()}</td></tr>
       <tr><td class="row-label row-sub">Hike Commission</td><td class="row-value">PKR ${c.hike.toLocaleString()}</td></tr>
       <tr class="row-alt"><td class="row-label row-sub">Other Commission</td><td class="row-value">PKR ${c.other.toLocaleString()}</td></tr>
       <tr class="row-total"><td class="row-label">Total Commission</td><td class="row-value">PKR ${c.totalCommission.toLocaleString()}</td></tr>
@@ -263,7 +262,7 @@ export default function DSOSalaryDetailPage() {
       <div><div class="np-label">Net Payable</div><div class="np-sub">After all allowances &amp; deductions</div></div>
       <div class="np-amount">PKR ${c.netPay.toLocaleString()}</div>
     </div>
-    <div class="amt-words" id="amtWords"><strong>Amount in Words:</strong> Rupees — Only</div>
+    <div class="amt-words" id="amtWords"><strong>Amount in Words:</strong> Rupees â€” Only</div>
     <div class="barcode-wrap">
       <canvas id="barcode"></canvas>
       <div class="bcode-id">${slipId}</div>
@@ -437,19 +436,19 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
           </h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">New SIM <span className="text-blue-500 font-bold">({currentPayroll.newSimCount})</span> × Rs.{currentPayroll.newSimRate}</span>
+              <span className="text-gray-500">New SIM <span className="text-blue-500 font-bold">({currentPayroll.newSimCount})</span> Ã— Rs.{currentPayroll.newSimRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.newSimComm.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">MNP <span className="text-purple-500 font-bold">({currentPayroll.mnpCount})</span> × Rs.{currentPayroll.mnpRate}</span>
+              <span className="text-gray-500">MNP <span className="text-purple-500 font-bold">({currentPayroll.mnpCount})</span> Ã— Rs.{currentPayroll.mnpRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.mnpComm.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">Replacement <span className="text-orange-500 font-bold">({currentPayroll.replacementCount})</span> × Rs.{currentPayroll.replacementRate}</span>
+              <span className="text-gray-500">Replacement <span className="text-orange-500 font-bold">({currentPayroll.replacementCount})</span> Ã— Rs.{currentPayroll.replacementRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.replComm.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">BYN <span className="text-teal-500 font-bold">({currentPayroll.bynCount})</span> × Rs.{currentPayroll.bynRate}</span>
+              <span className="text-gray-500">BYN <span className="text-teal-500 font-bold">({currentPayroll.bynCount})</span> Ã— Rs.{currentPayroll.bynRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.bynComm.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-gray-50">

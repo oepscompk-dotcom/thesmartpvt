@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
@@ -30,7 +29,7 @@ export default function FranchiseDashboardPage() {
   const safePct = (val: number, total: number) => total > 0 ? Math.round((val / total) * 100) : 0;
   const safeDiv = (val: number, total: number) => total > 0 ? val / total : 0;
 
-  // ─── All Memoized Metrics ────────────────────────────────
+  // â”€â”€â”€ All Memoized Metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const metrics = useMemo(() => ({
     activeDSM: dsms.filter((d) => d.status === "Active").length,
     totalDSM: dsms.length,
@@ -111,7 +110,7 @@ export default function FranchiseDashboardPage() {
       items.push({
         icon: r.status === "Issued" ? TrendingUp : TrendingDown,
         color: r.status === "Issued" ? "text-blue-500 bg-blue-50" : "text-green-500 bg-green-50",
-        title: `${r.issuedTo} — ${r.status === "Issued" ? "SIMs Issued" : "SIMs Returned"}`,
+        title: `${r.issuedTo} â€” ${r.status === "Issued" ? "SIMs Issued" : "SIMs Returned"}`,
         detail: `${r.simIds.length} SIM(s) | ${r.retailerId}`,
         time: r.issueDate || r.returnDate || "",
       });
@@ -119,7 +118,7 @@ export default function FranchiseDashboardPage() {
     equipmentIssueRecords.slice(0, 2).forEach((r) => {
       items.push({
         icon: Briefcase, color: "text-indigo-500 bg-indigo-50",
-        title: `${r.personName} — Equipment ${r.status === "Returned" ? "Returned" : "Issued"}`,
+        title: `${r.personName} â€” Equipment ${r.status === "Returned" ? "Returned" : "Issued"}`,
         detail: `${r.equipmentName} | ${r.personRole}`,
         time: r.issueDate || r.returnDate || "",
       });
@@ -175,8 +174,8 @@ export default function FranchiseDashboardPage() {
   const statCards = [
     { label: "Active DSM", value: metrics.activeDSM, sub: `of ${metrics.totalDSM} total`, icon: Users, color: "from-blue-500 to-blue-600", light: "bg-blue-50", trend: metrics.totalDSM > 0 ? `+${metrics.activeDSM}` : "0", up: metrics.activeDSM >= metrics.totalDSM * 0.5 },
     { label: "Active DSO", value: metrics.activeDSO, sub: `of ${metrics.totalDSO} total`, icon: UserCheck, color: "from-emerald-500 to-emerald-600", light: "bg-emerald-50", trend: metrics.totalDSO > 0 ? `+${metrics.activeDSO}` : "0", up: metrics.activeDSO >= metrics.totalDSO * 0.5 },
-    { label: "Devices Issued", value: metrics.issuedDevices, sub: `${metrics.inStockDevices} in stock · ${metrics.totalDevices} total`, icon: Smartphone, color: "from-purple-500 to-purple-600", light: "bg-purple-50", trend: metrics.totalDevices > 0 ? `${Math.round((metrics.issuedDevices / metrics.totalDevices) * 100)}%` : "0%", up: true },
-    { label: "Active SIMs", value: metrics.activatedSIMs, sub: `${metrics.issuedSIMs} issued · ${metrics.totalSIMs} total`, icon: CreditCard, color: "from-cyan-500 to-cyan-600", light: "bg-cyan-50", trend: metrics.totalSIMs > 0 ? `${safePct(metrics.activatedSIMs, metrics.totalSIMs)}%` : "0%", up: true },
+    { label: "Devices Issued", value: metrics.issuedDevices, sub: `${metrics.inStockDevices} in stock Â· ${metrics.totalDevices} total`, icon: Smartphone, color: "from-purple-500 to-purple-600", light: "bg-purple-50", trend: metrics.totalDevices > 0 ? `${Math.round((metrics.issuedDevices / metrics.totalDevices) * 100)}%` : "0%", up: true },
+    { label: "Active SIMs", value: metrics.activatedSIMs, sub: `${metrics.issuedSIMs} issued Â· ${metrics.totalSIMs} total`, icon: CreditCard, color: "from-cyan-500 to-cyan-600", light: "bg-cyan-50", trend: metrics.totalSIMs > 0 ? `${safePct(metrics.activatedSIMs, metrics.totalSIMs)}%` : "0%", up: true },
   ];
 
   const quickActions = [
@@ -193,13 +192,13 @@ export default function FranchiseDashboardPage() {
   const secondaryStats = [
     { label: "New SIM Stock", value: metrics.newSIMStock, icon: Package, color: "text-cyan-600", light: "bg-cyan-50", pct: metrics.newSIMTotal > 0 ? safePct(metrics.newSIMStock, metrics.newSIMTotal) : 0 },
     { label: "HLR SIM Stock", value: metrics.hlrStock, icon: Layers, color: "text-orange-600", light: "bg-orange-50", pct: metrics.hlrSIMTotal > 0 ? safePct(metrics.hlrStock, metrics.hlrSIMTotal) : 0 },
-    { label: "Today Present", value: attendanceToday.present, sub: attendanceToday.total > 0 ? `${safePct(attendanceToday.present, attendanceToday.total)}%` : "—", icon: CheckCircle2, color: "text-green-600", light: "bg-green-50", pct: safePct(attendanceToday.present, attendanceToday.total || 1) },
+    { label: "Today Present", value: attendanceToday.present, sub: attendanceToday.total > 0 ? `${safePct(attendanceToday.present, attendanceToday.total)}%` : "â€”", icon: CheckCircle2, color: "text-green-600", light: "bg-green-50", pct: safePct(attendanceToday.present, attendanceToday.total || 1) },
     { label: "Unread Alerts", value: notifStats.unread, icon: Bell, color: notifStats.unread > 0 ? "text-red-600" : "text-gray-400", light: notifStats.unread > 0 ? "bg-red-50" : "bg-gray-50", pct: 0 },
   ];
 
   return (
     <div className="space-y-6">
-      {/* ─── Greeting Header ──────────────────────────── */}
+      {/* â”€â”€â”€ Greeting Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="bg-gradient-to-r from-[#0A2647] via-[#144272] to-[#205295] rounded-2xl p-6 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -233,7 +232,7 @@ export default function FranchiseDashboardPage() {
         </div>
       </div>
 
-      {/* ─── Tab Navigation ────────────────────────────── */}
+      {/* â”€â”€â”€ Tab Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
         {[
           { key: "overview" as const, label: "Overview", icon: Home },
@@ -247,10 +246,10 @@ export default function FranchiseDashboardPage() {
         ))}
       </div>
 
-      {/* ═══════════ OVERVIEW TAB ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "overview" && (
         <>
-          {/* ─── Primary Stats ───────────────────────────── */}
+          {/* â”€â”€â”€ Primary Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((s) => (
               <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg transition-all group">
@@ -269,7 +268,7 @@ export default function FranchiseDashboardPage() {
             ))}
           </div>
 
-          {/* ─── Secondary Stats ──────────────────────────── */}
+          {/* â”€â”€â”€ Secondary Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {secondaryStats.map((s) => (
               <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-all">
@@ -279,7 +278,7 @@ export default function FranchiseDashboardPage() {
                   </div>
                   <div>
                     <p className="text-xl font-black text-gray-900">{s.value}</p>
-                    <p className="text-gray-500 text-[11px]">{s.label} {s.sub && `· ${s.sub}`}</p>
+                    <p className="text-gray-500 text-[11px]">{s.label} {s.sub && `Â· ${s.sub}`}</p>
                     {s.pct > 0 && (
                       <div className="w-16 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
                         <div className={`h-full rounded-full ${s.label === "Today Present" ? "bg-green-500" : "bg-blue-500"}`} style={{ width: `${s.pct}%` }} />
@@ -291,7 +290,7 @@ export default function FranchiseDashboardPage() {
             ))}
           </div>
 
-          {/* ─── Quick Actions ────────────────────────────── */}
+          {/* â”€â”€â”€ Quick Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2">
               <Zap size={16} className="text-[#C8A951]" /> Quick Actions
@@ -307,7 +306,7 @@ export default function FranchiseDashboardPage() {
             </div>
           </div>
 
-          {/* ─── Main Content Grid ────────────────────────── */}
+          {/* â”€â”€â”€ Main Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Left Column - 2 cols */}
             <div className="lg:col-span-2 space-y-6">
@@ -607,7 +606,7 @@ export default function FranchiseDashboardPage() {
         </>
       )}
 
-      {/* ═══════════ PERFORMANCE TAB ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• PERFORMANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "performance" && (
         <>
           {/* Target Overview Cards */}
@@ -752,7 +751,7 @@ export default function FranchiseDashboardPage() {
         </>
       )}
 
-      {/* ═══════════ FINANCE TAB ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• FINANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "finance" && (
         <>
           {/* Period Summary */}

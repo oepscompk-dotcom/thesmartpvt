@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
@@ -370,7 +369,7 @@ export default function DSMPendingFCAPage() {
           </div>
         )}
 
-        {/* Completed Records — Date-wise */}
+        {/* Completed Records â€” Date-wise */}
         {completedByDate.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold flex items-center gap-2 text-gray-800">

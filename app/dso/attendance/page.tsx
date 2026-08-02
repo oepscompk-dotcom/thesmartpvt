@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { CalendarCheck, CheckCircle2, XCircle, Clock, MapPin, Plus, X, ArrowLeft, LogOut, Search, Filter, AlertTriangle, Ban, FileText, ChevronDown, Timer, Award, Frown } from "lucide-react";
@@ -100,7 +99,7 @@ export default function DSOAttendancePage() {
     const isLate = timeToMinutes(currentTime) > timeToMinutes(settings.lateAfter);
     addAttendance({
       id: `DSA-${Date.now()}`, dsoId: auth.dsoId, date: today,
-      checkIn: currentTime, checkOut: "", gps: "33.6063°N, 73.0479°E",
+      checkIn: currentTime, checkOut: "", gps: "33.6063Â°N, 73.0479Â°E",
       selfie: "", status: isLate ? "Late" : "Present", franchiseId: auth.franchiseId,
     });
     setShowCheckIn(false);
@@ -209,7 +208,7 @@ export default function DSOAttendancePage() {
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"><Timer size={18} className="text-blue-600" /></div>
               <div>
                 <p className="text-blue-900 text-sm font-bold">Checked In at {todayRecord.checkIn}</p>
-                <p className="text-blue-600 text-xs">{todayRecord.status === "Late" ? "Late entry" : "On time"} — {settings.requiredHours}h required</p>
+                <p className="text-blue-600 text-xs">{todayRecord.status === "Late" ? "Late entry" : "On time"} â€” {settings.requiredHours}h required</p>
               </div>
             </div>
             <button onClick={() => setShowCheckOut(true)} className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-all">Check Out</button>
@@ -285,26 +284,26 @@ export default function DSOAttendancePage() {
                           <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0057FF]/10 text-[#0057FF] text-xs font-black">{idx + 1}</span>
                         </td>
                         <td className="px-4 py-3 text-gray-900 text-sm font-medium">{formatDateDDMMYYYY(a.date)}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkIn || "—"}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkOut || "—"}</td>
+                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkIn || "â€”"}</td>
+                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkOut || "â€”"}</td>
                         <td className="px-4 py-3 hidden md:table-cell">
                           {hours > 0 ? (
                             <span className={`text-sm font-bold ${hours >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>
                               {hours.toFixed(1)}h
                             </span>
-                          ) : "—"}
+                          ) : "â€”"}
                         </td>
                         <td className="px-4 py-3 hidden lg:table-cell">
-                          <span className="inline-flex items-center gap-1 text-gray-500 text-xs"><MapPin size={10} />{a.gps || "—"}</span>
+                          <span className="inline-flex items-center gap-1 text-gray-500 text-xs"><MapPin size={10} />{a.gps || "â€”"}</span>
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${a.status === "Present" ? "bg-green-50 text-green-700" : a.status === "Absent" ? "bg-red-50 text-red-700" : a.status === "Late" ? "bg-yellow-50 text-yellow-700" : a.status === "Leave" ? "bg-blue-50 text-blue-700" : "bg-gray-50 text-gray-700"}`}>{a.status}</span>
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          {a.fine ? <span className="text-red-600 text-xs font-bold">-PKR {a.fine}</span> : "—"}
+                          {a.fine ? <span className="text-red-600 text-xs font-bold">-PKR {a.fine}</span> : "â€”"}
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          {a.bonus ? <span className="text-green-600 text-xs font-bold">+PKR {a.bonus}</span> : "—"}
+                          {a.bonus ? <span className="text-green-600 text-xs font-bold">+PKR {a.bonus}</span> : "â€”"}
                         </td>
                       </tr>
                     );
@@ -346,7 +345,7 @@ export default function DSOAttendancePage() {
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${r.status === "Approved" ? "bg-green-50 text-green-700" : r.status === "Rejected" ? "bg-red-50 text-red-700" : "bg-yellow-50 text-yellow-700"}`}>{r.status}</span>
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{r.reviewedBy || "—"}</td>
+                    <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{r.reviewedBy || "â€”"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -385,7 +384,7 @@ export default function DSOAttendancePage() {
                       <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${w.type === "consecutive_absent" ? "bg-red-50 text-red-700" : w.type === "late" ? "bg-yellow-50 text-yellow-700" : "bg-amber-50 text-amber-700"}`}>{w.type.replace("_", " ").toUpperCase()}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-700 text-sm">{w.message}</td>
-                    <td className="px-4 py-3 text-red-600 text-xs font-bold">{w.fineAmount > 0 ? `PKR ${w.fineAmount.toLocaleString()}` : "—"}</td>
+                    <td className="px-4 py-3 text-red-600 text-xs font-bold">{w.fineAmount > 0 ? `PKR ${w.fineAmount.toLocaleString()}` : "â€”"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -394,7 +393,7 @@ export default function DSOAttendancePage() {
           {myWarnings.length === 0 && (
             <div className="px-6 py-12 text-center">
               <CheckCircle2 size={32} className="text-green-300 mx-auto mb-3" />
-              <p className="text-green-500 text-sm font-medium">No warnings — all clear!</p>
+              <p className="text-green-500 text-sm font-medium">No warnings â€” all clear!</p>
             </div>
           )}
         </div>
@@ -414,11 +413,11 @@ export default function DSOAttendancePage() {
                 <p className="text-gray-500 text-sm mt-1">{formatDateDDMMYYYY(today)}</p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
-                <div className="flex items-center gap-2 text-sm text-gray-600"><MapPin size={14} className="text-[#C8A951]" /> 33.6063°N, 73.0479°E</div>
+                <div className="flex items-center gap-2 text-sm text-gray-600"><MapPin size={14} className="text-[#C8A951]" /> 33.6063Â°N, 73.0479Â°E</div>
               </div>
               {timeToMinutes(currentTime) > timeToMinutes(settings.lateAfter) && (
                 <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
-                  <p className="text-yellow-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> Late entry — after {settings.lateAfter}</p>
+                  <p className="text-yellow-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> Late entry â€” after {settings.lateAfter}</p>
                 </div>
               )}
             </div>
@@ -477,7 +476,7 @@ export default function DSOAttendancePage() {
             </div>
             <div className="p-6 space-y-4">
               <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
-                <p className="text-blue-700 text-xs font-medium">Your request will be sent to DSM for review. Status: Pending → Approved/Rejected</p>
+                <p className="text-blue-700 text-xs font-medium">Your request will be sent to DSM for review. Status: Pending â†’ Approved/Rejected</p>
               </div>
               <LeaveForm onSubmit={handleLeaveRequest} onCancel={() => setShowLeaveForm(false)} />
             </div>

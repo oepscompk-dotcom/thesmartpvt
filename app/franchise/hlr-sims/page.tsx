@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { Plus, Search, Edit, Trash2, X, Save, Smartphone, Package, ArrowRight, CheckSquare, Square, Check, ChevronDown, Calendar } from "lucide-react";

@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import React, { useState, useMemo } from "react";
 import { useDSOData } from "@/lib/DSODataContext";
@@ -241,7 +240,7 @@ export default function PendingBVSPage() {
                 BVS Verification
               </h1>
               <p className="text-sm text-gray-300 mt-0.5">
-                Biometric Verification System — Pending SIMs
+                Biometric Verification System â€” Pending SIMs
               </p>
             </div>
           </div>
@@ -289,7 +288,7 @@ export default function PendingBVSPage() {
             style={{ color: "#C8A951" }}
           />
           <p className="text-sm text-gray-700">
-            After all verifications (BVS → FCA → IFCA), SIM status will change
+            After all verifications (BVS â†’ FCA â†’ IFCA), SIM status will change
             to <span className="font-semibold text-emerald-600">Active</span>.
           </p>
         </div>
@@ -498,7 +497,7 @@ export default function PendingBVSPage() {
           </div>
         )}
 
-        {/* Completed Records — Date-wise */}
+        {/* Completed Records â€” Date-wise */}
         {completedByDate.length > 0 && (
           <div className="space-y-4">
             <h2

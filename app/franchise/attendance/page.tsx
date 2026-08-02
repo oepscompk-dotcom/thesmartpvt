@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTriangle, FileText, ArrowLeft, Timer, Award, Ban, Eye, Plus, X, MapPin, Users, Settings, ChevronDown, ChevronUp } from "lucide-react";
@@ -259,23 +258,23 @@ export default function FranchiseAttendancePage() {
                           <span className={`px-2 py-1 rounded-lg text-xs font-medium ${a.role === "DSM" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{a.role}</span>
                         </td>
                         <td className="px-4 py-3 text-gray-900 text-sm font-medium">{formatDateDDMMYYYY(a.date)}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkIn || "—"}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkOut || "—"}</td>
+                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkIn || "â€”"}</td>
+                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkOut || "â€”"}</td>
                         <td className="px-4 py-3 hidden md:table-cell">
                           {hours > 0 ? (
                             <span className={`text-sm font-bold ${hours >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>
                               {hours.toFixed(1)}h
                             </span>
-                          ) : "—"}
+                          ) : "â€”"}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${a.status === "Present" ? "bg-green-50 text-green-700" : a.status === "Absent" ? "bg-red-50 text-red-700" : a.status === "Late" ? "bg-yellow-50 text-yellow-700" : a.status === "Leave" ? "bg-blue-50 text-blue-700" : "bg-gray-50 text-gray-700"}`}>{a.status}</span>
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          {hours > 0 && hours < settings.requiredHours ? <span className="text-red-600 text-xs font-bold">-PKR {settings.finePerDay.toLocaleString()}</span> : "—"}
+                          {hours > 0 && hours < settings.requiredHours ? <span className="text-red-600 text-xs font-bold">-PKR {settings.finePerDay.toLocaleString()}</span> : "â€”"}
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          {hours >= settings.requiredHours && hours > 0 ? <span className="text-green-600 text-xs font-bold">+PKR {settings.bonusPerSale.toLocaleString()}</span> : "—"}
+                          {hours >= settings.requiredHours && hours > 0 ? <span className="text-green-600 text-xs font-bold">+PKR {settings.bonusPerSale.toLocaleString()}</span> : "â€”"}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button onClick={() => setViewRecord(a)} className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
@@ -329,13 +328,13 @@ export default function FranchiseAttendancePage() {
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${viewRecord.role === "DSM" ? "bg-blue-600" : "bg-green-600"}`}>{viewRecord.employeeName?.charAt(0)}</div>
                 <div>
                   <p className="text-gray-900 font-bold">{viewRecord.employeeName}</p>
-                  <p className="text-gray-500 text-xs font-mono">{viewRecord.employeeId} · {viewRecord.role}</p>
+                  <p className="text-gray-500 text-xs font-mono">{viewRecord.employeeId} Â· {viewRecord.role}</p>
                 </div>
               </div>
               <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-gray-500">Date</span><span className="font-medium text-gray-900">{formatDateDDMMYYYY(viewRecord.date)}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Check In</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkIn || "—"}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Check Out</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkOut || "—"}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">Check In</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkIn || "â€”"}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">Check Out</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkOut || "â€”"}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-500">Working Hours</span><span className={`font-bold ${calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut) >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>{calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut).toFixed(1)}h / {settings.requiredHours}h</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-500">Status</span><span className={`px-2 py-1 rounded-lg text-xs font-medium ${viewRecord.status === "Present" ? "bg-green-50 text-green-700" : viewRecord.status === "Late" ? "bg-yellow-50 text-yellow-700" : viewRecord.status === "Leave" ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-700"}`}>{viewRecord.status}</span></div>
                 {viewRecord.gps ? <div className="flex justify-between text-sm"><span className="text-gray-500">GPS</span><span className="text-gray-700 text-xs flex items-center gap-1"><MapPin size={10} /> {viewRecord.gps}</span></div> : null}

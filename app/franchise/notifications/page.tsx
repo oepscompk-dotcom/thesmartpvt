@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState } from "react";
 import { Bell, Send, Trash2, MessageSquare, Mail, Smartphone, CheckCircle } from "lucide-react";

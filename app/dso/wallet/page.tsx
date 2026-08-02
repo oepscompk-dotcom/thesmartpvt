@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState } from "react";
 import { Wallet, Plus, ArrowDown, ArrowUp, X } from "lucide-react";

@@ -6,6 +6,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
+  ...(process.env.STATIC_EXPORT === "true" ? { output: "export" } : {}),
 }
 
 module.exports = nextConfig

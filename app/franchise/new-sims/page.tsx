@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { Plus, Search, Edit, Trash2, X, Save, Smartphone, Package, ArrowRight, CheckSquare, Square, Check, ChevronDown, Calendar, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
@@ -291,7 +290,7 @@ export default function NewSIMsPage() {
                         )}
                       </div>
                     ) : (
-                      <span className="text-gray-300 text-xs">—</span>
+                      <span className="text-gray-300 text-xs">â€”</span>
                     )}
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">

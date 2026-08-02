@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { FileText, Download, BarChart3, Users, Smartphone, DollarSign, Calendar, Clock, Target, Wallet, TrendingUp, TrendingDown, Eye, Printer, Search, Filter, X, ChevronDown, ChevronUp, CreditCard, Briefcase, ClipboardList, PieChart, Activity } from "lucide-react";
@@ -154,7 +153,7 @@ export default function ReportsPage() {
       </div>`;
     const footer = () =>
       `<div style="text-align:center;margin-top:14px;font-size:10px;color:#999;font-family:Arial,sans-serif;border-top:1px solid #ddd;padding-top:8px">
-        ${franchiseName}${phone || email ? ` &bull; ${[phone, email].filter(Boolean).join(" · ")}` : ""}${address ? ` &bull; ${address}` : ""} &bull; ${new Date().toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" })}
+        ${franchiseName}${phone || email ? ` &bull; ${[phone, email].filter(Boolean).join(" Â· ")}` : ""}${address ? ` &bull; ${address}` : ""} &bull; ${new Date().toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" })}
       </div>`;
     const wrapTable = (headers: string[], rows: (string | number)[][], label: string) => {
       const hr = headers.map((h) => `<th style="border:1px solid #999;padding:8px 10px;background:#333;color:#fff;font-size:11px;font-weight:700;font-family:Arial,sans-serif;text-align:left">${h}</th>`).join("");
@@ -165,12 +164,12 @@ export default function ReportsPage() {
     if (activeTab === "hr") {
       if (selectedReport === "attendance") {
         const headers = ["Employee", "Role", "Date", "Check In", "Check Out", "Status"];
-        const rows = filteredAttendance.map((a) => [a.employeeName, a.role, formatDateDDMMYYYY(a.date), a.checkIn || "—", a.checkOut || "—", a.status]);
+        const rows = filteredAttendance.map((a) => [a.employeeName, a.role, formatDateDDMMYYYY(a.date), a.checkIn || "â€”", a.checkOut || "â€”", a.status]);
         return { headers, rows, title: "Attendance Report", wrapTable };
       }
       if (selectedReport === "payroll") {
         const headers = ["Employee", "Role", "Month", "Basic", "Allowances", "Commission", "Deductions", "Net Pay", "Status"];
-        const rows = filteredPayroll.map((p) => [p.employeeName || "—", p.role || "—", p.month || "—", p.basicSalary || 0, p.totalAllowances || 0, p.totalCommission || 0, p.totalDeductions || 0, p.netPay || 0, p.paid ? "Paid" : "Unpaid"]);
+        const rows = filteredPayroll.map((p) => [p.employeeName || "â€”", p.role || "â€”", p.month || "â€”", p.basicSalary || 0, p.totalAllowances || 0, p.totalCommission || 0, p.totalDeductions || 0, p.netPay || 0, p.paid ? "Paid" : "Unpaid"]);
         return { headers, rows, title: "Payroll Report", wrapTable };
       }
       const headers = ["Employee", "ID", "Role", "Mobile", "CNIC", "Joining Date", "Salary", "Status"];
@@ -180,22 +179,22 @@ export default function ReportsPage() {
     if (activeTab === "inventory") {
       if (selectedReport === "devices") {
         const headers = ["BVS #", "Brand/Model", "IMEI", "Retailer ID", "Status", "Assigned To"];
-        const rows = devices.map((d) => [d.bvsNumber, `${d.brand} ${d.model}`.trim(), d.imei, d.retailerId, d.status, d.assignedDSO || "—"]);
+        const rows = devices.map((d) => [d.bvsNumber, `${d.brand} ${d.model}`.trim(), d.imei, d.retailerId, d.status, d.assignedDSO || "â€”"]);
         return { headers, rows, title: "Devices Report", wrapTable };
       }
       if (selectedReport === "equipment") {
         const headers = ["Item Name", "Price", "Condition", "Status", "Assigned To"];
-        const rows = equipment.map((e) => [e.name, e.price || 0, e.condition, e.status, e.assignedTo || "—"]);
+        const rows = equipment.map((e) => [e.name, e.price || 0, e.condition, e.status, e.assignedTo || "â€”"]);
         return { headers, rows, title: "Equipment Report", wrapTable };
       }
       const headers = ["SIM Number", "Network", "ICCID", "Type", "Status", "Receive Date", "Issued To"];
-      const rows = filteredSIMs.map((s) => [s.simNumber, s.network, s.iccid, s.type, s.status, s.receiveDate ? formatDateDDMMYYYY(s.receiveDate) : "", s.issuedToName || "—"]);
+      const rows = filteredSIMs.map((s) => [s.simNumber, s.network, s.iccid, s.type, s.status, s.receiveDate ? formatDateDDMMYYYY(s.receiveDate) : "", s.issuedToName || "â€”"]);
       return { headers, rows, title: "SIM Inventory Report", wrapTable };
     }
     if (activeTab === "finance") {
       if (selectedReport === "expenses") {
         const headers = ["Date", "Description", "Category", "Type", "Amount"];
-        const rows = filteredExpenses.map((e) => [formatDateDDMMYYYY(e.date), e.description || e.note || "—", e.category || "Other", e.type || "—", e.amount]);
+        const rows = filteredExpenses.map((e) => [formatDateDDMMYYYY(e.date), e.description || e.note || "â€”", e.category || "Other", e.type || "â€”", e.amount]);
         return { headers, rows, title: "Expenses Report", wrapTable };
       }
       if (selectedReport === "cashflow") {
@@ -203,16 +202,16 @@ export default function ReportsPage() {
       }
       if (selectedReport === "accounts") {
         const headers = ["Date", "Description", "Category", "Debit", "Credit"];
-        const rows = accounts.filter((a) => a.date >= dateFrom && a.date <= dateTo).map((a) => [formatDateDDMMYYYY(a.date), a.description, a.category, a.type === "expense" ? a.amount : "—", a.type === "income" ? a.amount : "—"]);
+        const rows = accounts.filter((a) => a.date >= dateFrom && a.date <= dateTo).map((a) => [formatDateDDMMYYYY(a.date), a.description, a.category, a.type === "expense" ? a.amount : "â€”", a.type === "income" ? a.amount : "â€”"]);
         return { headers, rows, title: "Account Ledger Report", wrapTable };
       }
       if (selectedReport === "payroll") {
         const headers = ["Employee", "Role", "Month", "Basic", "Allowances", "Commission", "Deductions", "Net Pay", "Status"];
-        const rows = filteredPayroll.map((p) => [p.employeeName || "—", p.role || "—", p.month || "—", p.basicSalary || 0, p.totalAllowances || 0, p.totalCommission || 0, p.totalDeductions || 0, p.netPay || 0, p.paid ? "Paid" : "Unpaid"]);
+        const rows = filteredPayroll.map((p) => [p.employeeName || "â€”", p.role || "â€”", p.month || "â€”", p.basicSalary || 0, p.totalAllowances || 0, p.totalCommission || 0, p.totalDeductions || 0, p.netPay || 0, p.paid ? "Paid" : "Unpaid"]);
         return { headers, rows, title: "Payroll Report", wrapTable };
       }
       const headers = ["Date", "Note", "Amount", "Type"];
-      const rows = wallet.filter((w) => w.date >= dateFrom && w.date <= dateTo).map((w) => [formatDateDDMMYYYY(w.date), w.note || w.remarks || "—", w.amount, w.type]);
+      const rows = wallet.filter((w) => w.date >= dateFrom && w.date <= dateTo).map((w) => [formatDateDDMMYYYY(w.date), w.note || w.remarks || "â€”", w.amount, w.type]);
       return { headers, rows, title: "Wallet Transactions", wrapTable };
     }
     if (activeTab === "sales") {
@@ -277,7 +276,7 @@ export default function ReportsPage() {
       <div class="print-header">
         <h1>${franchiseName}</h1>
         ${ownerLine}
-        <p>${data.title} — Generated: ${date}</p>
+        <p>${data.title} â€” Generated: ${date}</p>
       </div>
       <table><thead><tr>${hr}</tr></thead><tbody>${rr}</tbody></table>
       <div class="print-footer">${franchiseName}${contactParts ? ` &bull; ${contactParts}` : ""}${addressParts ? ` &bull; ${addressParts}` : ""} &bull; ${date.split(",")[0]}</div>
@@ -350,7 +349,7 @@ export default function ReportsPage() {
           <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm">
             <Calendar size={14} className="text-gray-400" />
             <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="border-0 p-0 w-28 focus:outline-none text-gray-700" />
-            <span className="text-gray-300">—</span>
+            <span className="text-gray-300">â€”</span>
             <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="border-0 p-0 w-28 focus:outline-none text-gray-700" />
           </div>
           <div className="relative no-print">
@@ -445,7 +444,7 @@ export default function ReportsPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Users size={16} className="text-[#0A2647]" /> Staff Overview</h3>
-                <button onClick={() => { setActiveTab("hr"); setSelectedReport("staff"); }} className="text-xs text-[#0A2647] font-medium hover:underline">View Details →</button>
+                <button onClick={() => { setActiveTab("hr"); setSelectedReport("staff"); }} className="text-xs text-[#0A2647] font-medium hover:underline">View Details â†’</button>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -467,7 +466,7 @@ export default function ReportsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">{s.name}</p>
-                          <p className="text-xs text-gray-400">{s.id} · {s.role}</p>
+                          <p className="text-xs text-gray-400">{s.id} Â· {s.role}</p>
                         </div>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
@@ -483,7 +482,7 @@ export default function ReportsPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Clock size={16} className="text-[#0A2647]" /> Today&apos;s Attendance</h3>
-                <button onClick={() => { setActiveTab("hr"); setSelectedReport("attendance"); }} className="text-xs text-[#0A2647] font-medium hover:underline">View All →</button>
+                <button onClick={() => { setActiveTab("hr"); setSelectedReport("attendance"); }} className="text-xs text-[#0A2647] font-medium hover:underline">View All â†’</button>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-4 gap-3 mb-4">
@@ -509,7 +508,7 @@ export default function ReportsPage() {
                     <div key={a.id} className="flex items-center justify-between py-1.5">
                       <span className="text-sm text-gray-700">{a.employeeName}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">{a.checkIn || "—"} - {a.checkOut || "—"}</span>
+                        <span className="text-xs text-gray-400">{a.checkIn || "â€”"} - {a.checkOut || "â€”"}</span>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${a.status === "Present" ? "bg-green-50 text-green-700" : a.status === "Late" ? "bg-yellow-50 text-yellow-700" : a.status === "Leave" ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-700"}`}>
                           {a.status}
                         </span>
@@ -729,8 +728,8 @@ export default function ReportsPage() {
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${a.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{a.role}</span>
                           </td>
                           <td className="px-4 py-3 text-gray-500">{formatDateDDMMYYYY(a.date)}</td>
-                          <td className="px-4 py-3 text-gray-600 font-mono text-xs">{a.checkIn || "—"}</td>
-                          <td className="px-4 py-3 text-gray-600 font-mono text-xs">{a.checkOut || "—"}</td>
+                          <td className="px-4 py-3 text-gray-600 font-mono text-xs">{a.checkIn || "â€”"}</td>
+                          <td className="px-4 py-3 text-gray-600 font-mono text-xs">{a.checkOut || "â€”"}</td>
                           <td className="px-4 py-3 text-center">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                               a.status === "Present" ? "bg-green-50 text-green-700" :
@@ -754,8 +753,8 @@ export default function ReportsPage() {
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${a.employeeName}</td>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;">${a.role}</td>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;">${formatDateDDMMYYYY(a.date)}</td>
-                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${a.checkIn || "—"}</td>
-                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${a.checkOut || "—"}</td>
+                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${a.checkIn || "â€”"}</td>
+                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${a.checkOut || "â€”"}</td>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;">${a.status}</td>
                     </tr>`).join("");
                     handlePrint("Attendance Report", `
@@ -823,7 +822,7 @@ export default function ReportsPage() {
                       {filteredPayroll.map((p) => (
                         <>
                           <tr key={p.id} className="hover:bg-gray-50/50 cursor-pointer" onClick={() => setExpandedRow(expandedRow === p.id ? null : p.id)}>
-                            <td className="px-4 py-3 font-medium text-gray-900">{p.employeeName || "—"}</td>
+                            <td className="px-4 py-3 font-medium text-gray-900">{p.employeeName || "â€”"}</td>
                             <td className="px-4 py-3">
                               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{p.role}</span>
                             </td>
@@ -852,9 +851,9 @@ export default function ReportsPage() {
                                   <div><p className="text-gray-400 mb-1">Advance Salary</p><p className="font-medium text-red-600">-PKR {(p.advanceSalary || 0).toLocaleString()}</p></div>
                                   <div><p className="text-gray-400 mb-1">Loan Deduction</p><p className="font-medium text-red-600">-PKR {(p.loanDeduction || 0).toLocaleString()}</p></div>
                                   <div><p className="text-gray-400 mb-1">Other Deduction</p><p className="font-medium text-red-600">-PKR {(p.otherDeduction || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">New SIM</p><p className="font-medium">{p.newSimCount || 0} × PKR {(p.newSimRate || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">MNP</p><p className="font-medium">{p.mnpCount || 0} × PKR {(p.mnpRate || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Replacement</p><p className="font-medium">{p.replacementCount || 0} × PKR {(p.replacementRate || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-gray-400 mb-1">New SIM</p><p className="font-medium">{p.newSimCount || 0} Ã— PKR {(p.newSimRate || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-gray-400 mb-1">MNP</p><p className="font-medium">{p.mnpCount || 0} Ã— PKR {(p.mnpRate || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-gray-400 mb-1">Replacement</p><p className="font-medium">{p.replacementCount || 0} Ã— PKR {(p.replacementRate || 0).toLocaleString()}</p></div>
                                 </div>
                               </td>
                             </tr>
@@ -882,9 +881,9 @@ export default function ReportsPage() {
                   <span className="text-xs text-gray-400">Total Paid: PKR {payrollStats.totalPaid.toLocaleString()}</span>
                   <button onClick={() => {
                     const rows = filteredPayroll.map((p) => `<tr>
-                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${p.employeeName || "—"}</td>
-                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;">${p.role || "—"}</td>
-                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;">${p.month || "—"}</td>
+                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${p.employeeName || "â€”"}</td>
+                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;">${p.role || "â€”"}</td>
+                      <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;">${p.month || "â€”"}</td>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:right;">PKR ${(p.basicSalary || 0).toLocaleString()}</td>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:right;">PKR ${(p.totalAllowances || 0).toLocaleString()}</td>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:right;">PKR ${(p.totalCommission || 0).toLocaleString()}</td>
@@ -1011,7 +1010,7 @@ export default function ReportsPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{d.name}</p>
-                          <p className="text-xs text-gray-400">{d.id} · {d.assignedDSM ? `Reports to ${d.assignedDSM}` : "Unassigned"}</p>
+                          <p className="text-xs text-gray-400">{d.id} Â· {d.assignedDSM ? `Reports to ${d.assignedDSM}` : "Unassigned"}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -1167,9 +1166,9 @@ export default function ReportsPage() {
                               "bg-gray-50 text-gray-600"
                             }`}>{s.network}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs font-mono">{s.iccid || "—"}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs font-mono">{s.iccid || "â€”"}</td>
                           <td className="px-4 py-3">
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{s.type || "—"}</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{s.type || "â€”"}</span>
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -1179,8 +1178,8 @@ export default function ReportsPage() {
                               "bg-gray-50 text-gray-600"
                             }`}>{s.status}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{s.receiveDate ? formatDateDDMMYYYY(s.receiveDate) : "—"}</td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{s.issuedToName || "—"}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">{s.receiveDate ? formatDateDDMMYYYY(s.receiveDate) : "â€”"}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">{s.issuedToName || "â€”"}</td>
                         </tr>
                       ))}
                       {filteredSIMs.length === 0 && (
@@ -1235,7 +1234,7 @@ export default function ReportsPage() {
                         <td className="px-4 py-3 font-mono text-xs font-medium text-gray-900">{d.bvsNumber}</td>
                         <td className="px-4 py-3 text-gray-700">{d.brand} {d.model}</td>
                         <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.imei}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.retailerId || "—"}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.retailerId || "â€”"}</td>
                         <td className="px-4 py-3 text-center">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                             d.status === "In Stock" ? "bg-green-50 text-green-700" :
@@ -1244,7 +1243,7 @@ export default function ReportsPage() {
                             "bg-red-50 text-red-700"
                           }`}>{d.status}</span>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{d.assignedDSO || "—"}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{d.assignedDSO || "â€”"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1257,7 +1256,7 @@ export default function ReportsPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
                 <h3 className="text-gray-900 font-bold text-sm">Equipment & Assets Report</h3>
-                <p className="text-gray-400 text-xs mt-1">{equipment.length} items · {equipmentIssueRecords.length} issue records</p>
+                <p className="text-gray-400 text-xs mt-1">{equipment.length} items Â· {equipmentIssueRecords.length} issue records</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-5 border-b border-gray-100">
                 <div className="bg-gray-50 rounded-xl p-3 text-center">
@@ -1295,7 +1294,7 @@ export default function ReportsPage() {
                         <td className="px-4 py-3 text-center">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${e.status === "In Stock" ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>{e.status}</span>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{e.assignedTo || "—"}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{e.assignedTo || "â€”"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1363,11 +1362,11 @@ export default function ReportsPage() {
                       {filteredExpenses.map((e) => (
                         <tr key={e.id} className="hover:bg-gray-50/50">
                           <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(e.date)}</td>
-                          <td className="px-4 py-3 text-gray-900 font-medium">{e.description || e.note || "—"}</td>
+                          <td className="px-4 py-3 text-gray-900 font-medium">{e.description || e.note || "â€”"}</td>
                           <td className="px-4 py-3">
                             <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{e.category || "Other"}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{e.type || "—"}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">{e.type || "â€”"}</td>
                           <td className="px-4 py-3 text-right text-red-600 font-semibold">-PKR {e.amount.toLocaleString()}</td>
                         </tr>
                       ))}
@@ -1464,7 +1463,7 @@ export default function ReportsPage() {
                         {wallet.filter((w) => w.date >= dateFrom && w.date <= dateTo).map((w) => (
                           <tr key={w.id} className="hover:bg-gray-50/50">
                             <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(w.date)}</td>
-                            <td className="px-4 py-3 text-gray-900 font-medium text-sm">{w.note || w.remarks || "—"}</td>
+                            <td className="px-4 py-3 text-gray-900 font-medium text-sm">{w.note || w.remarks || "â€”"}</td>
                             <td className={`px-4 py-3 text-right font-semibold ${w.type === "Deposit" || w.type === "Credit" ? "text-green-600" : "text-red-600"}`}>
                               {w.type === "Deposit" || w.type === "Credit" ? "+" : "-"}PKR {w.amount.toLocaleString()}
                             </td>
@@ -1509,8 +1508,8 @@ export default function ReportsPage() {
                         <td className="px-4 py-3">
                           <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{a.category}</span>
                         </td>
-                        <td className="px-4 py-3 text-right text-red-600 font-medium">{a.type === "expense" ? `PKR ${a.amount.toLocaleString()}` : "—"}</td>
-                        <td className="px-4 py-3 text-right text-green-600 font-medium">{a.type === "income" ? `PKR ${a.amount.toLocaleString()}` : "—"}</td>
+                        <td className="px-4 py-3 text-right text-red-600 font-medium">{a.type === "expense" ? `PKR ${a.amount.toLocaleString()}` : "â€”"}</td>
+                        <td className="px-4 py-3 text-right text-green-600 font-medium">{a.type === "income" ? `PKR ${a.amount.toLocaleString()}` : "â€”"}</td>
                       </tr>
                     ))}
                     {accounts.length === 0 && (

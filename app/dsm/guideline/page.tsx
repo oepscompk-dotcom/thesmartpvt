@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -39,7 +38,7 @@ const steps = {
     light: "bg-purple-50",
     textColor: "text-purple-600",
     steps: [
-      { step: 1, title: "Open MNP Page", desc: "Tap Activate → MNP Process from the dashboard.", icon: Smartphone, detail: "MNP (Mobile Number Portability) transfers a number from another network." },
+      { step: 1, title: "Open MNP Page", desc: "Tap Activate â†’ MNP Process from the dashboard.", icon: Smartphone, detail: "MNP (Mobile Number Portability) transfers a number from another network." },
       { step: 2, title: "Select DSO", desc: "Choose the DSO who will manage this MNP request.", icon: Users, detail: "As DSM, you assign MNP requests to your DSOs. The DSO will handle document collection and verification." },
       { step: 3, title: "Enter Porting Details", desc: "Enter customer name, current number, current network, and CNIC.", icon: User, detail: "Select the customer's current network (Jazz, Telenor, Ufone, Zong)." },
       { step: 4, title: "Upload Documents", desc: "Upload CNIC front/back images and the MNP request form.", icon: FileText, detail: "Documents are required for MNP approval. Files must be under 5MB each." },
@@ -56,7 +55,7 @@ const steps = {
     light: "bg-orange-50",
     textColor: "text-orange-600",
     steps: [
-      { step: 1, title: "Open Replacement Page", desc: "Tap Activate → SIM Replacement from the dashboard.", icon: Smartphone, detail: "SIM replacement is for damaged, lost, or stolen SIMs." },
+      { step: 1, title: "Open Replacement Page", desc: "Tap Activate â†’ SIM Replacement from the dashboard.", icon: Smartphone, detail: "SIM replacement is for damaged, lost, or stolen SIMs." },
       { step: 2, title: "Select DSO", desc: "Choose the DSO who will handle the replacement process.", icon: Users, detail: "As DSM, you assign replacement requests to your DSOs. The DSO will verify customer identity and process the replacement." },
       { step: 3, title: "Enter Customer Details", desc: "Enter customer name, existing number, CNIC, and reason for replacement.", icon: User, detail: "Select the reason: Damaged, Lost, Stolen, or Defective." },
       { step: 4, title: "Select Replacement SIM", desc: "Choose a new HLR SIM from stock to replace the old one.", icon: CreditCard, detail: "The old SIM will be deactivated automatically after replacement." },
@@ -73,7 +72,7 @@ const steps = {
     light: "bg-teal-50",
     textColor: "text-teal-600",
     steps: [
-      { step: 1, title: "Open BYN Page", desc: "Tap Activate → BYN Registration from the dashboard.", icon: Smartphone, detail: "BYN (Bring Your Number) registers a new device on the network." },
+      { step: 1, title: "Open BYN Page", desc: "Tap Activate â†’ BYN Registration from the dashboard.", icon: Smartphone, detail: "BYN (Bring Your Number) registers a new device on the network." },
       { step: 2, title: "Select DSO", desc: "Choose the DSO who will manage this BYN registration.", icon: Users, detail: "As DSM, you assign BYN registrations to your DSOs. The DSO will collect device details from the customer." },
       { step: 3, title: "Enter Device Details", desc: "Enter device IMEI, brand, model, and customer information.", icon: Smartphone, detail: "IMEI must be 15 digits. The system auto-detects brand and model." },
       { step: 4, title: "Select SIM for BYN", desc: "Choose the SIM card that will be used with this device.", icon: CreditCard, detail: "The SIM must be active and in stock for BYN registration." },
@@ -95,8 +94,8 @@ const verificationSteps = [
       "Select activation(s) to verify",
       "Perform biometric scan on customer device",
       "System validates fingerprint against NADRA",
-      "If matched → BVS status changes to Completed",
-      "If failed → Mark for manual verification",
+      "If matched â†’ BVS status changes to Completed",
+      "If failed â†’ Mark for manual verification",
     ]
   },
   {
@@ -235,7 +234,7 @@ export default function DSMGuidelinePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* ═══════════ OVERVIEW ═══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW â•â•â•â•â•â•â•â•â•â•â• */}
         {activeSection === "overview" && (
           <div className="space-y-6">
             {/* Welcome */}
@@ -333,7 +332,7 @@ export default function DSMGuidelinePage() {
           </div>
         )}
 
-        {/* ═══════════ ACTIVATION PAGES ═══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â• ACTIVATION PAGES â•â•â•â•â•â•â•â•â•â•â• */}
         {activeSection !== "overview" && activeSection !== "verification" && activeSection !== "dso-management" && steps[activeSection] && (
           <div className="space-y-6">
             {(() => {
@@ -436,7 +435,7 @@ export default function DSMGuidelinePage() {
                           <div className={`w-full py-2 rounded-lg text-center text-[10px] font-bold text-white ${
                             expandedStep === 6 ? "bg-green-500" : "bg-gray-300"
                           }`}>
-                            {expandedStep === 6 ? "✓ Submit Activation" : "Complete all steps"}
+                            {expandedStep === 6 ? "âœ“ Submit Activation" : "Complete all steps"}
                           </div>
                         </div>
                       </PhoneMockup>
@@ -448,7 +447,7 @@ export default function DSMGuidelinePage() {
           </div>
         )}
 
-        {/* ═══════════ VERIFICATION ═══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â• VERIFICATION â•â•â•â•â•â•â•â•â•â•â• */}
         {activeSection === "verification" && (
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
@@ -458,7 +457,7 @@ export default function DSMGuidelinePage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-black">Verification Process</h2>
-                  <p className="text-white/70 text-xs mt-0.5">BVS → FCA → IFCA verification workflow</p>
+                  <p className="text-white/70 text-xs mt-0.5">BVS â†’ FCA â†’ IFCA verification workflow</p>
                 </div>
               </div>
             </div>
@@ -568,7 +567,7 @@ export default function DSMGuidelinePage() {
                     ))}
                   </div>
                   <div className="mt-2 p-2 bg-green-50 rounded-lg text-center">
-                    <p className="text-[9px] font-bold text-green-700">✓ All verifications passed</p>
+                    <p className="text-[9px] font-bold text-green-700">âœ“ All verifications passed</p>
                     <p className="text-[8px] text-green-500">Activation Completed</p>
                   </div>
                 </PhoneMockup>
@@ -577,7 +576,7 @@ export default function DSMGuidelinePage() {
           </div>
         )}
 
-        {/* ═══════════ DSO MANAGEMENT ═══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â• DSO MANAGEMENT â•â•â•â•â•â•â•â•â•â•â• */}
         {activeSection === "dso-management" && (
           <div className="space-y-6">
             {/* Title */}
@@ -682,7 +681,7 @@ export default function DSMGuidelinePage() {
                     <div className={`w-full py-2 rounded-lg text-center text-[10px] font-bold text-white ${
                       expandedDsoMgmt === 4 ? "bg-green-500" : "bg-gray-300"
                     }`}>
-                      {expandedDsoMgmt === 4 ? "✓ Management Complete" : "Complete all steps"}
+                      {expandedDsoMgmt === 4 ? "âœ“ Management Complete" : "Complete all steps"}
                     </div>
                   </div>
                 </PhoneMockup>

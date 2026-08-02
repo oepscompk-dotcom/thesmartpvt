@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import React, { useState, useMemo } from "react";
 import { useDSOData } from "@/lib/DSODataContext";

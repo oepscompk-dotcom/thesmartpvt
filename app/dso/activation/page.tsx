@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { useDSOData } from "@/lib/DSODataContext";
@@ -183,7 +182,7 @@ export default function NewSIMActivationPage() {
     setForm({ ...initialForm, deviceId: device?.id ?? "" });
     setSelectedSimId("");
     setShowModal(false);
-    alert("Activation submitted successfully! SIM is now pending verification (BVS → FCA → IFCA)");
+    alert("Activation submitted successfully! SIM is now pending verification (BVS â†’ FCA â†’ IFCA)");
   };
 
   const [verifyConfirm, setVerifyConfirm] = useState<{ step: string; simNumber: string; activation: any } | null>(null);

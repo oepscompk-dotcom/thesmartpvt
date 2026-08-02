@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState } from "react";
 import { Target, Save, TrendingUp } from "lucide-react";
@@ -50,7 +49,7 @@ export default function DSOTargetsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Targets & Achievements</h1>
-          <p className="text-gray-500 text-sm mt-1">{targets.month} — Track and update your monthly goals</p>
+          <p className="text-gray-500 text-sm mt-1">{targets.month} â€” Track and update your monthly goals</p>
         </div>
         <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
           <Save size={16} /> {saved ? "Saved!" : "Save Changes"}

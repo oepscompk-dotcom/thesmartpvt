@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import React, { useState, useMemo } from "react";
 import { useDSOData } from "@/lib/DSODataContext";
@@ -247,7 +246,7 @@ export default function PendingIFCAPage() {
                 IFCA Verification
               </h1>
               <p className="text-sm text-gray-300 mt-0.5">
-                Final data &amp; connectivity check — {pending.length} pending
+                Final data &amp; connectivity check â€” {pending.length} pending
               </p>
             </div>
             <div className="flex items-center gap-3">

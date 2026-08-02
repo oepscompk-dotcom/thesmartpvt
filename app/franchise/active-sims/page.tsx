@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, Filter, Smartphone, CheckCircle, Clock, Package, Upload, Download, X, FileSpreadsheet, AlertCircle, FileDown, Eye, Pencil, Trash2, Calendar, CheckSquare } from "lucide-react";
@@ -132,7 +131,7 @@ function exportToCSV(data: any[], filename: string) {
 }
 
 function formatDate(dateStr: string): string {
-  if (!dateStr) return "—";
+  if (!dateStr) return "â€”";
   const datePart = dateStr.split(" ")[0].split("T")[0];
   const parts = datePart.split("-");
   if (parts.length !== 3) return dateStr;
@@ -192,7 +191,7 @@ export default function ActiveSIMsPage() {
   }, [auth?.franchiseId]);
 
   const getPersonName = (dsoId: string) => {
-    if (!dsoId || dsoId === "—") return "—";
+    if (!dsoId || dsoId === "â€”") return "â€”";
     const foundDso = dso.find((d) => d.id === dsoId);
     if (foundDso) return foundDso.name;
     const foundDsm = dsms.find((d) => d.id === dsoId);
@@ -201,12 +200,12 @@ export default function ActiveSIMsPage() {
   };
 
   const getPersonRetailerId = (dsoId: string) => {
-    if (!dsoId || dsoId === "—") return "—";
+    if (!dsoId || dsoId === "â€”") return "â€”";
     const foundDso = dso.find((d) => d.id === dsoId);
-    if (foundDso) return foundDso.retailerId || "—";
+    if (foundDso) return foundDso.retailerId || "â€”";
     const foundDsm = dsms.find((d) => d.id === dsoId);
-    if (foundDsm) return foundDsm.retailerId || "—";
-    return "—";
+    if (foundDsm) return foundDsm.retailerId || "â€”";
+    return "â€”";
   };
 
   const getActivationForSIM = (simNumber: string) => allActivations.find((a) => a.simNumber === simNumber);
@@ -438,11 +437,11 @@ export default function ActiveSIMsPage() {
             const exportData = filteredList.map((sim, idx) => {
               const { status, bvs, fca, ifca } = getDisplayStatus(sim);
               const activation = getActivationForSIM(sim.simNumber);
-              const dsoId = sim.issuedToId || activation?.dsoId || "—";
+              const dsoId = sim.issuedToId || activation?.dsoId || "â€”";
               const dsoName = sim.issuedToName || getPersonName(dsoId);
               const retailerId = activation?.retailerId || getPersonRetailerId(dsoId);
-              return { srNo: idx + 1, retailerId, simNumber: sim.simNumber, iccid: sim.iccid || "—", network: sim.network,
-                deviceId: sim.deviceId || "—", dsoId, dsoName, date: formatDate(activation?.createdAt || sim.receiveDate),
+              return { srNo: idx + 1, retailerId, simNumber: sim.simNumber, iccid: sim.iccid || "â€”", network: sim.network,
+                deviceId: sim.deviceId || "â€”", dsoId, dsoName, date: formatDate(activation?.createdAt || sim.receiveDate),
                 status, simType: getSIMType(sim), bvs, fca, ifca };
             });
             exportToCSV(exportData, `active-sims-${new Date().toISOString().split("T")[0]}.csv`);
@@ -580,11 +579,11 @@ export default function ActiveSIMsPage() {
               {filteredList.map((sim, idx) => {
                 const activation = getActivationForSIM(sim.simNumber);
                 const { status: simStatus, bvs, fca, ifca } = getDisplayStatus(sim);
-                const dsoId = sim.issuedToId || activation?.dsoId || "—";
+                const dsoId = sim.issuedToId || activation?.dsoId || "â€”";
                 const dsoName = sim.issuedToName || getPersonName(dsoId);
                 const retailerId = activation?.retailerId || getPersonRetailerId(dsoId);
                 const dateStr = formatDate(activation?.createdAt || sim.receiveDate);
-                const deviceId = sim.deviceId || "—";
+                const deviceId = sim.deviceId || "â€”";
                 const simType = getSIMType(sim);
 
                 return (
@@ -600,7 +599,7 @@ export default function ActiveSIMsPage() {
                       <p className="text-gray-900 text-sm font-mono font-medium">{sim.simNumber}</p>
                       <p className="text-gray-400 text-[10px] font-mono">{sim.id}</p>
                     </td>
-                    <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs font-mono">{sim.iccid || "—"}</td>
+                    <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs font-mono">{sim.iccid || "â€”"}</td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
                     </td>
@@ -664,7 +663,7 @@ export default function ActiveSIMsPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewSIM(null)}>
           <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Eye size={18} /> SIM Details — #{viewSIM.srNo}</h3>
+              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Eye size={18} /> SIM Details â€” #{viewSIM.srNo}</h3>
               <button onClick={() => setViewSIM(null)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-4">
@@ -672,7 +671,7 @@ export default function ActiveSIMsPage() {
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">SIM Number</p><p className="text-gray-900 font-mono font-bold text-sm">{viewSIM.sim.simNumber}</p></div>
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">SIM Type</p><span className={`px-2 py-1 rounded-lg text-xs font-bold ${viewSIM.simType === "New" ? "bg-cyan-100 text-cyan-700" : viewSIM.simType === "MNP" ? "bg-purple-100 text-purple-700" : viewSIM.simType === "BYN" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>{viewSIM.simType}</span></div>
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Retailer ID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.retailerId}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">ICCID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.sim.iccid || "—"}</p></div>
+                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">ICCID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.sim.iccid || "â€”"}</p></div>
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Network</p><p className="text-gray-900 text-sm font-bold">{viewSIM.sim.network}</p></div>
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Device ID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.deviceId}</p></div>
                 <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">DSO/DSM ID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.dsoId}</p></div>
@@ -713,7 +712,7 @@ export default function ActiveSIMsPage() {
                 <div>
                   <label className="block text-gray-500 text-xs font-medium mb-1.5">Status</label>
                   <select value={editForm.status} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
-                    {bulkEditActive && <option value="">— No change —</option>}
+                    {bulkEditActive && <option value="">â€” No change â€”</option>}
                     <option value="Issued">Issued</option>
                     <option value="Active">Active</option>
                     <option value="Pending BVS">Pending BVS</option>
@@ -736,7 +735,7 @@ export default function ActiveSIMsPage() {
               <div>
                 <label className="block text-gray-500 text-xs font-medium mb-1.5">SIM Category</label>
                 <select value={editForm.simType || ""} onChange={(e) => setEditForm((p) => ({ ...p, simType: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
-                  {bulkEditActive && <option value="">— No change —</option>}
+                  {bulkEditActive && <option value="">â€” No change â€”</option>}
                   <option value="new">New</option><option value="mnp">MNP</option><option value="byn">BYN</option><option value="replacement">REPL</option><option value="hlr">HLR</option>
                 </select>
               </div>
@@ -756,25 +755,25 @@ export default function ActiveSIMsPage() {
                   <div>
                     <label className="block text-gray-500 text-[10px] font-medium mb-1">BVS</label>
                     <select value={editForm.bvs} onChange={(e) => setEditForm((p) => ({ ...p, bvs: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
-                      {bulkEditActive && <option value="">— No change —</option>}
-                      <option value="0">0 — Pending</option>
-                      <option value="1">1 — Completed</option>
+                      {bulkEditActive && <option value="">â€” No change â€”</option>}
+                      <option value="0">0 â€” Pending</option>
+                      <option value="1">1 â€” Completed</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-gray-500 text-[10px] font-medium mb-1">FCA</label>
                     <select value={editForm.fca} onChange={(e) => setEditForm((p) => ({ ...p, fca: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
-                      {bulkEditActive && <option value="">— No change —</option>}
-                      <option value="0">0 — Pending</option>
-                      <option value="1">1 — Completed</option>
+                      {bulkEditActive && <option value="">â€” No change â€”</option>}
+                      <option value="0">0 â€” Pending</option>
+                      <option value="1">1 â€” Completed</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-gray-500 text-[10px] font-medium mb-1">IFCA</label>
                     <select value={editForm.ifca} onChange={(e) => setEditForm((p) => ({ ...p, ifca: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
-                      {bulkEditActive && <option value="">— No change —</option>}
-                      <option value="0">0 — Pending</option>
-                      <option value="1">1 — Completed</option>
+                      {bulkEditActive && <option value="">â€” No change â€”</option>}
+                      <option value="0">0 â€” Pending</option>
+                      <option value="1">1 â€” Completed</option>
                     </select>
                   </div>
                 </div>
@@ -886,7 +885,7 @@ export default function ActiveSIMsPage() {
                   <li>Match by <strong>ICCID</strong> OR <strong>SIM Number</strong> OR <strong>Device ID</strong> OR <strong>Retailer ID</strong></li>
                   <li>ICCID column will also be <strong>updated</strong> on matched SIM records</li>
                   <li>Use <code className="bg-blue-100 px-1 rounded">0</code> = Done, <code className="bg-blue-100 px-1 rounded">1</code> = Verified, leave empty to keep existing</li>
-                  <li>All 0 → <strong>Completed</strong>, All 1 → <strong>Verified</strong>, Has X → <strong>Pending</strong></li>
+                  <li>All 0 â†’ <strong>Completed</strong>, All 1 â†’ <strong>Verified</strong>, Has X â†’ <strong>Pending</strong></li>
                 </ul>
                 <button onClick={downloadSampleFile} className="mt-3 inline-flex items-center gap-1.5 text-blue-700 text-xs font-bold hover:underline"><Download size={12} /> Download Sample CSV</button>
               </div>
@@ -918,10 +917,10 @@ export default function ActiveSIMsPage() {
                       <tbody>
                         {importRows.map((row, i) => (
                           <tr key={i} className={`border-t border-gray-100 ${row.matched ? "bg-green-50/50" : "bg-red-50/50"}`}>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.iccid || "—"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.simNumber || "—"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.deviceId || "—"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.retailerId || "—"}</td>
+                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.iccid || "â€”"}</td>
+                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.simNumber || "â€”"}</td>
+                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.deviceId || "â€”"}</td>
+                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.retailerId || "â€”"}</td>
                             <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.bvs === "1" ? "text-green-600" : "text-gray-400"}`}>{row.bvs}</span></td>
                             <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.fca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.fca}</span></td>
                             <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.ifca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.ifca}</span></td>

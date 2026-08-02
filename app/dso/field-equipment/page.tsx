@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { Search, Wrench, ArrowRightLeft, CheckCircle, Clock, RotateCcw, Filter } from "lucide-react";
@@ -105,7 +104,7 @@ export default function DSOFieldEquipmentPage() {
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs font-mono">{r.equipmentId}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(r.issueDate)}</td>
-                  <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{r.returnDate ? formatDateDDMMYYYY(r.returnDate) : "—"}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{r.returnDate ? formatDateDDMMYYYY(r.returnDate) : "â€”"}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${r.status === "Issued" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{r.status}</span>
                   </td>

@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -104,7 +103,7 @@ export default function DSODashboardPage() {
     return activations.slice(0, 5).map((a) => ({
       icon: a.status === "Completed" ? CheckCircle2 : Clock,
       color: a.status === "Completed" ? "text-green-500 bg-green-50" : "text-amber-500 bg-amber-50",
-      title: `${a.customerName} — ${a.type}`,
+      title: `${a.customerName} â€” ${a.type}`,
       detail: `${a.simNumber} | ${a.network}`,
       time: a.createdAt,
     })).sort((a, b) => b.time.localeCompare(a.time)).slice(0, 6);
@@ -154,7 +153,7 @@ export default function DSODashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* ─── Activate Popup Modal ───────────────────────── */}
+      {/* â”€â”€â”€ Activate Popup Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {showActivatePopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowActivatePopup(false)} />
@@ -183,7 +182,7 @@ export default function DSODashboardPage() {
         </div>
       )}
 
-      {/* ─── Greeting Header ──────────────────────────── */}
+      {/* â”€â”€â”€ Greeting Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="bg-gradient-to-r from-[#0A2647] via-[#144272] to-[#205295] rounded-2xl p-6 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -224,7 +223,7 @@ export default function DSODashboardPage() {
         </div>
       </div>
 
-      {/* ─── Tab Navigation ────────────────────────────── */}
+      {/* â”€â”€â”€ Tab Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
         {[
           { key: "overview" as const, label: "Overview", icon: Home },
@@ -238,10 +237,10 @@ export default function DSODashboardPage() {
         ))}
       </div>
 
-      {/* ═══════════ OVERVIEW TAB ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "overview" && (
         <>
-          {/* ─── Stats ───────────────────────────── */}
+          {/* â”€â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {primaryStats.map((s) => (
               <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg transition-all group">
@@ -261,7 +260,7 @@ export default function DSODashboardPage() {
             ))}
           </div>
 
-          {/* ─── Secondary Stats ──────────────────────────── */}
+          {/* â”€â”€â”€ Secondary Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { label: "Pending BVS", value: metrics.pendingBVS, icon: Fingerprint, color: "text-amber-600", light: "bg-amber-50" },
@@ -283,7 +282,7 @@ export default function DSODashboardPage() {
             ))}
           </div>
 
-          {/* ─── Quick Actions + Search ───────────────────── */}
+          {/* â”€â”€â”€ Quick Actions + Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
@@ -312,7 +311,7 @@ export default function DSODashboardPage() {
             </div>
           </div>
 
-          {/* ─── Main Content Grid ────────────────────────── */}
+          {/* â”€â”€â”€ Main Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {/* Verification Pipeline */}
@@ -588,7 +587,7 @@ export default function DSODashboardPage() {
                             <Smartphone size={14} className="text-gray-400 flex-shrink-0" />
                             <div className="min-w-0">
                               <p className="text-xs font-bold text-gray-900 truncate">{s.id}</p>
-                              <p className="text-[10px] text-gray-400">{s.network} · {s.simNumber}</p>
+                              <p className="text-[10px] text-gray-400">{s.network} Â· {s.simNumber}</p>
                             </div>
                           </div>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-700">{s.type === "new" ? "New" : "HLR"}</span>
@@ -644,7 +643,7 @@ export default function DSODashboardPage() {
         </>
       )}
 
-      {/* ═══════════ PERFORMANCE TAB ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• PERFORMANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "performance" && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -717,7 +716,7 @@ export default function DSODashboardPage() {
         </>
       )}
 
-      {/* ═══════════ FINANCE TAB ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• FINANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "finance" && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
-
 const JSON_FIELDS = [
   "newSimLimits", "hlrSimLimits", "dailyTargets", "monthlyTargets",
   "documents", "agreements", "guarantor", "attendanceSettings", "permissions",

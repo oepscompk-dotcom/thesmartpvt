@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState } from "react";
 import { Bell, AlertTriangle, CheckCircle2, Info, Check } from "lucide-react";

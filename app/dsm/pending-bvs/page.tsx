@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
@@ -200,7 +199,7 @@ export default function DSMPendingBVSPage() {
                   BVS Verification
                 </h1>
                 <p className="text-sm text-blue-100 mt-1">
-                  Biometric Verification System — Pending SIMs
+                  Biometric Verification System â€” Pending SIMs
                 </p>
                 {/* Progress Indicator */}
                 <div className="flex items-center gap-2 mt-3">
@@ -386,7 +385,7 @@ export default function DSMPendingBVSPage() {
           </div>
         )}
 
-        {/* Completed Records — Date-wise */}
+        {/* Completed Records â€” Date-wise */}
         {completedByDate.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold flex items-center gap-2 text-gray-800">

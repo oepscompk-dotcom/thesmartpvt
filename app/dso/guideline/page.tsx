@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -39,7 +38,7 @@ const steps = {
     light: "bg-purple-50",
     textColor: "text-purple-600",
     steps: [
-      { step: 1, title: "Open MNP Page", desc: "Tap Activate → MNP Process from the dashboard.", icon: Smartphone, detail: "MNP (Mobile Number Portability) transfers a number from another network." },
+      { step: 1, title: "Open MNP Page", desc: "Tap Activate â†’ MNP Process from the dashboard.", icon: Smartphone, detail: "MNP (Mobile Number Portability) transfers a number from another network." },
       { step: 2, title: "Enter Porting Details", desc: "Enter customer name, current number, current network, and CNIC.", icon: User, detail: "Select the customer's current network (Jazz, Telenor, Ufone, Zong)." },
       { step: 3, title: "Upload Documents", desc: "Upload CNIC front/back images and the MNP request form.", icon: FileText, detail: "Documents are required for MNP approval. Files must be under 5MB each." },
       { step: 4, title: "Select New SIM", desc: "Choose an HLR SIM from stock for the ported number.", icon: CreditCard, detail: "MNP uses HLR (Home Location Register) SIMs, not new SIMs." },
@@ -56,7 +55,7 @@ const steps = {
     light: "bg-orange-50",
     textColor: "text-orange-600",
     steps: [
-      { step: 1, title: "Open Replacement Page", desc: "Tap Activate → SIM Replacement from the dashboard.", icon: Smartphone, detail: "SIM replacement is for damaged, lost, or stolen SIMs." },
+      { step: 1, title: "Open Replacement Page", desc: "Tap Activate â†’ SIM Replacement from the dashboard.", icon: Smartphone, detail: "SIM replacement is for damaged, lost, or stolen SIMs." },
       { step: 2, title: "Enter Customer Details", desc: "Enter customer name, existing number, CNIC, and reason for replacement.", icon: User, detail: "Select the reason: Damaged, Lost, Stolen, or Defective." },
       { step: 3, title: "Select Replacement SIM", desc: "Choose a new HLR SIM from stock to replace the old one.", icon: CreditCard, detail: "The old SIM will be deactivated automatically after replacement." },
       { step: 4, title: "Verify Identity", desc: "Verify customer identity using CNIC and biometric if available.", icon: Fingerprint, detail: "Biometric verification is recommended for security." },
@@ -73,7 +72,7 @@ const steps = {
     light: "bg-teal-50",
     textColor: "text-teal-600",
     steps: [
-      { step: 1, title: "Open BYN Page", desc: "Tap Activate → BYN Registration from the dashboard.", icon: Smartphone, detail: "BYN (Bring Your Number) registers a new device on the network." },
+      { step: 1, title: "Open BYN Page", desc: "Tap Activate â†’ BYN Registration from the dashboard.", icon: Smartphone, detail: "BYN (Bring Your Number) registers a new device on the network." },
       { step: 2, title: "Enter Device Details", desc: "Enter device IMEI, brand, model, and customer information.", icon: Smartphone, detail: "IMEI must be 15 digits. The system auto-detects brand and model." },
       { step: 3, title: "Select SIM for BYN", desc: "Choose the SIM card that will be used with this device.", icon: CreditCard, detail: "The SIM must be active and in stock for BYN registration." },
       { step: 4, title: "Enter Network Info", desc: "Select network operator and enter any required authorization codes.", icon: Wifi, detail: "BYN links the device IMEI to the SIM for network registration." },
@@ -95,8 +94,8 @@ const verificationSteps = [
       "Select activation(s) to verify",
       "Perform biometric scan on customer device",
       "System validates fingerprint against NADRA",
-      "If matched → BVS status changes to Completed",
-      "If failed → Mark for manual verification",
+      "If matched â†’ BVS status changes to Completed",
+      "If failed â†’ Mark for manual verification",
     ]
   },
   {
@@ -226,7 +225,7 @@ export default function DSOGuidelinePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* ═══════════ OVERVIEW ═══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW â•â•â•â•â•â•â•â•â•â•â• */}
         {activeSection === "overview" && (
           <div className="space-y-6">
             {/* Welcome */}
@@ -322,7 +321,7 @@ export default function DSOGuidelinePage() {
           </div>
         )}
 
-        {/* ═══════════ ACTIVATION PAGES ═══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â• ACTIVATION PAGES â•â•â•â•â•â•â•â•â•â•â• */}
         {activeSection !== "overview" && activeSection !== "verification" && steps[activeSection] && (
           <div className="space-y-6">
             {(() => {
@@ -425,7 +424,7 @@ export default function DSOGuidelinePage() {
                           <div className={`w-full py-2 rounded-lg text-center text-[10px] font-bold text-white ${
                             expandedStep === 6 ? "bg-green-500" : "bg-gray-300"
                           }`}>
-                            {expandedStep === 6 ? "✓ Submit Activation" : "Complete all steps"}
+                            {expandedStep === 6 ? "âœ“ Submit Activation" : "Complete all steps"}
                           </div>
                         </div>
                       </PhoneMockup>
@@ -437,7 +436,7 @@ export default function DSOGuidelinePage() {
           </div>
         )}
 
-        {/* ═══════════ VERIFICATION ═══════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â• VERIFICATION â•â•â•â•â•â•â•â•â•â•â• */}
         {activeSection === "verification" && (
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
@@ -447,7 +446,7 @@ export default function DSOGuidelinePage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-black">Verification Process</h2>
-                  <p className="text-white/70 text-xs mt-0.5">BVS → FCA → IFCA verification workflow</p>
+                  <p className="text-white/70 text-xs mt-0.5">BVS â†’ FCA â†’ IFCA verification workflow</p>
                 </div>
               </div>
             </div>
@@ -557,7 +556,7 @@ export default function DSOGuidelinePage() {
                     ))}
                   </div>
                   <div className="mt-2 p-2 bg-green-50 rounded-lg text-center">
-                    <p className="text-[9px] font-bold text-green-700">✓ All verifications passed</p>
+                    <p className="text-[9px] font-bold text-green-700">âœ“ All verifications passed</p>
                     <p className="text-[8px] text-green-500">Activation Completed</p>
                   </div>
                 </PhoneMockup>

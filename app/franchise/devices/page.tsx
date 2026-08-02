@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { Smartphone, Plus, Edit, Trash2, X, Save, Search, Filter, CheckSquare, Square, Eye, RotateCcw, Package, ArrowUpCircle, ArrowDownCircle, Calendar, ChevronDown, ChevronRight, Fingerprint, ShieldCheck, Send, UserCheck, History, User, BadgeCheck } from "lucide-react";
@@ -82,7 +81,7 @@ export default function DevicesPage() {
   const inStockDevices = devices.filter((d) => d.status === "In Stock");
   const returnedDevices = devices.filter((d) => d.returnDate && d.status !== "Issued" && d.status !== "Assigned");
 
-  const getDSOName = (dsoId: string) => { const found = dso.find((d) => d.id === dsoId); return found ? found.name : dsoId || "—"; };
+  const getDSOName = (dsoId: string) => { const found = dso.find((d) => d.id === dsoId); return found ? found.name : dsoId || "â€”"; };
   const getDeviceSIMs = (deviceId: string) => allSims.filter((s) => s.deviceId === deviceId);
 
   const openAdd = () => {
@@ -291,7 +290,7 @@ export default function DevicesPage() {
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
             <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2"><Smartphone size={16} className="text-[#0A2647]" /> Device Information</h3>
             <div className="space-y-3">
-              {[ ["Device ID", viewDevice.id], ["Brand", viewDevice.brand], ["Model", viewDevice.model], ["IMEI", viewDevice.imei], ["BVS Number", viewDevice.bvsNumber], ["Purchase Date", formatDateDDMMYYYY(viewDevice.purchaseDate)], ["Status", viewDevice.status], ["Assigned DSO", getDSOName(viewDevice.assignedDSO)], ["Retailer ID", (viewDevice.status === "Issued" || viewDevice.status === "Assigned") ? (getActiveDeviceIssue(deviceIssueRecords, viewDevice.id)?.retailerId || viewDevice.retailerId || "—") : (viewDevice.retailerId || "—")], ["Base Retailer ID", viewDevice.originalRetailerId || "—"], ["Issue Date", formatDateDDMMYYYY(viewDevice.issueDate)], ["Return Date", formatDateDDMMYYYY(viewDevice.returnDate)] ].map(([label, value]) => (
+              {[ ["Device ID", viewDevice.id], ["Brand", viewDevice.brand], ["Model", viewDevice.model], ["IMEI", viewDevice.imei], ["BVS Number", viewDevice.bvsNumber], ["Purchase Date", formatDateDDMMYYYY(viewDevice.purchaseDate)], ["Status", viewDevice.status], ["Assigned DSO", getDSOName(viewDevice.assignedDSO)], ["Retailer ID", (viewDevice.status === "Issued" || viewDevice.status === "Assigned") ? (getActiveDeviceIssue(deviceIssueRecords, viewDevice.id)?.retailerId || viewDevice.retailerId || "â€”") : (viewDevice.retailerId || "â€”")], ["Base Retailer ID", viewDevice.originalRetailerId || "â€”"], ["Issue Date", formatDateDDMMYYYY(viewDevice.issueDate)], ["Return Date", formatDateDDMMYYYY(viewDevice.returnDate)] ].map(([label, value]) => (
                 <div key={label} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
                   <span className="text-gray-500 text-xs">{label}</span>
                   <span className="text-gray-900 text-sm font-medium">{value}</span>
@@ -337,12 +336,12 @@ export default function DevicesPage() {
                       </div>
                       <div>
                         <p className="text-gray-900 text-sm font-medium">{r.assignedToName}</p>
-                        <p className="text-gray-400 text-xs">{r.assignedToRole} · <span className="font-mono">{r.retailerId}</span></p>
+                        <p className="text-gray-400 text-xs">{r.assignedToRole} Â· <span className="font-mono">{r.retailerId}</span></p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className={`text-xs font-medium ${r.status === "Issued" ? "text-blue-600" : "text-purple-600"}`}>{r.status}</p>
-                      <p className="text-gray-400 text-[10px]">Issued: {formatDateDDMMYYYY(r.issueDate)}{r.returnDate ? ` · Returned: ${formatDateDDMMYYYY(r.returnDate)}` : ""}</p>
+                      <p className="text-gray-400 text-[10px]">Issued: {formatDateDDMMYYYY(r.issueDate)}{r.returnDate ? ` Â· Returned: ${formatDateDDMMYYYY(r.returnDate)}` : ""}</p>
                     </div>
                   </div>
                 ))}
@@ -539,7 +538,7 @@ export default function DevicesPage() {
                       <td className="px-6 py-4 hidden lg:table-cell"><p className="text-gray-600 text-sm">{r.assignedToName}</p><p className="text-gray-400 text-xs">{r.assignedToRole}</p></td>
                       <td className="px-6 py-4"><span className="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded-lg">{r.retailerId}</span></td>
                       <td className="px-6 py-4 hidden lg:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(r.issueDate)}</td>
-                      <td className="px-6 py-4 hidden lg:table-cell text-gray-500 text-xs">{r.returnDate ? formatDateDDMMYYYY(r.returnDate) : "—"}</td>
+                      <td className="px-6 py-4 hidden lg:table-cell text-gray-500 text-xs">{r.returnDate ? formatDateDDMMYYYY(r.returnDate) : "â€”"}</td>
                       <td className="px-6 py-4"><span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${r.status === "Issued" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-purple-50 text-purple-700 border border-purple-200"}`}>{r.status}</span></td>
                     </tr>
                   );
@@ -575,7 +574,7 @@ export default function DevicesPage() {
                     <td className="px-6 py-4 hidden md:table-cell"><p className="text-gray-700 text-sm font-medium">{d.brand}</p><p className="text-gray-400 text-xs">{d.model}</p></td>
                     <td className="px-6 py-4 hidden lg:table-cell text-gray-500 text-xs font-mono">{d.imei}</td>
                     <td className="px-6 py-4 hidden xl:table-cell text-gray-600 text-sm">{getDSOName(d.assignedDSO)}</td>
-                    <td className="px-6 py-4 hidden xl:table-cell text-gray-600 text-xs font-mono">{(d.status === "Issued" || d.status === "Assigned") ? (getActiveDeviceIssue(deviceIssueRecords, d.id)?.retailerId || d.retailerId || "—") : (d.retailerId || "—")}</td>
+                    <td className="px-6 py-4 hidden xl:table-cell text-gray-600 text-xs font-mono">{(d.status === "Issued" || d.status === "Assigned") ? (getActiveDeviceIssue(deviceIssueRecords, d.id)?.retailerId || d.retailerId || "â€”") : (d.retailerId || "â€”")}</td>
                     <td className="px-6 py-4"><span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${getStatusStyle(d.status)}`}>{d.status}</span></td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -628,7 +627,7 @@ export default function DevicesPage() {
                           <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 shrink-0"><UserCheck size={15} /></div>
                           <div className="flex-1 min-w-0">
                             <p className="text-gray-900 text-sm font-semibold truncate">{p.name}</p>
-                            <p className="text-gray-400 text-xs">{p.role} · <span className="font-mono">{p.id}</span></p>
+                            <p className="text-gray-400 text-xs">{p.role} Â· <span className="font-mono">{p.id}</span></p>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-gray-700 text-xs font-mono font-bold">{p.retailerId}</p>
@@ -667,7 +666,7 @@ export default function DevicesPage() {
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2 border border-amber-200">
                             <ShieldCheck size={14} className="text-amber-600" />
-                            <span className="text-amber-700 text-xs">OTP sent — Code: <span className="font-mono font-bold">{otpCode}</span></span>
+                            <span className="text-amber-700 text-xs">OTP sent â€” Code: <span className="font-mono font-bold">{otpCode}</span></span>
                           </div>
                           <div className="flex gap-2">
                             <input type="text" value={otpValue} onChange={(e) => setOtpValue(e.target.value)} className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm font-mono text-center focus:outline-none focus:border-blue-400" placeholder="Enter 6-digit OTP" maxLength={6} />
@@ -677,7 +676,7 @@ export default function DevicesPage() {
                       ) : (
                         <div className="flex items-center gap-2 bg-green-50 rounded-lg px-3 py-2 border border-green-200">
                           <ShieldCheck size={14} className="text-green-600" />
-                          <span className="text-green-700 text-xs font-medium">OTP Verified — Device paired to {matchedPerson.name}</span>
+                          <span className="text-green-700 text-xs font-medium">OTP Verified â€” Device paired to {matchedPerson.name}</span>
                         </div>
                       )}
                     </div>
@@ -711,7 +710,7 @@ export default function DevicesPage() {
                   <Smartphone size={16} className={otpVerified ? "text-green-600" : "text-blue-600"} />
                   <div>
                     <p className={`text-sm font-medium ${otpVerified ? "text-green-800" : "text-blue-800"}`}>
-                      {otpVerified ? "Device ready to save — paired to " + matchedPerson.name : "Complete OTP verification to pair device"}
+                      {otpVerified ? "Device ready to save â€” paired to " + matchedPerson.name : "Complete OTP verification to pair device"}
                     </p>
                     <p className="text-xs text-gray-500">Retailer ID: {matchedPerson.retailerId} (fixed, will not change on re-issue)</p>
                   </div>

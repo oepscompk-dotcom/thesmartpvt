@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Save, User, Phone, Briefcase, Key, Smartphone, Target, DollarSign, Building2, FileText, Shield, CheckCircle, Camera, AlertTriangle, Search, X as XIcon } from "lucide-react";
@@ -232,7 +231,7 @@ export default function DSMCreatePage() {
         <Link href="/franchise/dsm" className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"><ArrowLeft size={20} /></Link>
         <div>
           <h1 className="text-2xl font-black text-gray-900">{isEditMode ? "Edit DSM" : "DSM Registration"}</h1>
-          <p className="text-gray-500 text-sm mt-1">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
+          <p className="text-gray-500 text-sm mt-1">Step {step + 1} of {STEPS.length} â€” {STEPS[step].label}</p>
         </div>
       </div>
 
@@ -653,7 +652,7 @@ export default function DSMCreatePage() {
                   <div className="flex flex-wrap gap-1.5">
                     {docs.map((d) => (
                       <span key={d.name} className={`text-[10px] font-medium px-2 py-1 rounded-lg ${d.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-                        {d.ok ? "✓" : "✗"} {d.name}
+                        {d.ok ? "âœ“" : "âœ—"} {d.name}
                       </span>
                     ))}
                   </div>
@@ -665,33 +664,33 @@ export default function DSMCreatePage() {
                 <h4 className="text-gray-900 font-bold text-xs uppercase">Personal</h4>
                 <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                   <InfoRow label="DSM ID" value={form.id} />
-                  <InfoRow label="Name" value={form.name || "—"} err={!form.name} />
-                  <InfoRow label="Father Name" value={form.fatherName || "—"} err={!form.fatherName} />
-                  <InfoRow label="CNIC" value={form.cnic || "—"} err={!form.cnic} />
-                  <InfoRow label="Mobile" value={form.mobile || "—"} err={!form.mobile} />
-                  <InfoRow label="Gender" value={form.gender || "—"} />
-                  <InfoRow label="DOB" value={form.dob || "—"} />
+                  <InfoRow label="Name" value={form.name || "â€”"} err={!form.name} />
+                  <InfoRow label="Father Name" value={form.fatherName || "â€”"} err={!form.fatherName} />
+                  <InfoRow label="CNIC" value={form.cnic || "â€”"} err={!form.cnic} />
+                  <InfoRow label="Mobile" value={form.mobile || "â€”"} err={!form.mobile} />
+                  <InfoRow label="Gender" value={form.gender || "â€”"} />
+                  <InfoRow label="DOB" value={form.dob || "â€”"} />
                 </div>
               </div>
               <div className="space-y-3">
                 <h4 className="text-gray-900 font-bold text-xs uppercase">Employment</h4>
                 <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                   <InfoRow label="Franchise" value={form.franchiseId} />
-                  <InfoRow label="Designation" value={form.designation || "—"} />
+                  <InfoRow label="Designation" value={form.designation || "â€”"} />
                   <InfoRow label="Status" value={form.status} />
-                  <InfoRow label="Joining Date" value={form.joiningDate || "—"} />
+                  <InfoRow label="Joining Date" value={form.joiningDate || "â€”"} />
                   <InfoRow label="Salary" value={`PKR ${form.salary.toLocaleString()}`} err={form.salary === 0} />
                 </div>
               </div>
               <div className="space-y-3">
                 <h4 className="text-gray-900 font-bold text-xs uppercase">Contact & Address</h4>
                 <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <InfoRow label="Email" value={form.email || "—"} />
-                  <InfoRow label="WhatsApp" value={form.whatsapp || "—"} />
-                  <InfoRow label="Province" value={form.province || "—"} />
-                  <InfoRow label="City" value={form.city || "—"} />
-                  <InfoRow label="Area" value={form.area || "—"} />
-                  <InfoRow label="Address" value={form.address || "—"} />
+                  <InfoRow label="Email" value={form.email || "â€”"} />
+                  <InfoRow label="WhatsApp" value={form.whatsapp || "â€”"} />
+                  <InfoRow label="Province" value={form.province || "â€”"} />
+                  <InfoRow label="City" value={form.city || "â€”"} />
+                  <InfoRow label="Area" value={form.area || "â€”"} />
+                  <InfoRow label="Address" value={form.address || "â€”"} />
                 </div>
               </div>
               <div className="space-y-3">
@@ -838,7 +837,7 @@ function InfoRow({ label, value, err }: { label: string; value: string; err?: bo
   return (
     <div className="flex justify-between text-sm">
       <span className="text-gray-500">{label}</span>
-      <span className={`font-medium ${err ? "text-red-600" : "text-gray-900"}`}>{value}{err ? " ⚠" : ""}</span>
+      <span className={`font-medium ${err ? "text-red-600" : "text-gray-900"}`}>{value}{err ? " âš " : ""}</span>
     </div>
   );
 }

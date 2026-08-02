@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTriangle, FileText, ArrowLeft, Timer, Award, Ban, Eye, CheckCircle, X } from "lucide-react";
@@ -212,23 +211,23 @@ export default function DSMDsoAttendancePage() {
                           <p className="text-gray-400 text-xs font-mono">{a.dsoId}</p>
                         </td>
                         <td className="px-4 py-3 text-gray-900 text-sm font-medium">{formatDateDDMMYYYY(a.date)}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkIn || "—"}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkOut || "—"}</td>
+                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkIn || "â€”"}</td>
+                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkOut || "â€”"}</td>
                         <td className="px-4 py-3 hidden md:table-cell">
                           {hours > 0 ? (
                             <span className={`text-sm font-bold ${hours >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>
                               {hours.toFixed(1)}h
                             </span>
-                          ) : "—"}
+                          ) : "â€”"}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${a.status === "Present" ? "bg-green-50 text-green-700" : a.status === "Absent" ? "bg-red-50 text-red-700" : a.status === "Late" ? "bg-yellow-50 text-yellow-700" : "bg-gray-50 text-gray-700"}`}>{a.status}</span>
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          {(a as any).fine ? <span className="text-red-600 text-xs font-bold">-PKR {(a as any).fine}</span> : "—"}
+                          {(a as any).fine ? <span className="text-red-600 text-xs font-bold">-PKR {(a as any).fine}</span> : "â€”"}
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          {(a as any).bonus ? <span className="text-green-600 text-xs font-bold">+PKR {(a as any).bonus}</span> : "—"}
+                          {(a as any).bonus ? <span className="text-green-600 text-xs font-bold">+PKR {(a as any).bonus}</span> : "â€”"}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button onClick={() => setViewRecord(a)} className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
@@ -285,7 +284,7 @@ export default function DSMDsoAttendancePage() {
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${r.status === "Approved" ? "bg-green-50 text-green-700" : r.status === "Rejected" ? "bg-red-50 text-red-700" : "bg-yellow-50 text-yellow-700"}`}>{r.status}</span>
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{r.reviewedBy || "—"}</td>
+                    <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{r.reviewedBy || "â€”"}</td>
                     <td className="px-4 py-3 text-center">
                       {r.status === "Pending" ? (
                         <div className="flex items-center justify-center gap-1">
@@ -297,7 +296,7 @@ export default function DSMDsoAttendancePage() {
                           </button>
                         </div>
                       ) : (
-                        <span className="text-gray-400 text-xs">{r.reviewedBy ? "Done" : "—"}</span>
+                        <span className="text-gray-400 text-xs">{r.reviewedBy ? "Done" : "â€”"}</span>
                       )}
                     </td>
                   </tr>
@@ -346,7 +345,7 @@ export default function DSMDsoAttendancePage() {
                       <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${w.type === "consecutive_absent" ? "bg-red-50 text-red-700" : w.type === "late" ? "bg-yellow-50 text-yellow-700" : "bg-amber-50 text-amber-700"}`}>{w.type.replace("_", " ").toUpperCase()}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-700 text-sm">{w.message}</td>
-                    <td className="px-4 py-3 text-red-600 text-xs font-bold">{w.fineAmount > 0 ? `PKR ${w.fineAmount.toLocaleString()}` : "—"}</td>
+                    <td className="px-4 py-3 text-red-600 text-xs font-bold">{w.fineAmount > 0 ? `PKR ${w.fineAmount.toLocaleString()}` : "â€”"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -355,7 +354,7 @@ export default function DSMDsoAttendancePage() {
           {warnings.length === 0 && (
             <div className="px-6 py-12 text-center">
               <CheckCircle2 size={32} className="text-green-300 mx-auto mb-3" />
-              <p className="text-green-500 text-sm font-medium">No warnings — all clear!</p>
+              <p className="text-green-500 text-sm font-medium">No warnings â€” all clear!</p>
             </div>
           )}
         </div>
@@ -378,8 +377,8 @@ export default function DSMDsoAttendancePage() {
               </div>
               <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-gray-500">Date</span><span className="font-medium text-gray-900">{formatDateDDMMYYYY(viewRecord.date)}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Check In</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkIn || "—"}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Check Out</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkOut || "—"}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">Check In</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkIn || "â€”"}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">Check Out</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkOut || "â€”"}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-500">Working Hours</span><span className={`font-bold ${(viewRecord.hoursWorked || 0) >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>{(viewRecord.hoursWorked || 0).toFixed(1)}h / {settings.requiredHours}h</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-500">Status</span><span className={`px-2 py-1 rounded-lg text-xs font-medium ${viewRecord.status === "Present" ? "bg-green-50 text-green-700" : viewRecord.status === "Late" ? "bg-yellow-50 text-yellow-700" : "bg-red-50 text-red-700"}`}>{viewRecord.status}</span></div>
                 {viewRecord.fine ? <div className="flex justify-between text-sm"><span className="text-gray-500">Fine</span><span className="text-red-600 font-bold">PKR {viewRecord.fine.toLocaleString()}</span></div> : null}

@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Plus, Search, Edit, Trash2, X, Save, Wrench, Package, ArrowRightLeft, Tag, Filter, Calendar, ChevronDown, ChevronUp, User, CheckCircle, Clock, RotateCcw } from "lucide-react";
@@ -261,7 +260,7 @@ export default function EquipmentPage() {
                       <td className="px-4 py-3 hidden md:table-cell">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${e.condition === "New" ? "bg-green-50 text-green-600" : e.condition === "Good" ? "bg-blue-50 text-blue-600" : e.condition === "Fair" ? "bg-amber-50 text-amber-600" : "bg-red-50 text-red-600"}`}>{e.condition}</span>
                       </td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-gray-700 text-xs font-mono">{e.assignedTo || "—"}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-gray-700 text-xs font-mono">{e.assignedTo || "â€”"}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${e.status === "Available" ? "bg-green-50 text-green-700" : e.status === "Issued" ? "bg-blue-50 text-blue-700" : e.status === "Returned" ? "bg-gray-50 text-gray-700" : "bg-red-50 text-red-700"}`}>{e.status}</span>
                       </td>
@@ -453,7 +452,7 @@ export default function EquipmentPage() {
                         {filteredAssignedPersonnel.map((p) => (
                           <button key={p.id} onClick={() => { setForm((prev) => ({ ...prev, assignedTo: p.id })); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-all">
                             <p className="text-gray-900 text-xs font-medium">{p.name}</p>
-                            <p className="text-gray-400 text-[10px] font-mono">{p.id} · <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
+                            <p className="text-gray-400 text-[10px] font-mono">{p.id} Â· <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
                           </button>
                         ))}
                         {filteredAssignedPersonnel.length === 0 && <p className="text-gray-400 text-xs text-center py-2">No results</p>}
@@ -501,7 +500,7 @@ export default function EquipmentPage() {
                       {filteredIssuePersonnel.map((p) => (
                         <button key={p.id} onClick={() => { setIssueForm((prev) => ({ ...prev, personId: p.id, personRole: p.role })); setShowPersonDropdown(false); setPersonSearch(""); }} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-all">
                           <p className="text-gray-900 text-xs font-medium">{p.name}</p>
-                          <p className="text-gray-400 text-[10px] font-mono">{p.id} · <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
+                          <p className="text-gray-400 text-[10px] font-mono">{p.id} Â· <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
                         </button>
                       ))}
                       {filteredIssuePersonnel.length === 0 && <p className="text-gray-400 text-xs text-center py-2">No results</p>}

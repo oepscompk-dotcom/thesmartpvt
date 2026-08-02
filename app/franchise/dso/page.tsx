@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo, Fragment } from "react";
 import {
@@ -298,7 +297,7 @@ export default function DSOPage() {
       <div class="name">${emp.name}</div>
       <div class="meta">
         <span>ID: ${emp.id}</span>
-        <span>CNIC: ${emp.cnic || "—"}</span>
+        <span>CNIC: ${emp.cnic || "â€”"}</span>
         ${emp.fatherName ? "<span>S/o " + emp.fatherName + "</span>" : ""}
       </div>
     </div>
@@ -317,10 +316,10 @@ export default function DSOPage() {
       <tr><td class="row-label row-sub">Residence Allowance</td><td class="row-value">PKR ${residence.toLocaleString()}</td></tr>
       <tr class="row-total"><td class="row-label">Total Allowances</td><td class="row-value">PKR ${totalAllow.toLocaleString()}</td></tr>
       <tr class="row-divider"><td colspan="2"></td></tr>
-      <tr><td class="row-label">New SIM <span style="font-size:9px;color:#94a3b8;">BVS(${newSimBvs}×${v("newSimBvs")})+FCA(${newSimFca}×${v("newSimFca")})+IFCA(${newSimIfca}×${v("newSimIfca")})</span></td><td class="row-value">PKR ${newSimComm.toLocaleString()}</td></tr>
-      <tr class="row-alt"><td class="row-label">MNP <span style="font-size:9px;color:#94a3b8;">BVS(${mnpBvs}×${v("mnpBvs")})+FCA(${mnpFca}×${v("mnpFca")})+IFCA(${mnpIfca}×${v("mnpIfca")})</span></td><td class="row-value">PKR ${mnpComm.toLocaleString()}</td></tr>
-      <tr><td class="row-label">Replacement <span style="font-size:9px;color:#94a3b8;">BVS(${replBvs}×${v("replacementBvs")})+FCA(${replFca}×${v("replacementFca")})+IFCA(${replIfca}×${v("replacementIfca")})</span></td><td class="row-value">PKR ${replComm.toLocaleString()}</td></tr>
-      <tr class="row-alt"><td class="row-label">BYN <span style="font-size:9px;color:#94a3b8;">BVS(${bynBvs}×${v("bynBvs")})+FCA(${bynFca}×${v("bynFca")})+IFCA(${bynIfca}×${v("bynIfca")})</span></td><td class="row-value">PKR ${bynComm.toLocaleString()}</td></tr>
+      <tr><td class="row-label">New SIM <span style="font-size:9px;color:#94a3b8;">BVS(${newSimBvs}Ã—${v("newSimBvs")})+FCA(${newSimFca}Ã—${v("newSimFca")})+IFCA(${newSimIfca}Ã—${v("newSimIfca")})</span></td><td class="row-value">PKR ${newSimComm.toLocaleString()}</td></tr>
+      <tr class="row-alt"><td class="row-label">MNP <span style="font-size:9px;color:#94a3b8;">BVS(${mnpBvs}Ã—${v("mnpBvs")})+FCA(${mnpFca}Ã—${v("mnpFca")})+IFCA(${mnpIfca}Ã—${v("mnpIfca")})</span></td><td class="row-value">PKR ${mnpComm.toLocaleString()}</td></tr>
+      <tr><td class="row-label">Replacement <span style="font-size:9px;color:#94a3b8;">BVS(${replBvs}Ã—${v("replacementBvs")})+FCA(${replFca}Ã—${v("replacementFca")})+IFCA(${replIfca}Ã—${v("replacementIfca")})</span></td><td class="row-value">PKR ${replComm.toLocaleString()}</td></tr>
+      <tr class="row-alt"><td class="row-label">BYN <span style="font-size:9px;color:#94a3b8;">BVS(${bynBvs}Ã—${v("bynBvs")})+FCA(${bynFca}Ã—${v("bynFca")})+IFCA(${bynIfca}Ã—${v("bynIfca")})</span></td><td class="row-value">PKR ${bynComm.toLocaleString()}</td></tr>
       <tr><td class="row-label row-sub">Hike Commission</td><td class="row-value">PKR ${hike.toLocaleString()}</td></tr>
       <tr class="row-alt"><td class="row-label row-sub">Other Commission</td><td class="row-value">PKR ${other.toLocaleString()}</td></tr>
       <tr class="row-total"><td class="row-label">Total Commission</td><td class="row-value">PKR ${totalComm.toLocaleString()}</td></tr>
@@ -344,7 +343,7 @@ export default function DSOPage() {
       <div><div class="np-label">Net Payable</div><div class="np-sub">After all allowances &amp; deductions</div></div>
       <div class="np-amount">PKR ${netPay.toLocaleString()}</div>
     </div>
-    <div class="amt-words" id="amtWords"><strong>Amount in Words:</strong> Rupees — Only</div>
+    <div class="amt-words" id="amtWords"><strong>Amount in Words:</strong> Rupees â€” Only</div>
     <div class="barcode-wrap">
       <canvas id="barcode"></canvas>
       <div class="bcode-id">${slipId}</div>
@@ -556,7 +555,7 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
         {activeTab !== "salary" && activeTab !== "documents" && (
           <div className="flex items-center justify-between">
             <p className="text-gray-400 text-xs">
-              Showing {Math.min((safePage - 1) * PAGE_SIZE + 1, tabList.length)}–{Math.min(safePage * PAGE_SIZE, tabList.length)} of {tabList.length}
+              Showing {Math.min((safePage - 1) * PAGE_SIZE + 1, tabList.length)}â€“{Math.min(safePage * PAGE_SIZE, tabList.length)} of {tabList.length}
             </p>
             <div className="flex items-center gap-1">
               <button
@@ -716,13 +715,13 @@ function AllDSOTab({
                       <p className="text-gray-900 text-sm font-medium truncate">{d.name}</p>
                       <p className="text-gray-400 text-xs font-mono truncate">
                         {d.id}
-                        {d.employeeCode ? ` · ${d.employeeCode}` : ""}
+                        {d.employeeCode ? ` Â· ${d.employeeCode}` : ""}
                       </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "—"}</td>
-                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-sm font-mono">{d.assignedDSM || "—"}</td>
+                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "â€”"}</td>
+                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-sm font-mono">{d.assignedDSM || "â€”"}</td>
                 <td className="px-4 py-3 hidden xl:table-cell text-gray-600 text-sm">
                   PKR {(d.salary || 0).toLocaleString()}
                 </td>
@@ -979,7 +978,7 @@ function SalaryTab({
             </div>
             <div>
               <h3 className="font-bold text-sm">Salary Formula</h3>
-              <p className="text-white/60 text-xs">Net = Basic + Allowances + Commissions + Bonuses − Deductions</p>
+              <p className="text-white/60 text-xs">Net = Basic + Allowances + Commissions + Bonuses âˆ’ Deductions</p>
             </div>
           </div>
           <button onClick={() => setShowFormula(!showFormula)} className="px-3 py-1.5 bg-white/10 rounded-lg text-xs font-medium hover:bg-white/20 transition-all">
@@ -991,12 +990,12 @@ function SalaryTab({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div><span className="text-white/50">Basic Salary</span><p className="font-bold">Fixed monthly</p></div>
               <div><span className="text-white/50">Allowances</span><p className="font-bold">Fuel + Mobile + Daily</p></div>
-              <div><span className="text-white/50">Commissions</span><p className="font-bold">Per activation × rate</p></div>
+              <div><span className="text-white/50">Commissions</span><p className="font-bold">Per activation Ã— rate</p></div>
               <div><span className="text-white/50">Deductions</span><p className="font-bold">Advance + Loan + Other</p></div>
             </div>
             <div className="border-t border-white/10 pt-2 mt-2">
               <p className="text-white/50">Commission Types:</p>
-              <p className="font-bold">New SIM × rate + MNP × rate + Replacement × rate + BYN × rate + Hike + Other</p>
+              <p className="font-bold">New SIM Ã— rate + MNP Ã— rate + Replacement Ã— rate + BYN Ã— rate + Hike + Other</p>
             </div>
           </div>
         )}
@@ -1204,20 +1203,20 @@ function SalaryTab({
                             {/* Earnings Breakdown */}
                             <div className="bg-gradient-to-br from-[#0A2647] to-[#144272] rounded-xl p-4 text-white">
                               <h4 className="font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <TrendingUp size={14} /> Earnings Breakdown — {calcMonth}
+                                <TrendingUp size={14} /> Earnings Breakdown â€” {calcMonth}
                               </h4>
                               <div className="space-y-2 text-xs">
                                 <div className="flex justify-between"><span className="text-white/60">Basic Salary</span><span className="font-medium">PKR {e.basic.toLocaleString()}</span></div>
                                 <div className="flex justify-between"><span className="text-white/60">Allowances</span><span className="font-medium">PKR {e.totalAllowances.toLocaleString()}</span></div>
                                 <div className="border-t border-white/10 pt-2">
                                   <div className="flex justify-between"><span className="text-white/60">New SIM</span><span className="font-medium text-green-300">PKR {e.newSimComm.toLocaleString()}</span></div>
-                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.newSimBvs}×{getSalaryValue(d, "newSimBvs")}) + FCA({acts.newSimFca}×{getSalaryValue(d, "newSimFca")}) + IFCA({acts.newSimIfca}×{getSalaryValue(d, "newSimIfca")})</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.newSimBvs}Ã—{getSalaryValue(d, "newSimBvs")}) + FCA({acts.newSimFca}Ã—{getSalaryValue(d, "newSimFca")}) + IFCA({acts.newSimIfca}Ã—{getSalaryValue(d, "newSimIfca")})</span></div>
                                   <div className="flex justify-between"><span className="text-white/60">MNP</span><span className="font-medium text-green-300">PKR {e.mnpComm.toLocaleString()}</span></div>
-                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.mnpBvs}×{getSalaryValue(d, "mnpBvs")}) + FCA({acts.mnpFca}×{getSalaryValue(d, "mnpFca")}) + IFCA({acts.mnpIfca}×{getSalaryValue(d, "mnpIfca")})</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.mnpBvs}Ã—{getSalaryValue(d, "mnpBvs")}) + FCA({acts.mnpFca}Ã—{getSalaryValue(d, "mnpFca")}) + IFCA({acts.mnpIfca}Ã—{getSalaryValue(d, "mnpIfca")})</span></div>
                                   <div className="flex justify-between"><span className="text-white/60">Replacement</span><span className="font-medium text-green-300">PKR {e.replComm.toLocaleString()}</span></div>
-                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.replBvs}×{getSalaryValue(d, "replacementBvs")}) + FCA({acts.replFca}×{getSalaryValue(d, "replacementFca")}) + IFCA({acts.replIfca}×{getSalaryValue(d, "replacementIfca")})</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.replBvs}Ã—{getSalaryValue(d, "replacementBvs")}) + FCA({acts.replFca}Ã—{getSalaryValue(d, "replacementFca")}) + IFCA({acts.replIfca}Ã—{getSalaryValue(d, "replacementIfca")})</span></div>
                                   <div className="flex justify-between"><span className="text-white/60">BYN</span><span className="font-medium text-green-300">PKR {e.bynComm.toLocaleString()}</span></div>
-                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.bynBvs}×{getSalaryValue(d, "bynBvs")}) + FCA({acts.bynFca}×{getSalaryValue(d, "bynFca")}) + IFCA({acts.bynIfca}×{getSalaryValue(d, "bynIfca")})</span></div>
+                                  <div className="flex justify-between pl-3 text-[10px]"><span className="text-white/40">BVS({acts.bynBvs}Ã—{getSalaryValue(d, "bynBvs")}) + FCA({acts.bynFca}Ã—{getSalaryValue(d, "bynFca")}) + IFCA({acts.bynIfca}Ã—{getSalaryValue(d, "bynIfca")})</span></div>
                                   <div className="flex justify-between"><span className="text-white/60">Hike + Other</span><span className="font-medium text-green-300">PKR {(e.hikeComm + e.otherComm).toLocaleString()}</span></div>
                                 </div>
                                 <div className="border-t border-white/10 pt-2">
@@ -1268,7 +1267,7 @@ function InactiveTab({
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
         <AlertTriangle size={16} className="text-amber-600" />
-        <p className="text-amber-800 text-sm font-bold">Inactive / Resigned DSOs — {data.length} found</p>
+        <p className="text-amber-800 text-sm font-bold">Inactive / Resigned DSOs â€” {data.length} found</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -1307,13 +1306,13 @@ function InactiveTab({
                       <p className="text-gray-900 text-sm font-medium truncate">{d.name}</p>
                       <p className="text-gray-400 text-xs font-mono truncate">
                         {d.id}
-                        {d.employeeCode ? ` · ${d.employeeCode}` : ""}
+                        {d.employeeCode ? ` Â· ${d.employeeCode}` : ""}
                       </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "—"}</td>
-                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-sm font-mono">{d.assignedDSM || "—"}</td>
+                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "â€”"}</td>
+                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-sm font-mono">{d.assignedDSM || "â€”"}</td>
                 <td className="px-4 py-3 hidden xl:table-cell text-gray-600 text-sm">
                   PKR {(d.salary || 0).toLocaleString()}
                 </td>
@@ -1376,7 +1375,7 @@ function ViewModal({ dso, onClose }: { dso: DSO; onClose: () => void }) {
               <p className="text-gray-900 font-bold text-lg">{dso.name}</p>
               <p className="text-gray-500 text-xs font-mono">
                 {dso.id}
-                {dso.employeeCode ? ` · ${dso.employeeCode}` : ""}
+                {dso.employeeCode ? ` Â· ${dso.employeeCode}` : ""}
               </p>
               <span className={`px-2 py-0.5 rounded text-[10px] font-medium mt-1 inline-block ${STATUS_COLORS[dso.status] || ""}`}>
                 {dso.status}
@@ -1402,7 +1401,7 @@ function ViewModal({ dso, onClose }: { dso: DSO; onClose: () => void }) {
               <button
                 onClick={() => {
                   const phone = (dso.whatsapp || dso.mobile).replace(/\D/g, "");
-                  const msg = `*THE SMART ERP - Account Credentials*\n\nDear ${dso.name},\n\nYour DSO account has been created successfully. Please find your login credentials below:\n\n🆔 User ID: ${dso.username}\n🔑 Password: ${dso.password}\n\n🔗 Login Portal: https://thesmartpvt.com/dso-login\n\n⚠️ *IMPORTANT SECURITY NOTICE:*\n• Do NOT share your ID or password with anyone\n• THE SMART will NEVER ask for your password\n• Change your password after first login\n• Keep your credentials confidential\n\nThank you,\nTHE SMART ERP Team`;
+                  const msg = `*THE SMART ERP - Account Credentials*\n\nDear ${dso.name},\n\nYour DSO account has been created successfully. Please find your login credentials below:\n\nðŸ†” User ID: ${dso.username}\nðŸ”‘ Password: ${dso.password}\n\nðŸ”— Login Portal: https://thesmartpvt.com/dso-login\n\nâš ï¸ *IMPORTANT SECURITY NOTICE:*\nâ€¢ Do NOT share your ID or password with anyone\nâ€¢ THE SMART will NEVER ask for your password\nâ€¢ Change your password after first login\nâ€¢ Keep your credentials confidential\n\nThank you,\nTHE SMART ERP Team`;
                   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
                 }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all"

@@ -1,5 +1,4 @@
-"use client";
-export const dynamic = "force-dynamic";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import {
@@ -257,8 +256,8 @@ export default function PayrollPage() {
       const b = p.bynCount || 0;
       const totalActivations = n + m + r + b;
       return `<tr>
-        <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;font-weight:500;color:#1a1a1a;">${p.employeeName || "—"}<br/><span style="font-size:8px;color:#888;font-weight:400;">${p.employeeId || ""}</span></td>
-        <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;"><span style="background:${p.role === "DSO" ? "#d1fae5" : "#dbeafe"};color:${p.role === "DSO" ? "#065f46" : "#1e40af"};padding:2px 8px;border-radius:10px;font-weight:600;font-size:8px;">${p.role || "—"}</span></td>
+        <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;font-weight:500;color:#1a1a1a;">${p.employeeName || "â€”"}<br/><span style="font-size:8px;color:#888;font-weight:400;">${p.employeeId || ""}</span></td>
+        <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:center;"><span style="background:${p.role === "DSO" ? "#d1fae5" : "#dbeafe"};color:${p.role === "DSO" ? "#065f46" : "#1e40af"};padding:2px 8px;border-radius:10px;font-weight:600;font-size:8px;">${p.role || "â€”"}</span></td>
         <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;text-align:right;font-weight:500;">${(p.basicSalary || 0).toLocaleString()}</td>
         <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:8px;text-align:right;color:#555;">${(p.fuelAllowance || 0).toLocaleString()}</td>
         <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:8px;text-align:right;color:#555;">${(p.mobileAllowance || 0).toLocaleString()}</td>
@@ -328,7 +327,7 @@ export default function PayrollPage() {
       </style>
       </head>
       <body>
-        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨 Print</button><button class="btn-close" onclick="window.close()">✕ Close</button></div>
+        <div class="no-print"><button class="btn-print" onclick="window.print()">ðŸ–¨ Print</button><button class="btn-close" onclick="window.close()">âœ• Close</button></div>
         <div class="report-header">
           <h1>Payroll Detail Report</h1>
           <div class="meta">
@@ -371,7 +370,7 @@ export default function PayrollPage() {
               <td class="right">${filteredPayroll.reduce((s,p) => s + (p.dailyAllowance || 0), 0).toLocaleString()}</td>
               <td class="right">${filteredPayroll.reduce((s,p) => s + (p.residenceAllowance || 0), 0).toLocaleString()}</td>
               <td class="right">PKR ${totalAllow.toLocaleString()}</td>
-              <td>—</td>
+              <td>â€”</td>
               <td class="right">${filteredPayroll.reduce((s,p) => s + (p.newSimCommission || 0), 0).toLocaleString()}</td>
               <td class="right">${filteredPayroll.reduce((s,p) => s + (p.mnpCommission || 0), 0).toLocaleString()}</td>
               <td class="right">${filteredPayroll.reduce((s,p) => s + (p.replacementCommission || 0), 0).toLocaleString()}</td>
@@ -386,11 +385,11 @@ export default function PayrollPage() {
               <td class="right">${filteredPayroll.reduce((s,p) => s + (p.otherDeduction || 0), 0).toLocaleString()}</td>
               <td class="right">PKR ${totalDed.toLocaleString()}</td>
               <td class="right" style="background:#eff6ff;font-size:11px;color:#0A2647;">PKR ${totalNet.toLocaleString()}</td>
-              <td>—</td>
+              <td>â€”</td>
             </tr>
           </tfoot>
         </table>
-        <div class="footer">THE SMART ERP — Payroll System | Generated on ${dateStr} at ${timeStr}</div>
+        <div class="footer">THE SMART ERP â€” Payroll System | Generated on ${dateStr} at ${timeStr}</div>
       </body></html>
     `);
     printWindow.document.close();
@@ -664,7 +663,7 @@ export default function PayrollPage() {
                           <td className="px-4 py-3">
                             <div>
                               <p className="text-gray-900 text-sm font-medium">{p.employeeName}</p>
-                              <p className="text-gray-400 text-xs font-mono">{p.employeeId} · {p.role}</p>
+                              <p className="text-gray-400 text-xs font-mono">{p.employeeId} Â· {p.role}</p>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-right text-gray-700 text-xs hidden md:table-cell">PKR {(p.basicSalary || 0).toLocaleString()}</td>
@@ -725,10 +724,10 @@ export default function PayrollPage() {
                                     <TrendingUp size={14} className="text-blue-500" /> Commissions
                                   </h4>
                                   <div className="space-y-2 text-xs">
-                                    <div className="flex justify-between"><span className="text-gray-500">New SIM ({p.newSimCount || 0} × Rs.{p.newSimRate || 0})</span><span className="font-medium text-green-600">PKR {(p.newSimCommission || 0).toLocaleString()}</span></div>
-                                    <div className="flex justify-between"><span className="text-gray-500">MNP ({p.mnpCount || 0} × Rs.{p.mnpRate || 0})</span><span className="font-medium text-green-600">PKR {(p.mnpCommission || 0).toLocaleString()}</span></div>
-                                    <div className="flex justify-between"><span className="text-gray-500">Replace ({p.replacementCount || 0} × Rs.{p.replacementRate || 0})</span><span className="font-medium text-green-600">PKR {(p.replacementCommission || 0).toLocaleString()}</span></div>
-                                    <div className="flex justify-between"><span className="text-gray-500">BYN ({p.bynCount || 0} × Rs.{p.bynRate || 0})</span><span className="font-medium text-green-600">PKR {(p.bynCommission || 0).toLocaleString()}</span></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">New SIM ({p.newSimCount || 0} Ã— Rs.{p.newSimRate || 0})</span><span className="font-medium text-green-600">PKR {(p.newSimCommission || 0).toLocaleString()}</span></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">MNP ({p.mnpCount || 0} Ã— Rs.{p.mnpRate || 0})</span><span className="font-medium text-green-600">PKR {(p.mnpCommission || 0).toLocaleString()}</span></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">Replace ({p.replacementCount || 0} Ã— Rs.{p.replacementRate || 0})</span><span className="font-medium text-green-600">PKR {(p.replacementCommission || 0).toLocaleString()}</span></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">BYN ({p.bynCount || 0} Ã— Rs.{p.bynRate || 0})</span><span className="font-medium text-green-600">PKR {(p.bynCommission || 0).toLocaleString()}</span></div>
                                     <div className="flex justify-between"><span className="text-gray-500">Hike + Other</span><span className="font-medium text-green-600">PKR {((p.hikeCommission || 0) + (p.otherCommission || 0)).toLocaleString()}</span></div>
                                     <div className="border-t border-gray-200 pt-2 flex justify-between font-bold"><span>Total Commission</span><span className="text-green-600">PKR {(p.totalCommission || 0).toLocaleString()}</span></div>
                                   </div>

@@ -11,6 +11,9 @@
 /.next/
 /out/
 
+# mobile app build artifacts (regenerate via mobile/ scripts)
+/mobile/
+
 # production
 /build
 
