@@ -286,13 +286,14 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords] = await Promise.all([
+      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords] = await Promise.all([
         apiLoad("dsm", fid),
         apiLoad("dso", fid),
         apiLoad("device", fid),
         apiLoad("sim", fid),
         apiLoad("equipment", fid),
         apiLoad("attendanceRecord", fid),
+        apiLoad("dsoAttendance", fid),
         apiLoad("target", fid),
         apiLoad("walletTransaction", fid),
         apiLoad("payrollRecord", fid),
@@ -311,7 +312,23 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       setDevices(loadedDevices || []);
       setSIMs(loadedSIMs || []);
       setEquipment(loadedEquipment || []);
-      setAttendance(loadedAttendance || []);
+      const mergedAttendance = [
+        ...(Array.isArray(loadedAttendance) ? loadedAttendance : []),
+        ...(Array.isArray(loadedDsoAttendance) ? loadedDsoAttendance.map((a: any) => ({
+          id: a.id,
+          employeeId: a.dsoId,
+          employeeName: "",
+          role: "DSO",
+          date: a.date,
+          checkIn: a.checkIn,
+          checkOut: a.checkOut,
+          gps: a.gps,
+          selfie: a.selfie,
+          status: a.status,
+          franchiseId: a.franchiseId,
+        })) : []),
+      ];
+      setAttendance(mergedAttendance);
       setTargets(loadedTargets || []);
       setWallet(loadedWallet || []);
       setPayroll(loadedPayroll || []);
