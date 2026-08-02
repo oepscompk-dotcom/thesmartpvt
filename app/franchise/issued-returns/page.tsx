@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, Filter, CheckSquare, Square, User, Smartphone, Trash2 } from "lucide-react";
+import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, Filter, CheckSquare, Square, User, Smartphone, Trash2, Clock } from "lucide-react";
 import { useFranchiseData, SIMIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
@@ -226,6 +226,14 @@ export default function IssuedReturnsPage() {
     }
   };
 
+  const getSIMBreakdown = (record: SIMIssueRecord) => {
+    const activated = record.simIds.filter((id) => {
+      const s = sims.find((x) => x.id === id);
+      return s && (s.status === "Activated" || s.status === "Active");
+    }).length;
+    return { total: record.simIds.length, activated, balance: record.simIds.length - activated };
+  };
+
   const filteredRecords = useMemo(() => {
     return issueRecords.filter((r) => {
       const matchStatus = statusFilter === "All" || r.status === statusFilter;
@@ -326,7 +334,7 @@ export default function IssuedReturnsPage() {
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Issued To</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Role</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Retailer ID</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">SIMs</th>
+                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">SIMs | Activated | Balance</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Issue Date</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Return Date</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
@@ -360,9 +368,13 @@ export default function IssuedReturnsPage() {
                   </td>
                   <td className="px-6 py-4 hidden lg:table-cell text-gray-600 text-sm font-mono">{r.retailerId}</td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium">
-                      <Package size={12} /> {r.simIds.length}
-                    </span>
+                    {(() => { const b = getSIMBreakdown(r); return (
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium"><Package size={11} /> {b.total}</span>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium"><Check size={11} /> {b.activated}</span>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 text-xs font-medium"><Clock size={11} /> {b.balance}</span>
+                      </div>
+                    ); })()}
                   </td>
                   <td className="px-6 py-4 hidden xl:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(r.issueDate)}</td>
                   <td className="px-6 py-4 hidden xl:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(r.returnDate)}</td>
