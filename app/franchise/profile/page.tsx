@@ -1,13 +1,13 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { User, Save, Lock, Mail, Phone, Building2, MapPin, CheckCircle2, CreditCard, Calendar, Package, MapPinned, Hash } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { useData } from "@/lib/DataContext";
 
 export default function ProfilePage() {
   const { settings, auth, updateSettings } = useFranchiseData();
-  const { franchises } = useData();
+  const { franchises, updateFranchise } = useData();
   const [form, setForm] = useState({
     franchiseName: "",
     ownerName: "",
@@ -19,10 +19,14 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [pwSaved, setPwSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const initialized = useRef(false);
 
   const franchise = franchises.find((f) => f.id === auth.franchiseId);
 
   useEffect(() => {
+    if (initialized.current) return;
+    if (!franchise && !settings.franchiseName) return;
+    initialized.current = true;
     setForm({
       franchiseName: franchise?.name || settings.franchiseName || "",
       ownerName: franchise?.owner || settings.ownerName || "",
@@ -33,17 +37,31 @@ export default function ProfilePage() {
     setMounted(true);
   }, [franchise, settings]);
 
-  const handleSave = () => {
-    updateSettings({
-      ...settings,
-      franchiseName: form.franchiseName,
-      ownerName: form.ownerName,
-      email: form.email,
-      phone: form.phone,
-      address: form.address,
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      if (franchise) {
+        await updateFranchise(franchise.id, {
+          ...franchise,
+          name: form.franchiseName,
+          owner: form.ownerName,
+          email: form.email,
+          mobile: form.phone,
+        });
+      }
+      await updateSettings({
+        ...settings,
+        franchiseName: form.franchiseName,
+        ownerName: form.ownerName,
+        email: form.email,
+        phone: form.phone,
+        address: form.address,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      console.error("Failed to save profile:", e);
+      alert("Failed to save profile. Please try again.");
+    }
   };
 
   const handlePasswordChange = () => {
