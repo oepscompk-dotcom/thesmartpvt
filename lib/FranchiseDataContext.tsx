@@ -950,17 +950,6 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       await apiDelete("accountEntry", matchedExpense.id);
       setAccounts((prev) => prev.filter((a) => a.id !== matchedExpense.id));
     }
-
-    await addAccountingEntry({
-      type: "income",
-      category: "Loan/Advance Repayment",
-      amount: req.amount,
-      date: today,
-      description: `Repayment received from ${req.staffName} (${req.role}) for ${req.paymentType} ${req.paymentId}`,
-      staffId: req.staffId,
-      staffName: req.staffName,
-      referenceId: req.paymentId,
-    });
   };
 
   const deleteIssueRecords = async (ids: string[]) => {
