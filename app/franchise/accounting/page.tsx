@@ -172,7 +172,7 @@ export default function AccountingPage() {
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><DollarSign size={16} className="text-[#0A2647]" /> SIM Rate Cards</h3>
-            <button onClick={() => setEditingRate({ id: `RC-${Date.now()}`, supplier: "Default", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: auth.franchiseId })}
+            <button onClick={() => setEditingRate({ id: `RC-${Date.now()}`, supplier: "Default", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: auth.franchiseId })}
               className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#0A2647] text-white text-xs font-bold rounded-lg hover:bg-[#144272]">
               <Plus size={12} /> Add Rate
             </button>
@@ -183,16 +183,18 @@ export default function AccountingPage() {
                 <th className="text-left px-5 py-3 text-gray-500 text-xs font-medium uppercase">Supplier</th>
                 <th className="text-left px-5 py-3 text-gray-500 text-xs font-medium uppercase">SIM Type</th>
                 <th className="text-right px-5 py-3 text-gray-500 text-xs font-medium uppercase">Customer Rate (PKR)</th>
+                <th className="text-right px-5 py-3 text-gray-500 text-xs font-medium uppercase">Commission (PKR)</th>
                 <th className="text-left px-5 py-3 text-gray-500 text-xs font-medium uppercase">Free</th>
                 <th className="w-20" />
               </tr></thead>
               <tbody>
-                {simRateCards.length === 0 && <tr><td colSpan={5} className="px-5 py-8 text-center text-gray-400 text-sm">No rate cards</td></tr>}
+                {simRateCards.length === 0 && <tr><td colSpan={6} className="px-5 py-8 text-center text-gray-400 text-sm">No rate cards</td></tr>}
                 {simRateCards.map((r) => (
                   <tr key={r.id} className="border-b border-gray-50">
                     <td className="px-5 py-3 text-gray-900 text-sm font-medium">{r.supplier}</td>
                     <td className="px-5 py-3 text-gray-600 text-sm">{r.simType}</td>
                     <td className="px-5 py-3 text-right font-bold text-gray-900">{r.customerRate.toLocaleString()}</td>
+                    <td className="px-5 py-3 text-right font-bold text-green-600">{(r.commissionRate || 0).toLocaleString()}</td>
                     <td className="px-5 py-3 text-green-600 text-xs font-medium">{r.isFreeForCustomer ? "Yes" : "No"}</td>
                     <td className="px-2 py-3 flex gap-1">
                       <button onClick={() => setEditingRate(r)} className="text-gray-400 hover:text-[#0A2647] p-1"><DollarSign size={14} /></button>
@@ -290,6 +292,10 @@ function RateCardModal({ card, onClose, onSave, suppliers, simTypes }: {
           <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Customer Rate (PKR)</label>
             <input type="number" value={local.customerRate || ""} onChange={(e) => setLocal((p) => ({ ...p, customerRate: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm" />
           </div>
+          <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Company Commission (PKR)</label>
+            <input type="number" value={local.commissionRate ?? 0} onChange={(e) => setLocal((p) => ({ ...p, commissionRate: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm" />
+            <p className="text-[10px] text-gray-400 mt-1">Income earned from the company per SIM sold (e.g. New SIM commission Rs 10)</p>
+          </div>
           <div className="flex items-center gap-3"><input type="checkbox" id="freeCb" checked={local.isFreeForCustomer} onChange={(e) => setLocal((p) => ({ ...p, isFreeForCustomer: e.target.checked }))} />
             <label htmlFor="freeCb" className="text-gray-900 text-sm font-medium">Free for customer (no charge)</label>
           </div>
@@ -318,7 +324,10 @@ function SaleForm({ onComplete }: { onComplete: () => void }) {
   const matchedRate = simRateCards.find((r) => (r.supplier === supplier || r.supplier === "Default") && r.simType === simType);
   const isFree = matchedRate?.isFreeForCustomer ?? (simType === "New");
   const rate = matchedRate?.customerRate ?? 0;
-  const total = Math.round(rate * quantity);
+  const commission = matchedRate?.commissionRate ?? (simType === "New" ? 10 : 0);
+  const customerTotal = isFree ? 0 : Math.round(rate * quantity);
+  const commissionTotal = Math.round(commission * quantity);
+  const total = customerTotal + commissionTotal;
 
   const handleSubmit = async () => {
     if (!customer || quantity <= 0) return;
@@ -326,12 +335,16 @@ function SaleForm({ onComplete }: { onComplete: () => void }) {
     if (!staff) return;
     setSubmitting(true);
     try {
+      const parts = [`${supplier} ${simType} sale x${quantity} to ${staff.name} (${staff.id})`];
+      if (customerTotal > 0) parts.push(`Customer paid PKR ${customerTotal}`);
+      if (commissionTotal > 0) parts.push(`Company commission PKR ${commissionTotal}`);
+      if (isFree) parts.push("[FREE to customer]");
       await addAccountingEntry({
         type: "income",
         category: "SIM Sales Revenue",
-        amount: isFree ? 0 : total,
+        amount: total,
         date: toStorageDate(),
-        description: `${supplier} ${simType} sale x${quantity} to ${staff.name} (${staff.id})${isFree ? " [FREE]" : ""}`,
+        description: parts.join(" - "),
         staffId: staff.id,
         staffName: staff.name,
       });
@@ -377,8 +390,13 @@ function SaleForm({ onComplete }: { onComplete: () => void }) {
       <div className="px-5 pb-5">
         <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-gray-500 text-xs font-medium">Charge to customer</p>
-            <p className="text-gray-900 font-bold">{isFree ? "FREE (no charge to customer)" : `PKR ${rate.toLocaleString()} x ${quantity} = PKR ${total.toLocaleString()}`}</p>
+            <p className="text-gray-500 text-xs font-medium">Income to record</p>
+            <p className="text-gray-900 font-bold">
+              {total > 0 ? `PKR ${total.toLocaleString()}` : "PKR 0"}{" "}
+              {isFree && customerTotal === 0 && <span className="text-green-600 font-medium">(FREE to customer{commissionTotal > 0 ? `, commission PKR ${commissionTotal.toLocaleString()}` : ""})</span>}
+              {!isFree && customerTotal > 0 && <span className="text-gray-500 font-medium">(Customer pays PKR {customerTotal.toLocaleString()}{commissionTotal > 0 ? ` + commission PKR ${commissionTotal.toLocaleString()}` : ""})</span>}
+            </p>
+            <p className="text-[10px] text-gray-400 mt-0.5">New SIMs: free to customer, income = company commission. HLR SIMs: income = amount collected from customer.</p>
           </div>
           <button onClick={handleSubmit} disabled={!customer || quantity <= 0 || submitting}
             className="px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 disabled:opacity-40 inline-flex items-center gap-2">

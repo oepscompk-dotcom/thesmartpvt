@@ -224,6 +224,7 @@ export interface SIMRateCard {
   supplier: string;
   simType: "New" | "HLR-MNP" | "HLR-Replace" | "HLR-BYN";
   customerRate: number;
+  commissionRate?: number;
   isFreeForCustomer: boolean;
   franchiseId: string;
 }
@@ -320,13 +321,13 @@ const emptySettings: FranchiseSettings = {
 };
 
 const defaultRateCards: SIMRateCard[] = [
-  { id: "RC-New-1", supplier: "Telenor", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-2", supplier: "Jazz", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-3", supplier: "Zong", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-4", supplier: "Ufone", simType: "New", customerRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-HLR-MNP", supplier: "Default", simType: "HLR-MNP", customerRate: 250, isFreeForCustomer: false, franchiseId: "" },
-  { id: "RC-HLR-Replace", supplier: "Default", simType: "HLR-Replace", customerRate: 300, isFreeForCustomer: false, franchiseId: "" },
-  { id: "RC-HLR-BYN", supplier: "Default", simType: "HLR-BYN", customerRate: 200, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-New-1", supplier: "Telenor", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-2", supplier: "Jazz", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-3", supplier: "Zong", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-4", supplier: "Ufone", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-HLR-MNP", supplier: "Default", simType: "HLR-MNP", customerRate: 250, commissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-Replace", supplier: "Default", simType: "HLR-Replace", customerRate: 300, commissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-BYN", supplier: "Default", simType: "HLR-BYN", customerRate: 200, commissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
 ];
 
 export function FranchiseDataProvider({ children }: { children: ReactNode }) {
@@ -431,7 +432,11 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       if (loadedRateCards?.data) {
         try {
           const parsed = JSON.parse(loadedRateCards.data);
-          setSimRateCards(Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultRateCards);
+          const normalized = (Array.isArray(parsed) ? parsed : []).map((r: any) => ({
+            ...r,
+            commissionRate: r.commissionRate ?? (r.simType === "New" ? 10 : 0),
+          }));
+          setSimRateCards(normalized.length > 0 ? normalized : defaultRateCards);
         } catch {}
       }
       setIssueRecords(loadedIssueRecords || []);
@@ -945,6 +950,17 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       await apiDelete("accountEntry", matchedExpense.id);
       setAccounts((prev) => prev.filter((a) => a.id !== matchedExpense.id));
     }
+
+    await addAccountingEntry({
+      type: "income",
+      category: "Loan/Advance Repayment",
+      amount: req.amount,
+      date: today,
+      description: `Repayment received from ${req.staffName} (${req.role}) for ${req.paymentType} ${req.paymentId}`,
+      staffId: req.staffId,
+      staffName: req.staffName,
+      referenceId: req.paymentId,
+    });
   };
 
   const deleteIssueRecords = async (ids: string[]) => {
