@@ -139,7 +139,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function ActiveSIMsPage() {
-  const { sims, dso, dsms, auth } = useFranchiseData();
+  const { sims, dso, dsms, auth, generateSIMMilestones } = useFranchiseData();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
@@ -254,6 +254,41 @@ export default function ActiveSIMsPage() {
       if (t === "replacement" || t === "repl") return "REPL";
     }
     return "HLR";
+  };
+
+  const mapSaleType = (t: string): "New" | "HLR-MNP" | "HLR-Replace" | "HLR-BYN" => {
+    if (t === "New") return "New";
+    if (t === "MNP") return "HLR-MNP";
+    if (t === "BYN") return "HLR-BYN";
+    if (t === "REPL") return "HLR-Replace";
+    return "HLR-MNP";
+  };
+
+  const autoGenerateSale = async (sim: any, activation: any, stages: { bvs: string; fca: string; ifca: string }) => {
+    try {
+      const bvs = stages.bvs || "0";
+      const fca = stages.fca || "0";
+      const ifca = stages.ifca || "0";
+      if (bvs !== "1" && fca !== "1" && ifca !== "1") return;
+      const simType = mapSaleType(getSIMType(sim));
+      const staffId = sim.issuedToId || activation?.dsoId || "";
+      if (!staffId) return;
+      const isDsm = dsms.some((d) => d.id === staffId) || sim.issuedToRole === "DSM";
+      const isDso = dso.some((d) => d.id === staffId) || sim.issuedToRole === "DSO";
+      const role = isDsm ? "DSM" : isDso ? "DSO" : "";
+      if (!role) return;
+      const name = sim.issuedToName || getPersonName(staffId) || staffId;
+      await generateSIMMilestones({
+        simNumber: sim.simNumber,
+        network: sim.network || "",
+        simType,
+        supplier: simType === "New" ? sim.network : "Default",
+        staff: { id: staffId, role: role as "DSO" | "DSM", name },
+        stages: { BVS: bvs, FCA: fca, IFCA: ifca },
+      });
+    } catch (e) {
+      console.error("autoGenerateSale error:", e);
+    }
   };
 
   const activeSIMs = useMemo(() => {
@@ -422,6 +457,19 @@ export default function ActiveSIMsPage() {
     setImportRows([]); setImportFile(null);
     setAllActivations(freshActivations);
     setImportVerifications(localVerifications);
+    for (const row of matchedRows) {
+      const simNum = row.matchedSimNumber || row.simNumber;
+      if (!simNum || !localVerifications[simNum]) continue;
+      const freshSim = activeSIMs.find((s) => s.simNumber === simNum);
+      const activation = freshActivations.find((a) => a.simNumber === simNum);
+      if (freshSim) {
+        await autoGenerateSale(freshSim, activation, {
+          bvs: localVerifications[simNum].bvs || "0",
+          fca: localVerifications[simNum].fca || "0",
+          ifca: localVerifications[simNum].ifca || "0",
+        });
+      }
+    }
     setTimeout(() => { setShowImportModal(false); setImportSuccess(""); }, 3000);
   };
 
@@ -826,6 +874,18 @@ export default function ActiveSIMsPage() {
                         ifca: editForm.ifca || existing.ifca || "0",
                         verifiedAt: new Date().toISOString(),
                       });
+                    }
+                    for (const simNum of targets) {
+                      if (!simNum) continue;
+                      const sim = allActivations.find((a) => a.simNumber === simNum) || sims.find((s) => s.simNumber === simNum);
+                      const activation = allActivations.find((a) => a.simNumber === simNum);
+                      if (sim) {
+                        await autoGenerateSale(sim, activation, {
+                          bvs: editForm.bvs || existingVerifications[simNum]?.bvs || "0",
+                          fca: editForm.fca || existingVerifications[simNum]?.fca || "0",
+                          ifca: editForm.ifca || existingVerifications[simNum]?.ifca || "0",
+                        });
+                      }
                     }
                   }
                 } catch {}

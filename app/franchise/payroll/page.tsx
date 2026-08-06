@@ -13,7 +13,7 @@ import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 type Tab = "generate" | "list";
 
 export default function PayrollPage() {
-  const { auth, payroll, dsms, dso, addPayroll, updatePayroll, deletePayroll, addExpense, settleStaffWalletPayments } = useFranchiseData();
+  const { auth, payroll, dsms, dso, addPayroll, updatePayroll, deletePayroll, addExpense, settleStaffWalletPayments, simSales } = useFranchiseData();
   const { activations, importVerifications } = useDSOData();
 
   const [tab, setTab] = useState<Tab>("generate");
@@ -135,7 +135,8 @@ export default function PayrollPage() {
     const advance = d.advanceSalary || 0;
     const loan = d.loanDeduction || 0;
     const otherDed = d.otherDeduction || 0;
-    const totalDeductions = advance + loan + otherDed;
+    const collectionDed = simSales.filter((s) => s.staffId === emp.id && s.collectionStatus === "Pending" && s.saleDate.slice(0, 7) === month).reduce((sum, s) => sum + s.collectionAmount, 0);
+    const totalDeductions = advance + loan + otherDed + collectionDed;
 
     const gross = basic + totalAllowances + totalCommission + targetBonus + perfBonus;
     const netPay = gross - totalDeductions;
@@ -162,7 +163,7 @@ export default function PayrollPage() {
       totalActivations: acts.total,
       hike, other, totalCommission,
       targetBonus, perfBonus,
-      advance, loan, otherDed, totalDeductions,
+      advance, loan, otherDed, collectionDed, totalDeductions,
       gross, netPay,
     };
   };
@@ -206,7 +207,7 @@ export default function PayrollPage() {
         hikeCommission: calc.hike, otherCommission: calc.other,
         totalCommission: calc.totalCommission,
         targetBonus: calc.targetBonus, performanceBonus: calc.perfBonus,
-        advanceSalary: calc.advance, loanDeduction: calc.loan, otherDeduction: calc.otherDed,
+        advanceSalary: calc.advance, loanDeduction: calc.loan, otherDeduction: calc.otherDed, collectionDeduction: calc.collectionDed,
         totalDeductions: calc.totalDeductions,
         netPay: calc.netPay,
         paid: false, status: "Unpaid",

@@ -203,7 +203,8 @@ export interface PayrollRecord {
   bynIfcaRate?: number; bynIfcaCommission?: number;
   hikeCommission?: number; otherCommission?: number;
   targetBonus?: number; performanceBonus?: number;
-  advanceSalary?: number; loanDeduction?: number; otherDeduction?: number;
+advanceSalary?: number; loanDeduction?: number; otherDeduction?: number;
+  collectionDeduction?: number;
   totalAllowances?: number; totalCommission?: number; totalDeductions?: number;
   status?: string; paid?: boolean; paidDate?: string; franchiseId: string;
 }
@@ -226,8 +227,35 @@ export interface SIMRateCard {
   customerRate: number;
   commissionRate?: number;
   staffCommissionRate?: number;
+  staffCommissionBvs?: number;
+  staffCommissionFca?: number;
+  staffCommissionIfca?: number;
   isFreeForCustomer: boolean;
   franchiseId: string;
+}
+
+export interface SIMSale {
+  id: string;
+  simNumber: string;
+  network: string;
+  simType: "New" | "HLR-MNP" | "HLR-Replace" | "HLR-BYN";
+  stage: "BVS" | "FCA" | "IFCA";
+  staffId: string;
+  staffRole: "DSO" | "DSM";
+  staffName: string;
+  supplier: string;
+  customerRate: number;
+  companyCommission: number;
+  staffCommission: number;
+  income: number;
+  collectionAmount: number;
+  collectionStatus: "N/A" | "Pending" | "Received";
+  receivedAt?: string;
+  receivedMethod?: string;
+  accountEntryId?: string;
+  saleDate: string;
+  franchiseId: string;
+  createdAt: string;
 }
 
 
@@ -293,6 +321,13 @@ interface FranchiseDataContextType {
   simRateCards: SIMRateCard[];
   upsertSimRateCard: (card: Omit<SIMRateCard, "franchiseId">) => Promise<void>;
   deleteSimRateCard: (id: string) => Promise<void>;
+  simSales: SIMSale[];
+  generateSIMMilestones: (input: {
+    simNumber: string; network: string; simType: SIMSale["simType"]; supplier?: string;
+    staff: { id: string; role: "DSO" | "DSM"; name: string };
+    stages: { BVS?: string; FCA?: string; IFCA?: string };
+  }) => Promise<number>;
+  markSIMCollectionReceived: (saleId: string, method: string) => Promise<void>;
   addNotification: (n: FranchiseNotification) => Promise<void>; markNotificationRead: (id: string) => Promise<void>; deleteNotification: (id: string) => Promise<void>;
   updateSettings: (s: FranchiseSettings) => Promise<void>;
   issueRecords: SIMIssueRecord[];
@@ -322,13 +357,13 @@ const emptySettings: FranchiseSettings = {
 };
 
 const defaultRateCards: SIMRateCard[] = [
-  { id: "RC-New-1", supplier: "Telenor", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-2", supplier: "Jazz", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-3", supplier: "Zong", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-4", supplier: "Ufone", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-HLR-MNP", supplier: "Default", simType: "HLR-MNP", customerRate: 250, commissionRate: 0, staffCommissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
-  { id: "RC-HLR-Replace", supplier: "Default", simType: "HLR-Replace", customerRate: 300, commissionRate: 0, staffCommissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
-  { id: "RC-HLR-BYN", supplier: "Default", simType: "HLR-BYN", customerRate: 200, commissionRate: 0, staffCommissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-New-1", supplier: "Telenor", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, staffCommissionBvs: 0, staffCommissionFca: 0, staffCommissionIfca: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-2", supplier: "Jazz", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, staffCommissionBvs: 0, staffCommissionFca: 0, staffCommissionIfca: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-3", supplier: "Zong", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, staffCommissionBvs: 0, staffCommissionFca: 0, staffCommissionIfca: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-4", supplier: "Ufone", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, staffCommissionBvs: 0, staffCommissionFca: 0, staffCommissionIfca: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-HLR-MNP", supplier: "Default", simType: "HLR-MNP", customerRate: 250, commissionRate: 0, staffCommissionRate: 0, staffCommissionBvs: 0, staffCommissionFca: 0, staffCommissionIfca: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-Replace", supplier: "Default", simType: "HLR-Replace", customerRate: 300, commissionRate: 0, staffCommissionRate: 0, staffCommissionBvs: 0, staffCommissionFca: 0, staffCommissionIfca: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-BYN", supplier: "Default", simType: "HLR-BYN", customerRate: 200, commissionRate: 0, staffCommissionRate: 0, staffCommissionBvs: 0, staffCommissionFca: 0, staffCommissionIfca: 0, isFreeForCustomer: false, franchiseId: "" },
 ];
 
 export function FranchiseDataProvider({ children }: { children: ReactNode }) {
@@ -351,6 +386,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const [staffWalletPayments, setStaffWalletPayments] = useState<StaffWalletPayment[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<StaffPaymentRequest[]>([]);
   const [simRateCards, setSimRateCards] = useState<SIMRateCard[]>((defaultRateCards));
+  const [simSales, setSimSales] = useState<SIMSale[]>([]);
   const [equipmentItemNames, setEquipmentItemNames] = useState<EquipmentItemName[]>([]);
   const [equipmentIssueRecords, setEquipmentIssueRecords] = useState<EquipmentIssueRecord[]>([]);
   const [deviceIssueRecords, setDeviceIssueRecords] = useState<DeviceIssueRecord[]>([]);
@@ -374,7 +410,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet, loadedPaymentRequests, loadedRateCards] = await Promise.all([
+      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet, loadedPaymentRequests, loadedRateCards, loadedSIMSales] = await Promise.all([
         apiLoad("dsm", fid),
         apiLoad("dso", fid),
         apiLoad("device", fid),
@@ -397,6 +433,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
         apiLoadById("franchiseData", "staffWallet-" + fid),
         apiLoadById("franchiseData", "paymentRequests-" + fid),
         apiLoadById("franchiseData", "rateCards-" + fid).catch(() => null),
+        apiLoadById("franchiseData", "simSales-" + fid).catch(() => null),
       ]);
       setDSMs(loadedDSMs || []);
       setDSO(loadedDSO || []);
@@ -437,6 +474,9 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
             ...r,
             commissionRate: r.commissionRate ?? (r.simType === "New" ? 10 : 0),
             staffCommissionRate: r.staffCommissionRate ?? 0,
+            staffCommissionBvs: r.staffCommissionBvs ?? r.staffCommissionRate ?? 0,
+            staffCommissionFca: r.staffCommissionFca ?? r.staffCommissionRate ?? 0,
+            staffCommissionIfca: r.staffCommissionIfca ?? r.staffCommissionRate ?? 0,
           }));
           setSimRateCards(normalized.length > 0 ? normalized : defaultRateCards);
         } catch {}
@@ -455,6 +495,12 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
         try {
           const parsed = JSON.parse(loadedPaymentRequests.data);
           setPaymentRequests(Array.isArray(parsed) ? parsed : []);
+        } catch {}
+      }
+      if (loadedSIMSales?.data) {
+        try {
+          const parsed = JSON.parse(loadedSIMSales.data);
+          setSimSales(Array.isArray(parsed) ? parsed : []);
         } catch {}
       }
     };
@@ -651,6 +697,149 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     const updated = simRateCards.filter((r) => r.id !== id);
     setSimRateCards(updated);
     await persistSimRateCards(updated);
+  };
+
+  const persistSIMSales = async (list: SIMSale[]) => {
+    await apiSave("franchiseData", { id: "simSales-" + fid, data: JSON.stringify(list) });
+  };
+
+  const creditStaffWallet = async (role: "DSO" | "DSM", staffId: string, staffName: string, amount: number, note: string, date: string) => {
+    if (amount <= 0) return;
+    const model = role === "DSO" ? "dsoWalletEntry" : "dsmWalletEntry";
+    const existing = await apiLoad(model, fid);
+    const entries = Array.isArray(existing) ? existing : [];
+    const lastBalance = entries.reduce((max, e: any) => Math.max(max, e.balance || 0), 0);
+    const entry = {
+      id: `${role === "DSO" ? "DSW" : "DMSW"}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type: "Credit",
+      amount,
+      balance: lastBalance + amount,
+      note: `${note} - ${staffName}${staffId ? ` (${staffId})` : ""}`,
+      date,
+      franchiseId: fid,
+    };
+    await apiSave(model, entry);
+  };
+
+  const generateSIMMilestones = async (input: {
+    simNumber: string; network: string; simType: SIMSale["simType"]; supplier?: string;
+    staff: { id: string; role: "DSO" | "DSM"; name: string };
+    stages: { BVS?: string; FCA?: string; IFCA?: string };
+  }): Promise<number> => {
+    const today = new Date().toISOString().split("T")[0];
+    const supplierKey = input.supplier || input.network;
+    const rate = simRateCards.find((r) => (r.supplier === supplierKey || r.supplier === "Default") && r.simType === input.simType);
+    const isNew = input.simType === "New";
+    const companyCommission = rate?.commissionRate ?? (isNew ? 10 : 0);
+    const staffCommission = rate?.staffCommissionRate ?? 0;
+    const customerRate = rate?.customerRate ?? 0;
+    const priorStages = simSales.filter((s) => s.simNumber === input.simNumber).length;
+    const createdList: SIMSale[] = [];
+    for (const stage of ["BVS", "FCA", "IFCA"] as const) {
+      if (input.stages[stage] !== "1") continue;
+      if (simSales.some((s) => s.simNumber === input.simNumber && s.stage === stage)) continue;
+      const isFirstStage = priorStages + createdList.length === 0;
+      const stageCommission = stage === "BVS"
+        ? (rate?.staffCommissionBvs ?? staffCommission)
+        : stage === "FCA"
+        ? (rate?.staffCommissionFca ?? staffCommission)
+        : (rate?.staffCommissionIfca ?? staffCommission);
+      let incomeAmount = 0;
+      let collectionAmount = 0;
+      let collectionStatus: SIMSale["collectionStatus"] = "N/A";
+      let accountEntryId: string | undefined;
+      if (isNew) {
+        incomeAmount = companyCommission;
+      } else if (isFirstStage) {
+        incomeAmount = customerRate;
+        collectionAmount = customerRate;
+        collectionStatus = "Pending";
+      }
+      if (stageCommission > 0) {
+        await creditStaffWallet(input.staff.role, input.staff.id, input.staff.name, stageCommission, `${input.simType} SIM commission (${stage}) - ${input.simNumber}`, today);
+      }
+      if (collectionStatus === "Pending" && collectionAmount > 0) {
+        await creditStaffWallet(input.staff.role, input.staff.id, input.staff.name, collectionAmount, `${input.simType} customer collection (${stage}) - pending return to franchise - ${input.simNumber}`, today);
+      }
+      if (incomeAmount > 0 && collectionStatus !== "Pending") {
+        const entryId = `ACC-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        await addAccountEntry({
+          id: entryId,
+          type: "income",
+          category: isNew ? "Commission Income" : "SIM Sales Revenue",
+          amount: incomeAmount,
+          date: today,
+          description: `${input.simType} SIM ${stage} verified - ${input.staff.name} (${input.staff.role})${isNew ? " company commission" : ""} [${input.simNumber}]`,
+          franchiseId: fid,
+          staffId: input.staff.id,
+          staffName: input.staff.name,
+        });
+        accountEntryId = entryId;
+      }
+      createdList.push({
+        id: `SALE-${Date.now()}-${stage}-${Math.random().toString(36).slice(2, 6)}`,
+        simNumber: input.simNumber,
+        network: input.network || "",
+        simType: input.simType,
+        stage,
+        staffId: input.staff.id,
+        staffRole: input.staff.role,
+        staffName: input.staff.name,
+        supplier: rate?.supplier || supplierKey || "Default",
+        customerRate,
+        companyCommission,
+        staffCommission: stageCommission,
+        income: incomeAmount,
+        collectionAmount,
+        collectionStatus,
+        accountEntryId,
+        saleDate: today,
+        franchiseId: fid,
+        createdAt: now(),
+      });
+    }
+    if (createdList.length > 0) {
+      const updated = [...createdList, ...simSales];
+      setSimSales(updated);
+      await persistSIMSales(updated);
+    }
+    return createdList.length;
+  };
+
+  const markSIMCollectionReceived = async (saleId: string, method: string) => {
+    const today = new Date().toISOString().split("T")[0];
+    const sale = simSales.find((s) => s.id === saleId);
+    if (!sale || sale.collectionStatus !== "Pending") return;
+    const receivedSale: SIMSale = { ...sale, collectionStatus: "Received", receivedAt: today, receivedMethod: method };
+    let updated = simSales.map((s) => (s.id === saleId ? receivedSale : s));
+    let entryId = sale.accountEntryId;
+    if (!entryId && sale.income > 0) {
+      entryId = `ACC-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      await addAccountEntry({
+        id: entryId,
+        type: "income",
+        category: "SIM Collection",
+        amount: sale.income,
+        date: today,
+        description: `${sale.simType} ${sale.stage} collection received from ${sale.staffName} (${sale.staffRole}) via ${method} [${sale.simNumber}]`,
+        franchiseId: fid,
+        staffId: sale.staffId,
+        staffName: sale.staffName,
+      });
+      updated = updated.map((s) => (s.id === saleId ? { ...s, accountEntryId: entryId } : s));
+    }
+    setSimSales(updated);
+    await persistSIMSales(updated);
+    if (sale.income > 0) {
+      await addWalletTransaction({
+        id: `WLT-${Date.now()}`,
+        type: "Deposit",
+        amount: sale.income,
+        date: today,
+        franchiseId: fid,
+        note: `SIM collection received from ${sale.staffName} (${sale.staffRole}) - ${sale.simNumber} via ${method}`,
+      });
+    }
   };
   const addAccount = async (a: Account) => {
     await apiSave("bankAccount", a);
@@ -995,6 +1184,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       equipmentItemNames, equipmentIssueRecords, attendance, targets,
       wallet, payroll, expenses, accounts, bankAccounts, notifications, settings,
       simRateCards, upsertSimRateCard, deleteSimRateCard,
+      simSales, generateSIMMilestones, markSIMCollectionReceived,
       addDSM, updateDSM, deleteDSM, addDSO, updateDSO, deleteDSO,
       addDevice, updateDevice, deleteDevice, addSIM, addSIMs, updateSIM, deleteSIM, deleteSIMs,
       addEquipment, updateEquipment, deleteEquipment,
