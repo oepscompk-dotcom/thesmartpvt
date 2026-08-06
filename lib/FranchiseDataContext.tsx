@@ -225,6 +225,7 @@ export interface SIMRateCard {
   simType: "New" | "HLR-MNP" | "HLR-Replace" | "HLR-BYN";
   customerRate: number;
   commissionRate?: number;
+  staffCommissionRate?: number;
   isFreeForCustomer: boolean;
   franchiseId: string;
 }
@@ -321,13 +322,13 @@ const emptySettings: FranchiseSettings = {
 };
 
 const defaultRateCards: SIMRateCard[] = [
-  { id: "RC-New-1", supplier: "Telenor", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-2", supplier: "Jazz", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-3", supplier: "Zong", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-New-4", supplier: "Ufone", simType: "New", customerRate: 0, commissionRate: 10, isFreeForCustomer: true, franchiseId: "" },
-  { id: "RC-HLR-MNP", supplier: "Default", simType: "HLR-MNP", customerRate: 250, commissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
-  { id: "RC-HLR-Replace", supplier: "Default", simType: "HLR-Replace", customerRate: 300, commissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
-  { id: "RC-HLR-BYN", supplier: "Default", simType: "HLR-BYN", customerRate: 200, commissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-New-1", supplier: "Telenor", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-2", supplier: "Jazz", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-3", supplier: "Zong", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-New-4", supplier: "Ufone", simType: "New", customerRate: 0, commissionRate: 10, staffCommissionRate: 0, isFreeForCustomer: true, franchiseId: "" },
+  { id: "RC-HLR-MNP", supplier: "Default", simType: "HLR-MNP", customerRate: 250, commissionRate: 0, staffCommissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-Replace", supplier: "Default", simType: "HLR-Replace", customerRate: 300, commissionRate: 0, staffCommissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
+  { id: "RC-HLR-BYN", supplier: "Default", simType: "HLR-BYN", customerRate: 200, commissionRate: 0, staffCommissionRate: 0, isFreeForCustomer: false, franchiseId: "" },
 ];
 
 export function FranchiseDataProvider({ children }: { children: ReactNode }) {
@@ -435,6 +436,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
           const normalized = (Array.isArray(parsed) ? parsed : []).map((r: any) => ({
             ...r,
             commissionRate: r.commissionRate ?? (r.simType === "New" ? 10 : 0),
+            staffCommissionRate: r.staffCommissionRate ?? 0,
           }));
           setSimRateCards(normalized.length > 0 ? normalized : defaultRateCards);
         } catch {}
