@@ -87,19 +87,19 @@ export default function TargetsPage() {
   }) => {
     const p = pct(target, achieved);
     return (
-      <div>
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-gray-500">{label}</span>
-          <span className={`font-medium ${p >= settings.warnHigh ? "text-green-600" : p >= settings.warnLow ? "text-yellow-600" : "text-red-600"}`}>
+      <div className="min-w-0">
+        <div className="flex justify-between items-center gap-2 text-xs mb-1">
+          <span className="text-gray-500 shrink-0">{label}</span>
+          <span className={`font-medium whitespace-nowrap ${p >= settings.warnHigh ? "text-green-600" : p >= settings.warnLow ? "text-yellow-600" : "text-red-600"}`}>
             {achieved}/{target} ({p}%)
           </span>
         </div>
         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
           <div className={`h-full rounded-full transition-all duration-500 ${barColor(p)}`} style={{ width: `${Math.max(p, target > 0 ? 2 : 0)}%` }} />
         </div>
-        <div className="flex gap-2 mt-1.5">
-          <input type="number" value={target} onChange={(e) => onTarget(Number(e.target.value))} placeholder="Target" className={`flex-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#0A2647]/50 ${accent}`} />
-          <input type="number" value={achieved} onChange={(e) => onAchieved(Number(e.target.value))} placeholder="Done" className="flex-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+        <div className="grid grid-cols-2 gap-2 mt-1.5">
+          <input type="number" value={target} onChange={(e) => onTarget(Number(e.target.value))} placeholder="Target" className={`w-full min-w-0 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#0A2647]/50 ${accent}`} />
+          <input type="number" value={achieved} onChange={(e) => onAchieved(Number(e.target.value))} placeholder="Done" className="w-full min-w-0 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
         </div>
       </div>
     );
@@ -209,16 +209,16 @@ export default function TargetsPage() {
             const st = statusOf(w);
             const pts = (r.target.deviceAchieved ?? 0) * settings.deviceWeight + (r.target.simAchieved ?? 0) * settings.simWeight;
             return (
-              <div key={r.id} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold ${r.role === "DSM" ? "bg-blue-600" : "bg-green-600"}`}>{r.name.charAt(0)}</div>
-                    <div>
-                      <p className="text-gray-900 font-bold text-sm">{r.name}</p>
-                      <p className="text-gray-400 text-xs font-mono">{r.id} · {r.role}</p>
+              <div key={r.id} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center text-white font-bold ${r.role === "DSM" ? "bg-blue-600" : "bg-green-600"}`}>{r.name.charAt(0)}</div>
+                    <div className="min-w-0">
+                      <p className="text-gray-900 font-bold text-sm truncate">{r.name}</p>
+                      <p className="text-gray-400 text-xs font-mono truncate">{r.id} · {r.role}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${st.cls}`}>{st.label}</span>
+                  <span className={`px-2 py-1 rounded-lg text-[10px] font-bold border shrink-0 whitespace-nowrap ${st.cls}`}>{st.label}</span>
                 </div>
 
                 <div className="space-y-3">
@@ -230,9 +230,9 @@ export default function TargetsPage() {
                     onAchieved={(v) => handleUpdate(r.id, r.role, "simAchieved", v)} />
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-gray-100 flex justify-between items-center text-xs">
-                  <span className="text-gray-500">Points</span>
-                  <span className="font-black text-gray-900">{pts.toLocaleString()}</span>
+                <div className="pt-3 mt-3 border-t border-gray-100 flex justify-between items-center gap-2 text-xs">
+                  <span className="text-gray-500 shrink-0">Points</span>
+                  <span className="font-black text-gray-900 whitespace-nowrap min-w-0">{pts.toLocaleString()}</span>
                 </div>
               </div>
             );
