@@ -182,6 +182,32 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
     loadAll();
   }, [fId, mounted]);
 
+  // Keep staff wallet payments in sync with franchise changes
+  useEffect(() => {
+    if (!fId || !mounted) return;
+    let active = true;
+    const reload = async () => {
+      try {
+        const sw = await apiLoadById("franchiseData", "staffWallet-" + fId).catch(() => null);
+        if (!active) return;
+        if (sw?.data) {
+          try { const parsed = JSON.parse(sw.data); setStaffWalletPayments(Array.isArray(parsed) ? parsed : []); } catch {}
+        }
+      } catch {}
+    };
+    const onFocus = () => reload();
+    const onVisible = () => { if (document.visibilityState === "visible") reload(); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = setInterval(reload, 20000);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(interval);
+    };
+  }, [fId, mounted]);
+
   const dsmLogin = async (id: string, password: string): Promise<boolean> => {
     try {
       const user = await apiLoadById("dsm", id);

@@ -188,6 +188,38 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
     loadAll();
   }, [fid, mounted]);
 
+  // Keep staff wallet payments & payment requests in sync with franchise changes
+  useEffect(() => {
+    if (!fid || !mounted) return;
+    let active = true;
+    const reload = async () => {
+      try {
+        const [sw, pr] = await Promise.all([
+          apiLoadById("franchiseData", "staffWallet-" + fid).catch(() => null),
+          apiLoadById("franchiseData", "paymentRequests-" + fid).catch(() => null),
+        ]);
+        if (!active) return;
+        if (sw?.data) {
+          try { const parsed = JSON.parse(sw.data); setStaffWalletPayments(Array.isArray(parsed) ? parsed : []); } catch {}
+        }
+        if (pr?.data) {
+          try { const parsed = JSON.parse(pr.data); setPaymentRequests(Array.isArray(parsed) ? parsed : []); } catch {}
+        }
+      } catch {}
+    };
+    const onFocus = () => reload();
+    const onVisible = () => { if (document.visibilityState === "visible") reload(); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = setInterval(reload, 20000);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(interval);
+    };
+  }, [fid, mounted]);
+
   const dsoLogin = async (id: string, password: string): Promise<boolean> => {
     try {
       const dsoRecord = await apiLoadById("dso", id);
