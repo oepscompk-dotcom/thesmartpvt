@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTriangle, FileText, ArrowLeft, Timer, Award, Ban, Eye, Plus, X, MapPin, Users, Settings, ChevronDown, ChevronUp } from "lucide-react";
+import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTriangle, FileText, ArrowLeft, Timer, Award, Ban, Eye, Plus, X, MapPin, Users, Settings, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useFranchiseData, AttendanceRecord } from "@/lib/FranchiseDataContext";
 import Link from "next/link";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
@@ -17,7 +17,7 @@ function calcWorkingHours(checkIn: string, checkOut: string): number {
 }
 
 export default function FranchiseAttendancePage() {
-  const { auth, attendance, dsms, dso, addAttendance } = useFranchiseData();
+  const { auth, attendance, dsms, dso, addAttendance, deleteAttendance } = useFranchiseData();
   const [settings, setSettings] = useState(defaultAttendanceSettings);
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export default function FranchiseAttendancePage() {
   const [viewRecord, setViewRecord] = useState<any>(null);
   const [showMarkForm, setShowMarkForm] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const allEmployees = useMemo(() => [
     ...dso.map((d) => ({ id: d.id, name: d.name, role: "DSO" as const })),
@@ -63,6 +64,21 @@ export default function FranchiseAttendancePage() {
       return matchSearch && matchStatus && matchRole && matchDate;
     }).sort((a, b) => b.date.localeCompare(a.date));
   }, [enrichedAttendance, search, statusFilter, roleFilter, dateFrom, dateTo]);
+
+  const tabRows = useMemo(() => filtered.filter((a) => tab === "overview" || (tab === "dso" && a.role === "DSO") || (tab === "dsm" && a.role === "DSM")), [filtered, tab]);
+  const allSelected = tabRows.length > 0 && tabRows.every((a) => selectedIds.includes(a.id));
+  const toggleSelect = (id: string) => setSelectedIds((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const toggleSelectAll = () => setSelectedIds(allSelected ? [] : tabRows.map((a) => a.id));
+  const handleDeleteOne = async (id: string) => {
+    if (!confirm("Delete this attendance record?")) return;
+    await deleteAttendance(id);
+    setSelectedIds((p) => p.filter((x) => x !== id));
+  };
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} selected attendance record(s)?`)) return;
+    await Promise.all(selectedIds.map((id) => deleteAttendance(id)));
+    setSelectedIds([]);
+  };
 
   const todayRecords = useMemo(() => enrichedAttendance.filter((a) => a.date === selectedDate), [enrichedAttendance, selectedDate]);
 
@@ -225,10 +241,24 @@ export default function FranchiseAttendancePage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            {selectedIds.length > 0 && (
+              <div className="px-4 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
+                <p className="text-red-700 text-sm font-medium">{selectedIds.length} selected</p>
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedIds([])} className="px-3 py-1.5 rounded-lg bg-white text-gray-700 text-xs font-medium border border-gray-200 hover:bg-gray-50">Clear</button>
+                  <button onClick={handleBulkDelete} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 inline-flex items-center gap-1">
+                    <Trash2 size={12} /> Delete Selected
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-10">
+                      <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                    </th>
                     <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">Sr.No</th>
                     <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
                     <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Role</th>
@@ -239,14 +269,17 @@ export default function FranchiseAttendancePage() {
                     <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
                     <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Fine</th>
                     <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Bonus</th>
-                    <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase w-14">View</th>
+                    <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase w-20">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.filter((a) => tab === "overview" || (tab === "dso" && a.role === "DSO") || (tab === "dsm" && a.role === "DSM")).map((a, idx) => {
+                  {tabRows.map((a, idx) => {
                     const hours = calcWorkingHours(a.checkIn, a.checkOut);
                     return (
-                      <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <tr key={a.id} className={`border-b border-gray-50 transition-colors ${selectedIds.includes(a.id) ? "bg-[#0A2647]/5" : "hover:bg-gray-50"}`}>
+                        <td className="px-3 py-3 text-center">
+                          <input type="checkbox" checked={selectedIds.includes(a.id)} onChange={() => toggleSelect(a.id)} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                        </td>
                         <td className="px-3 py-3 text-center">
                           <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
                         </td>
@@ -277,9 +310,14 @@ export default function FranchiseAttendancePage() {
                           {hours >= settings.requiredHours && hours > 0 ? <span className="text-green-600 text-xs font-bold">+PKR {settings.bonusPerSale.toLocaleString()}</span> : "â€”"}
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <button onClick={() => setViewRecord(a)} className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
-                            <Eye size={14} />
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button onClick={() => setViewRecord(a)} className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors" title="View">
+                              <Eye size={14} />
+                            </button>
+                            <button onClick={() => handleDeleteOne(a.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

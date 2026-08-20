@@ -310,6 +310,7 @@ interface FranchiseDataContextType {
   addDeviceIssueRecord: (r: DeviceIssueRecord) => Promise<void>;
   returnDeviceIssueRecord: (id: string) => Promise<void>;
   addAttendance: (a: AttendanceRecord) => Promise<void>;
+  deleteAttendance: (id: string) => Promise<void>;
   addTarget: (t: Target) => Promise<void>; updateTarget: (id: string, t: Target) => Promise<void>;
   getTarget: (dsoId: string, month: string) => Target;
   addWalletTransaction: (w: WalletTransaction) => Promise<void>;
@@ -441,7 +442,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       setSIMs(loadedSIMs || []);
       setEquipment(loadedEquipment || []);
       const mergedAttendance = [
-        ...(Array.isArray(loadedAttendance) ? loadedAttendance : []),
+        ...(Array.isArray(loadedAttendance) ? loadedAttendance.map((a: any) => ({ ...a, source: "attendanceRecord" })) : []),
         ...(Array.isArray(loadedDsoAttendance) ? loadedDsoAttendance.map((a: any) => ({
           id: a.id,
           employeeId: a.dsoId,
@@ -454,6 +455,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
           selfie: a.selfie,
           status: a.status,
           franchiseId: a.franchiseId,
+          source: "dsoAttendance",
         })) : []),
       ];
       setAttendance(mergedAttendance);
@@ -631,6 +633,12 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const addAttendance = async (a: AttendanceRecord) => {
     await apiSave("attendanceRecord", a);
     setAttendance((p) => [a, ...p]);
+  };
+  const deleteAttendance = async (id: string) => {
+    const rec = attendance.find((a) => a.id === id);
+    const model = (rec as any)?.source === "dsoAttendance" ? "dsoAttendance" : "attendanceRecord";
+    try { await apiDelete(model, id); } catch (e) { console.error(e); }
+    setAttendance((prev) => prev.filter((a) => a.id !== id));
   };
   const addTarget = async (t: Target) => {
     await apiSave("target", t);
@@ -1191,7 +1199,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       addEquipmentItemName, deleteEquipmentItemName,
       addEquipmentIssueRecord, updateEquipmentIssueRecord, returnEquipment,
       deviceIssueRecords, addDeviceIssueRecord, returnDeviceIssueRecord,
-      addAttendance,
+      addAttendance, deleteAttendance,
       addTarget, updateTarget, getTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
       addExpense, deleteExpense, updateExpense, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
