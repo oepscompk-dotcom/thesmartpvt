@@ -70,9 +70,11 @@ interface DSODataContextType {
   leaveRequests: LeaveRequest[]; addLeaveRequest: (r: LeaveRequest) => void;
   warnings: AttendanceWarning[];
   wallet: DSOWallet[]; addWalletEntry: (w: DSOWallet) => void;
+  deleteWalletEntry: (id: string) => Promise<void>;
   staffWalletPayments: StaffWalletPayment[];
   paymentRequests: StaffPaymentRequest[];
   submitPaymentRequest: (r: Omit<StaffPaymentRequest, "id" | "status" | "receivedAt" | "createdAt" | "franchiseId">) => Promise<void>;
+  deletePaymentRequest: (id: string) => Promise<void>;
   bankAccounts: FranchiseBankAccount[];
   targets: DSOTarget; updateTargets: (t: Partial<DSOTarget>) => void;
   device: DSODevice | null;
@@ -289,9 +291,20 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
     setLeaveRequests((p) => [r, ...p]);
   };
 
-  const addWalletEntry = async (w: DSOWallet) => {
+const addWalletEntry = async (w: DSOWallet) => {
     await apiSave("dsoWalletEntry", w);
     setWallet((p) => [w, ...p]);
+  };
+
+  const deleteWalletEntry = async (id: string) => {
+    try { await apiDelete("dsoWalletEntry", id); } catch (e) { console.error(e); }
+    setWallet((prev) => prev.filter((w) => w.id !== id));
+  };
+
+  const deletePaymentRequest = async (id: string) => {
+    const updated = paymentRequests.filter((r) => r.id !== id);
+    setPaymentRequests(updated);
+    await apiSave("franchiseData", { id: `paymentRequests-${fid}`, data: JSON.stringify(updated) });
   };
 
   const submitPaymentRequest = async (r: Omit<StaffPaymentRequest, "id" | "status" | "receivedAt" | "createdAt" | "franchiseId">) => {
@@ -334,9 +347,9 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
     <DSODataContext.Provider value={{
       auth, hydrated: mounted, dsoLogin, dsoLogout, activations, addActivation, updateActivation, deleteActivation,
       attendance, addAttendance, updateAttendance, leaveRequests, addLeaveRequest, warnings,
-      wallet, addWalletEntry, targets, updateTargets,
+wallet, addWalletEntry, deleteWalletEntry, targets, updateTargets,
       staffWalletPayments,
-      paymentRequests, submitPaymentRequest,
+      paymentRequests, submitPaymentRequest, deletePaymentRequest,
       bankAccounts,
       device, sims, importVerifications, notifications, markNotificationRead, settings,
     }}>

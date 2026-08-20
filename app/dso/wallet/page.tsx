@@ -1,12 +1,12 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Wallet, Plus, ArrowDown, ArrowUp, X, Receipt, Smartphone, Landmark, Send, Copy, CheckCircle2 } from "lucide-react";
+import { Wallet, Plus, ArrowDown, ArrowUp, X, Receipt, Smartphone, Landmark, Send, Copy, CheckCircle2, Trash2 } from "lucide-react";
 import { useDSOData } from "@/lib/DSODataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
 export default function DSOWalletPage() {
-  const { wallet, auth, staffWalletPayments, paymentRequests, submitPaymentRequest, bankAccounts } = useDSOData();
+  const { wallet, auth, staffWalletPayments, paymentRequests, submitPaymentRequest, deletePaymentRequest, bankAccounts, deleteWalletEntry } = useDSOData();
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState("");
@@ -14,6 +14,7 @@ export default function DSOWalletPage() {
   const [selectedAccountId, setSelectedAccountId] = useState("");
   const [transactionId, setTransactionId] = useState("");
   const [note, setNote] = useState("");
+  const [selectedTxnIds, setSelectedTxnIds] = useState<string[]>([]);
 
   const balance = wallet.length > 0 ? wallet[0].balance : 0;
   const totalCredits = wallet.filter((w) => w.type === "Credit").reduce((s, w) => s + w.amount, 0);
@@ -26,6 +27,24 @@ export default function DSOWalletPage() {
   const outstandingList = myLoans.filter((p) => p.status === "Paid");
 
   const myRequests = paymentRequests.filter((r) => r.role === "DSO" && r.staffId === auth.dsoId);
+
+  const allTxnsSelected = wallet.length > 0 && wallet.every((w) => selectedTxnIds.includes(w.id));
+  const toggleTxn = (id: string) => setSelectedTxnIds((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const toggleAllTxns = () => setSelectedTxnIds(allTxnsSelected ? [] : wallet.map((w) => w.id));
+  const handleDeleteTxn = async (id: string) => {
+    if (!confirm("Delete this transaction?")) return;
+    await deleteWalletEntry(id);
+    setSelectedTxnIds((p) => p.filter((x) => x !== id));
+  };
+  const handleBulkDeleteTxns = async () => {
+    if (!selectedTxnIds.length || !confirm(`Delete ${selectedTxnIds.length} selected transaction(s)?`)) return;
+    await Promise.all(selectedTxnIds.map((id) => deleteWalletEntry(id)));
+    setSelectedTxnIds([]);
+  };
+  const handleDeleteRequest = async (id: string) => {
+    if (!confirm("Delete this payment request?")) return;
+    await deletePaymentRequest(id);
+  };
 
   const openModal = () => {
     setSelectedPaymentId("");
@@ -120,11 +139,16 @@ export default function DSOWalletPage() {
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900">PKR {r.amount.toLocaleString()}</p>
-                  <span className={`inline-block mt-0.5 text-[10px] px-2 py-0.5 rounded-full font-medium ${r.status === "Received" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                    {r.status === "Received" ? "Received" : "Pending Verification"}
-                  </span>
+                <div className="text-right flex items-center gap-2">
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">PKR {r.amount.toLocaleString()}</p>
+                    <span className={`inline-block mt-0.5 text-[10px] px-2 py-0.5 rounded-full font-medium ${r.status === "Received" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                      {r.status === "Received" ? "Received" : "Pending Verification"}
+                    </span>
+                  </div>
+                  <button onClick={() => handleDeleteRequest(r.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -186,24 +210,47 @@ export default function DSOWalletPage() {
 
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
+          {selectedTxnIds.length > 0 && (
+            <div className="px-6 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
+              <p className="text-red-700 text-sm font-medium">{selectedTxnIds.length} selected</p>
+              <div className="flex gap-2">
+                <button onClick={() => setSelectedTxnIds([])} className="px-3 py-1.5 rounded-lg bg-white text-gray-700 text-xs font-medium border border-gray-200 hover:bg-gray-50">Clear</button>
+                <button onClick={handleBulkDeleteTxns} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 inline-flex items-center gap-1">
+                  <Trash2 size={12} /> Delete Selected
+                </button>
+              </div>
+            </div>
+          )}
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="text-center px-3 py-4 text-gray-500 text-xs font-medium uppercase w-10">
+                  <input type="checkbox" checked={allTxnsSelected} onChange={toggleAllTxns} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                </th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Date</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Type</th>
                 <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Amount</th>
                 <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Note</th>
                 <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Balance</th>
+                <th className="text-center px-4 py-4 text-gray-500 text-xs font-medium uppercase w-20">Actions</th>
               </tr>
             </thead>
             <tbody>
               {[...wallet].map((w) => (
-                <tr key={w.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                <tr key={w.id} className={`border-b border-gray-50 transition-colors ${selectedTxnIds.includes(w.id) ? "bg-[#0A2647]/5" : "hover:bg-gray-50"}`}>
+                  <td className="px-3 py-4 text-center">
+                    <input type="checkbox" checked={selectedTxnIds.includes(w.id)} onChange={() => toggleTxn(w.id)} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                  </td>
                   <td className="px-6 py-4 text-gray-600 text-sm">{formatDateDDMMYYYY(w.date)}</td>
                   <td className="px-6 py-4"><span className={`px-2 py-1 rounded-lg text-xs font-medium ${w.type === "Credit" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{w.type}</span></td>
                   <td className="px-6 py-4 text-right"><span className={`font-bold text-sm ${w.type === "Credit" ? "text-green-600" : "text-red-600"}`}>{w.type === "Credit" ? "+" : "-"} PKR {w.amount.toLocaleString()}</span></td>
                   <td className="px-6 py-4 hidden md:table-cell text-gray-600 text-sm">{w.note}</td>
                   <td className="px-6 py-4 text-right font-bold text-sm text-gray-900">PKR {w.balance.toLocaleString()}</td>
+                  <td className="px-4 py-4 text-center">
+                    <button onClick={() => handleDeleteTxn(w.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors mx-auto" title="Delete">
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
