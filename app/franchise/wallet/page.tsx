@@ -55,6 +55,10 @@ export default function WalletPage() {
   const balance = wallet.reduce((sum, w) => w.type === "Deposit" ? sum + w.amount : sum - w.amount, 0);
   const deposits = wallet.filter((w) => w.type === "Deposit").reduce((s, w) => s + w.amount, 0);
   const withdrawals = wallet.filter((w) => w.type === "Withdrawal").reduce((s, w) => s + w.amount, 0);
+  const walletBalanceAt = (date: string, ownAmount: number) => {
+    const upTo = wallet.filter((w) => w.date <= date);
+    return upTo.reduce((s, w) => (w.type === "Deposit" ? s + w.amount : s - w.amount), 0) + ownAmount;
+  };
 
   const staffList = role === "DSO" ? dso : dsms;
   const selectedStaff = staffList.find((s) => s.id === staffId);
@@ -214,13 +218,17 @@ export default function WalletPage() {
               </div>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="grid grid-cols-3 gap-2 pt-1">
             <div className="bg-gray-50 rounded-lg px-3 py-2">
               <p className="text-[10px] text-gray-400">Date</p>
               <p className="text-xs font-medium text-gray-900">{formatDateDDMMYYYY(p.paymentDate)}</p>
             </div>
             <div className="bg-gray-50 rounded-lg px-3 py-2">
-              <p className="text-[10px] text-gray-400">Amount</p>
+              <p className="text-[10px] text-gray-400">Original Balance</p>
+              <p className="text-xs font-bold text-gray-900">PKR {walletBalanceAt(p.paymentDate, p.amount).toLocaleString()}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg px-3 py-2">
+              <p className="text-[10px] text-gray-400">Value</p>
               <p className="text-xs font-black text-green-600">PKR {p.amount.toLocaleString()}</p>
             </div>
           </div>
