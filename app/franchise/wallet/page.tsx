@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import {
   Wallet as WalletIcon, Plus, ArrowDown, ArrowUp, X, Search, Smartphone, User,
-  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package,
+  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package, Trash2,
 } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
@@ -24,12 +24,13 @@ const PAKISTAN_BANKS = [
 ];
 
 export default function WalletPage() {
-  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest } = useFranchiseData();
+  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest } = useFranchiseData();
   const [tab, setTab] = useState<Tab>("package");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<"Package" | "Loan" | "Advance">("Package");
   const [sending, setSending] = useState(false);
   const [receivingId, setReceivingId] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Shared form state
   const [role, setRole] = useState<"DSO" | "DSM">("DSO");
@@ -59,6 +60,21 @@ export default function WalletPage() {
   const loanPayments = staffWalletPayments.filter((p) => p.type !== "Package");
   const outstandingLoans = loanPayments.filter((p) => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
   const pendingRequests = paymentRequests.filter((r) => r.status === "Pending");
+
+  const currentRows = tab === "package" ? packagePayments : loanPayments;
+  const allSelected = currentRows.length > 0 && currentRows.every((p) => selectedIds.includes(p.id));
+  const toggleSelect = (id: string) => setSelectedIds((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const toggleSelectAll = () => setSelectedIds(allSelected ? [] : currentRows.map((p) => p.id));
+  const handleDeleteOne = async (id: string) => {
+    if (!confirm("Delete this payment record?")) return;
+    await deleteStaffWalletPayment(id);
+    setSelectedIds((p) => p.filter((x) => x !== id));
+  };
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} selected payment record(s)?`)) return;
+    await Promise.all(selectedIds.map((id) => deleteStaffWalletPayment(id)));
+    setSelectedIds([]);
+  };
 
   const handleReceive = async (requestId: string) => {
     if (receivingId) return;
@@ -200,19 +216,37 @@ export default function WalletPage() {
             <span className="px-2.5 py-1 bg-[#0A2647]/10 text-[#0A2647] rounded-lg text-xs font-bold">{packagePayments.length} Issue(s)</span>
           </div>
           <div className="overflow-x-auto">
+            {selectedIds.length > 0 && (
+              <div className="px-6 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
+                <p className="text-red-700 text-sm font-medium">{selectedIds.length} selected</p>
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedIds([])} className="px-3 py-1.5 rounded-lg bg-white text-gray-700 text-xs font-medium border border-gray-200 hover:bg-gray-50">Clear</button>
+                  <button onClick={handleBulkDelete} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 inline-flex items-center gap-1">
+                    <Trash2 size={12} /> Delete Selected
+                  </button>
+                </div>
+              </div>
+            )}
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-center px-3 py-4 text-gray-500 text-xs font-medium uppercase w-10">
+                    <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                  </th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Payment ID</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Issued To</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">SIM / ICCID</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Date</th>
                   <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Amount</th>
+                  <th className="text-center px-4 py-4 text-gray-500 text-xs font-medium uppercase w-20">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {[...packagePayments].reverse().map((p) => (
-                  <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <tr key={p.id} className={`border-b border-gray-50 transition-colors ${selectedIds.includes(p.id) ? "bg-[#0A2647]/5" : "hover:bg-gray-50"}`}>
+                    <td className="px-3 py-4 text-center">
+                      <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => toggleSelect(p.id)} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                    </td>
                     <td className="px-6 py-4 font-mono text-gray-900 text-sm font-medium">{p.id}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -234,6 +268,11 @@ export default function WalletPage() {
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">{formatDateDDMMYYYY(p.paymentDate)}</td>
                     <td className="px-6 py-4 text-right font-bold text-sm text-green-600">PKR {p.amount.toLocaleString()}</td>
+                    <td className="px-4 py-4 text-center">
+                      <button onClick={() => handleDeleteOne(p.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors mx-auto" title="Delete">
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -300,9 +339,23 @@ export default function WalletPage() {
             <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold">Outstanding: PKR {outstandingLoans.toLocaleString()}</span>
           </div>
           <div className="overflow-x-auto">
+            {selectedIds.length > 0 && (
+              <div className="px-6 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
+                <p className="text-red-700 text-sm font-medium">{selectedIds.length} selected</p>
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedIds([])} className="px-3 py-1.5 rounded-lg bg-white text-gray-700 text-xs font-medium border border-gray-200 hover:bg-gray-50">Clear</button>
+                  <button onClick={handleBulkDelete} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 inline-flex items-center gap-1">
+                    <Trash2 size={12} /> Delete Selected
+                  </button>
+                </div>
+              </div>
+            )}
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-center px-3 py-4 text-gray-500 text-xs font-medium uppercase w-10">
+                    <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                  </th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Payment ID</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Paid To</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Type</th>
@@ -310,11 +363,15 @@ export default function WalletPage() {
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Date</th>
                   <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Amount</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
+                  <th className="text-center px-4 py-4 text-gray-500 text-xs font-medium uppercase w-20">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {[...loanPayments].reverse().map((p) => (
-                  <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <tr key={p.id} className={`border-b border-gray-50 transition-colors ${selectedIds.includes(p.id) ? "bg-[#0A2647]/5" : "hover:bg-gray-50"}`}>
+                    <td className="px-3 py-4 text-center">
+                      <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => toggleSelect(p.id)} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                    </td>
                     <td className="px-6 py-4 font-mono text-gray-900 text-sm font-medium">{p.id}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -346,6 +403,11 @@ export default function WalletPage() {
                         {p.status === "Deducted" ? "Deducted from Salary" : "Paid / Pending"}
                       </span>
                       {p.settledMonth && <p className="text-[10px] text-gray-400 mt-1">{p.settledMonth}</p>}
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <button onClick={() => handleDeleteOne(p.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors mx-auto" title="Delete">
+                        <Trash2 size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))}

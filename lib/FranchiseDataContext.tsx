@@ -340,6 +340,7 @@ interface FranchiseDataContextType {
   deleteIssueRecords: (ids: string[]) => Promise<void>;
   staffWalletPayments: StaffWalletPayment[];
   sendStaffWalletPayment: (p: Omit<StaffWalletPayment, "id" | "status" | "createdAt" | "franchiseId">) => Promise<void>;
+  deleteStaffWalletPayment: (id: string) => Promise<void>;
   settleStaffWalletPayments: (staffId: string, role: string, month: string) => Promise<void>;
   paymentRequests: StaffPaymentRequest[];
   receiveStaffPaymentRequest: (requestId: string) => Promise<void>;
@@ -1040,6 +1041,17 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     await apiSave("franchiseData", { id: `staffWallet-${fid}`, data: JSON.stringify(list) });
   };
 
+  const deleteStaffWalletPayment = async (id: string) => {
+    const updated = staffWalletPayments.filter((p) => p.id !== id);
+    setStaffWalletPayments(updated);
+    await persistStaffWalletPayments(updated);
+    const matched = accounts.find((a) => a.referenceId === id && a.type === "expense");
+    if (matched) {
+      try { await apiDelete("accountEntry", matched.id); } catch (e) { console.error(e); }
+      setAccounts((prev) => prev.filter((a) => a.id !== matched.id));
+    }
+  };
+
   const sendStaffWalletPayment = async (p: Omit<StaffWalletPayment, "id" | "status" | "createdAt" | "franchiseId">) => {
     const today = new Date().toISOString().split("T")[0];
     const payment: StaffWalletPayment = {
@@ -1217,7 +1229,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       addExpense, deleteExpense, updateExpense, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
       issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,
-      staffWalletPayments, sendStaffWalletPayment, settleStaffWalletPayments,
+      staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, settleStaffWalletPayments,
       paymentRequests, receiveStaffPaymentRequest,
     }}>
       {children}
