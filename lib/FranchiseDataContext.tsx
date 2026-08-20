@@ -703,12 +703,14 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     await persistExpenseCategories(updated);
   };
   const addAccountEntry = async (a: AccountEntry) => {
-    await apiSave("accountEntry", a);
+    const { staffId: _s1, staffName: _s2, referenceId: _r, ...persistable } = a;
+    await apiSave("accountEntry", persistable);
     setAccounts((p) => [a, ...p]);
   };
   const addAccountingEntry = async (a: Omit<AccountEntry, "id" | "franchiseId">) => {
     const entry: AccountEntry = { id: `ACC-${Date.now()}`, ...a, franchiseId: fid };
-    await apiSave("accountEntry", entry);
+    const { staffId: _s1, staffName: _s2, referenceId: _r, ...persistable } = entry;
+    await apiSave("accountEntry", persistable);
     setAccounts((p) => [entry, ...p]);
   };
   const deleteAccountingEntry = async (id: string) => {
@@ -1069,7 +1071,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     const updated = staffWalletPayments.filter((p) => p.id !== id);
     setStaffWalletPayments(updated);
     await persistStaffWalletPayments(updated);
-    const matched = accounts.find((a) => a.referenceId === id && a.type === "expense");
+    const matched = accounts.find((a) => a.type === "expense" && (a.referenceId === id || (a.description || "").includes(`[ref: ${id}]`)));
     if (matched) {
       try { await apiDelete("accountEntry", matched.id); } catch (e) { console.error(e); }
       setAccounts((prev) => prev.filter((a) => a.id !== matched.id));
@@ -1129,7 +1131,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       category: expenseCategory,
       amount: p.amount,
       date: today,
-      description: `${typeLabel} to ${p.staffName} (${p.role})${p.iccid ? ` - ${p.iccid}` : ""}${p.note ? ` - ${p.note}` : ""}`,
+      description: `${typeLabel} to ${p.staffName} (${p.role})${p.iccid ? ` - ${p.iccid}` : ""}${p.note ? ` - ${p.note}` : ""} [ref: ${payment.id}]`,
       staffId: p.staffId,
       staffName: p.staffName,
       referenceId: payment.id,
@@ -1193,7 +1195,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     });
 
     // Remove the expense entry created when this loan/advance was issued (repayment clears it)
-    const matchedExpense = accounts.find((a) => a.referenceId === req.paymentId && a.type === "expense");
+    const matchedExpense = accounts.find((a) => a.type === "expense" && (a.referenceId === req.paymentId || (a.description || "").includes(`[ref: ${req.paymentId}]`)));
     if (matchedExpense) {
       await apiDelete("accountEntry", matchedExpense.id);
       setAccounts((prev) => prev.filter((a) => a.id !== matchedExpense.id));
