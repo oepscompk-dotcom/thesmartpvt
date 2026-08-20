@@ -317,6 +317,7 @@ interface FranchiseDataContextType {
   addWalletTransaction: (w: WalletTransaction) => Promise<void>;
   addPayroll: (p: PayrollRecord) => Promise<void>; updatePayroll: (id: string, p: PayrollRecord) => Promise<void>; deletePayroll: (id: string) => Promise<void>;
   addExpense: (e: Expense) => Promise<void>; deleteExpense: (id: string) => Promise<void>; updateExpense: (id: string, e: Expense) => Promise<void>;
+  expenseCategories: string[]; addExpenseCategory: (name: string) => Promise<void>; deleteExpenseCategory: (name: string) => Promise<void>;
   addAccountEntry: (a: AccountEntry) => Promise<void>;   addAccount: (a: Account) => Promise<void>; updateAccount: (id: string, a: Account) => Promise<void>; deleteAccount: (id: string) => Promise<void>;
   addAccountingEntry: (a: Omit<AccountEntry, "id" | "franchiseId">) => Promise<void>;
   deleteAccountingEntry: (id: string) => Promise<void>;
@@ -381,6 +382,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<WalletTransaction[]>([]);
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<string[]>(["Rent", "Utilities", "Staff Salary", "Marketing", "Travel", "Maintenance", "Office Supplies", "Internet", "Mobile Load", "Commission Paid", "Other"]);
   const [accounts, setAccounts] = useState<AccountEntry[]>([]);
   const [bankAccounts, setBankAccounts] = useState<Account[]>([]);
   const [notifications, setNotifications] = useState<FranchiseNotification[]>([]);
@@ -413,7 +415,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!fid || !mounted) return;
     const loadAll = async () => {
-      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet, loadedPaymentRequests, loadedRateCards, loadedSIMSales] = await Promise.all([
+      const [loadedDSMs, loadedDSO, loadedDevices, loadedSIMs, loadedEquipment, loadedAttendance, loadedDsoAttendance, loadedTargets, loadedWallet, loadedPayroll, loadedExpenses, loadedAccounts, loadedBankAccounts, loadedNotifications, loadedSettings, loadedIssueRecords, loadedEquipmentItemNames, loadedEquipmentIssueRecords, loadedDeviceIssueRecords, loadedStaffWallet, loadedPaymentRequests, loadedRateCards, loadedSIMSales, loadedExpenseCategories] = await Promise.all([
         apiLoad("dsm", fid),
         apiLoad("dso", fid),
         apiLoad("device", fid),
@@ -437,6 +439,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
         apiLoadById("franchiseData", "paymentRequests-" + fid),
         apiLoadById("franchiseData", "rateCards-" + fid).catch(() => null),
         apiLoadById("franchiseData", "simSales-" + fid).catch(() => null),
+        apiLoadById("franchiseData", "expenseCategories-" + fid).catch(() => null),
       ]);
       setDSMs(loadedDSMs || []);
       setDSO(loadedDSO || []);
@@ -465,6 +468,12 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       setWallet(loadedWallet || []);
       setPayroll(loadedPayroll || []);
       setExpenses(loadedExpenses || []);
+      if (loadedExpenseCategories?.data) {
+        try {
+          const parsed = JSON.parse(loadedExpenseCategories.data);
+          if (Array.isArray(parsed) && parsed.length > 0) setExpenseCategories(parsed);
+        } catch {}
+      }
       setAccounts(loadedAccounts || []);
       setBankAccounts(loadedBankAccounts || []);
       setNotifications(loadedNotifications || []);
@@ -677,6 +686,21 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const updateExpense = async (id: string, e: Expense) => {
     await apiUpdate("expense", id, e);
     setExpenses((p) => p.map((i) => (i.id === id ? e : i)));
+  };
+  const persistExpenseCategories = async (list: string[]) => {
+    await apiSave("franchiseData", { id: `expenseCategories-${fid}`, data: JSON.stringify(list) });
+  };
+  const addExpenseCategory = async (name: string) => {
+    const clean = name.trim();
+    if (!clean || expenseCategories.some((c) => c.toLowerCase() === clean.toLowerCase())) return;
+    const updated = [...expenseCategories, clean];
+    setExpenseCategories(updated);
+    await persistExpenseCategories(updated);
+  };
+  const deleteExpenseCategory = async (name: string) => {
+    const updated = expenseCategories.filter((c) => c !== name);
+    setExpenseCategories(updated);
+    await persistExpenseCategories(updated);
   };
   const addAccountEntry = async (a: AccountEntry) => {
     await apiSave("accountEntry", a);
@@ -1226,7 +1250,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       deviceIssueRecords, addDeviceIssueRecord, returnDeviceIssueRecord,
       addAttendance, deleteAttendance,
       addTarget, updateTarget, getTarget, upsertTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
-      addExpense, deleteExpense, updateExpense, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
+      addExpense, deleteExpense, updateExpense, expenseCategories, addExpenseCategory, deleteExpenseCategory, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
       issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,
       staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, settleStaffWalletPayments,

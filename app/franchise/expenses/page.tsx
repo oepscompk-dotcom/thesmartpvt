@@ -1,21 +1,24 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Plus, Search, Edit, Trash2, X, Save, Receipt } from "lucide-react";
+import { Plus, Search, Edit, Trash2, X, Save, Receipt, Tags } from "lucide-react";
 import { useFranchiseData, Expense } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
 export default function ExpensesPage() {
-  const { auth, expenses, addExpense, updateExpense, deleteExpense } = useFranchiseData();
+  const { auth, expenses, addExpense, updateExpense, deleteExpense, expenseCategories, addExpenseCategory, deleteExpenseCategory } = useFranchiseData();
+  const [tab, setTab] = useState<"expenses" | "categories">("expenses");
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
+  const [newCategory, setNewCategory] = useState("");
+  const [selectedCats, setSelectedCats] = useState<string[]>([]);
 
   const emptyForm: Expense = { id: "", category: "", amount: 0, note: "", date: new Date().toISOString().split("T")[0], franchiseId: auth.franchiseId };
   const [form, setForm] = useState<Expense>(emptyForm);
 
-  const categories = ["Rent", "Utilities", "Staff Salary", "Marketing", "Travel", "Maintenance", "Office Supplies", "Internet", "Other"];
+  const categories = expenseCategories;
   const filtered = expenses.filter((e) => e.date.startsWith(month) && ((e.category || "").toLowerCase().includes(search.toLowerCase()) || (e.note || "").toLowerCase().includes(search.toLowerCase())));
   const total = filtered.reduce((s, e) => s + e.amount, 0);
 
@@ -31,6 +34,32 @@ export default function ExpensesPage() {
 
   const grouped = categories.map((c) => ({ category: c, total: filtered.filter((e) => (e.category || "") === c).reduce((s, e) => s + e.amount, 0) })).filter((g) => g.total > 0).sort((a, b) => b.total - a.total);
 
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+    await addExpenseCategory(newCategory);
+    setNewCategory("");
+  };
+  const handleDeleteCategory = async (c: string) => {
+    if (!confirm(`Delete category "${c}"?`)) return;
+    await deleteExpenseCategory(c);
+    setSelectedCats((p) => p.filter((x) => x !== c));
+  };
+  const toggleCat = (c: string) => setSelectedCats((p) => (p.includes(c) ? p.filter((x) => x !== c) : [...p, c]));
+  const allCatsSelected = categories.length > 0 && categories.every((c) => selectedCats.includes(c));
+  const toggleAllCats = () => setSelectedCats(allCatsSelected ? [] : [...categories]);
+  const handleBulkDeleteCats = async () => {
+    if (!selectedCats.length || !confirm(`Delete ${selectedCats.length} selected category(ies)?`)) return;
+    for (const c of selectedCats) await deleteExpenseCategory(c);
+    setSelectedCats([]);
+  };
+
+  const tabButton = (t: "expenses" | "categories", label: string, icon: any) => (
+    <button onClick={() => setTab(t)}
+      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === t ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
+      {icon} {label}
+    </button>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -38,11 +67,14 @@ export default function ExpensesPage() {
           <h1 className="text-2xl font-black text-gray-900">Expenses</h1>
           <p className="text-gray-500 text-sm mt-1">Track franchise expenses</p>
         </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Plus size={16} /> Add Expense
-        </button>
+        <div className="flex gap-2">
+          {tabButton("expenses", "Expenses", <Receipt size={14} />)}
+          {tabButton("categories", "Categories", <Tags size={14} />)}
+        </div>
       </div>
 
+      {tab === "expenses" && (
+        <>
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl p-5 border border-gray-200 text-center"><p className="text-3xl font-black text-red-600">PKR {total.toLocaleString()}</p><p className="text-gray-500 text-xs mt-1">Total Expenses ({month})</p></div>
         <div className="bg-white rounded-2xl p-5 border border-gray-200"><p className="text-gray-900 font-bold text-sm mb-2">Top Categories</p>{grouped.slice(0, 3).map((g) => <div key={g.category} className="flex justify-between text-xs mb-1"><span className="text-gray-500">{g.category}</span><span className="font-medium text-gray-900">PKR {g.total.toLocaleString()}</span></div>)}{grouped.length === 0 && <p className="text-gray-400 text-xs">No expenses</p>}</div>
@@ -54,6 +86,9 @@ export default function ExpensesPage() {
           <Search size={16} className="text-gray-400" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search expenses..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
         </div>
+        <button onClick={openAdd} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
+          <Plus size={16} /> Add Expense
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -88,6 +123,58 @@ export default function ExpensesPage() {
         </div>
         {filtered.length === 0 && <div className="px-6 py-12 text-center"><Receipt size={32} className="text-gray-300 mx-auto mb-3" /><p className="text-gray-400 text-sm">No expenses found</p></div>}
       </div>
+        </>
+      )}
+
+      {tab === "categories" && (
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Tags size={16} className="text-[#0A2647]" /> Expense Categories</h3>
+              <p className="text-gray-400 text-xs mt-0.5">Manage the category list used in the Add Expense dropdown</p>
+            </div>
+            <div className="flex gap-2">
+              <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddCategory()} placeholder="New category name" className="flex-1 sm:w-64 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+              <button onClick={handleAddCategory} disabled={!newCategory.trim()} className="inline-flex items-center gap-1 px-4 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40">
+                <Plus size={14} /> Add
+              </button>
+            </div>
+          </div>
+          {selectedCats.length > 0 && (
+            <div className="px-6 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
+              <p className="text-red-700 text-sm font-medium">{selectedCats.length} selected</p>
+              <div className="flex gap-2">
+                <button onClick={() => setSelectedCats([])} className="px-3 py-1.5 rounded-lg bg-white text-gray-700 text-xs font-medium border border-gray-200 hover:bg-gray-50">Clear</button>
+                <button onClick={handleBulkDeleteCats} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 inline-flex items-center gap-1">
+                  <Trash2 size={12} /> Delete Selected
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="p-6">
+            {categories.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No categories yet. Add one above.</p>}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {categories.map((c) => {
+                const used = expenses.filter((e) => (e.category || "") === c).length;
+                return (
+                  <div key={c} className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${selectedCats.includes(c) ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300 bg-white"}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <input type="checkbox" checked={selectedCats.includes(c)} onChange={() => toggleCat(c)} className="w-4 h-4 accent-[#0A2647] cursor-pointer flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-gray-900 text-sm font-medium truncate">{c}</p>
+                        <p className="text-gray-400 text-[10px]">{used} expense{used === 1 ? "" : "s"}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => handleDeleteCategory(c)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors flex-shrink-0" title="Delete">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
