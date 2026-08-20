@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { useState, useMemo } from "react";
 import {
@@ -34,7 +34,7 @@ export default function WalletPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingPayment, setEditingPayment] = useState<StaffWalletPayment | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
-  const patchEdit = (patch: Partial<StaffWalletPayment>) => patchEdit;
+  const patchEdit = (patch: Partial<StaffWalletPayment>) => setEditingPayment((p) => (p ? { ...p, ...patch } : p));
 
   // Shared form state
   const [role, setRole] = useState<"DSO" | "DSM">("DSO");
@@ -194,7 +194,7 @@ export default function WalletPage() {
             <div className="w-8 h-8 rounded-lg bg-[#0A2647]/10 flex items-center justify-center shrink-0"><User size={13} className="text-[#0A2647]" /></div>
             <div className="min-w-0">
               <p className="text-gray-900 text-sm font-medium truncate">{p.staffName}</p>
-              <p className="text-gray-400 text-[10px] font-mono truncate">{p.staffId} · {p.role}</p>
+              <p className="text-gray-400 text-[10px] font-mono truncate">{p.staffId} Â· {p.role}</p>
             </div>
           </div>
           {isPackage ? (
@@ -202,7 +202,7 @@ export default function WalletPage() {
               <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><Package size={13} className="text-blue-600" /></div>
               <div className="min-w-0">
                 <p className="text-gray-900 text-xs font-mono font-medium truncate">{p.iccid || p.simNumber || p.simId || "\u2014"}</p>
-                <p className="text-gray-400 text-[10px] truncate">{p.network || ""}{p.simNumber && p.iccid ? ` · ${p.simNumber}` : ""}</p>
+                <p className="text-gray-400 text-[10px] truncate">{p.network || ""}{p.simNumber && p.iccid ? ` Â· ${p.simNumber}` : ""}</p>
               </div>
             </div>
           ) : (
@@ -210,7 +210,7 @@ export default function WalletPage() {
               <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><Landmark size={13} className="text-green-600" /></div>
               <div className="min-w-0">
                 <p className="text-gray-900 text-xs font-medium truncate">{p.bank || p.accountTitle || p.transactionId || p.accountNumber || "Cash"}</p>
-                <p className="text-gray-400 text-[10px] font-mono truncate">{[p.accountNumber, p.transactionId].filter(Boolean).join(" · ") || (p.note || "\u2014")}</p>
+                <p className="text-gray-400 text-[10px] font-mono truncate">{[p.accountNumber, p.transactionId].filter(Boolean).join(" Â· ") || (p.note || "\u2014")}</p>
               </div>
             </div>
           )}
