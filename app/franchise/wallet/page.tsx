@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import {
   Wallet as WalletIcon, Plus, ArrowDown, ArrowUp, X, Search, Smartphone, User,
-  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package, Trash2,
+  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package, Trash2, LayoutGrid, List,
 } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
@@ -26,6 +26,7 @@ const PAKISTAN_BANKS = [
 export default function WalletPage() {
   const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest } = useFranchiseData();
   const [tab, setTab] = useState<Tab>("package");
+  const [view, setView] = useState<"table" | "cards">("table");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<"Package" | "Loan" | "Advance">("Package");
   const [sending, setSending] = useState(false);
@@ -161,6 +162,80 @@ export default function WalletPage() {
     </button>
   );
 
+  const viewButton = (v: "table" | "cards", label: string, icon: any) => (
+    <button onClick={() => setView(v)}
+      className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${view === v ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}>
+      {icon} {label}
+    </button>
+  );
+
+  const paymentCard = (p: any, isPackage: boolean) => {
+    const isLoan = p.type !== "Package";
+    const st = p.status === "Deducted" ? { label: "Deducted", cls: "bg-green-50 text-green-700 border-green-200" } : { label: p.status || (isLoan ? "Outstanding" : "Paid"), cls: "bg-amber-50 text-amber-700 border-amber-200" };
+    return (
+      <div key={p.id} className={`bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden min-w-0 ${selectedIds.includes(p.id) ? "border-[#0A2647] ring-1 ring-[#0A2647]/20" : ""}`}>
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${isPackage ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600"}`}>
+              {isPackage ? <Smartphone size={18} /> : p.type === "Advance" ? <WalletIcon size={18} /> : <Landmark size={18} />}
+            </div>
+            <div className="min-w-0">
+              <p className="text-gray-900 text-sm font-bold truncate">{isPackage ? "SIM Package Issue" : `${p.type} Payment`}</p>
+              <p className="text-gray-400 text-[10px] font-mono truncate">{p.id}</p>
+            </div>
+          </div>
+          <span className={`px-2 py-1 rounded-lg text-[10px] font-bold border shrink-0 whitespace-nowrap ${st.cls}`}>{st.label}</span>
+        </div>
+        <div className="px-5 py-4 space-y-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-[#0A2647]/10 flex items-center justify-center shrink-0"><User size={13} className="text-[#0A2647]" /></div>
+            <div className="min-w-0">
+              <p className="text-gray-900 text-sm font-medium truncate">{p.staffName}</p>
+              <p className="text-gray-400 text-[10px] font-mono truncate">{p.staffId} · {p.role}</p>
+            </div>
+          </div>
+          {isPackage ? (
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><Package size={13} className="text-blue-600" /></div>
+              <div className="min-w-0">
+                <p className="text-gray-900 text-xs font-mono font-medium truncate">{p.iccid || p.simNumber || p.simId || "\u2014"}</p>
+                <p className="text-gray-400 text-[10px] truncate">{p.network || ""}{p.simNumber && p.iccid ? ` · ${p.simNumber}` : ""}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><Landmark size={13} className="text-green-600" /></div>
+              <div className="min-w-0">
+                <p className="text-gray-900 text-xs font-medium truncate">{p.bank || p.accountTitle || p.transactionId || p.accountNumber || "Cash"}</p>
+                <p className="text-gray-400 text-[10px] font-mono truncate">{[p.accountNumber, p.transactionId].filter(Boolean).join(" · ") || (p.note || "\u2014")}</p>
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="bg-gray-50 rounded-lg px-3 py-2">
+              <p className="text-[10px] text-gray-400">Date</p>
+              <p className="text-xs font-medium text-gray-900">{formatDateDDMMYYYY(p.paymentDate)}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg px-3 py-2">
+              <p className="text-[10px] text-gray-400">Amount</p>
+              <p className="text-xs font-black text-green-600">PKR {p.amount.toLocaleString()}</p>
+            </div>
+          </div>
+          {p.note && <p className="text-xs text-gray-500 truncate">Note: {p.note}</p>}
+        </div>
+        <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => toggleSelect(p.id)} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+            <span className="text-xs text-gray-500">Select</span>
+          </label>
+          <button onClick={() => handleDeleteOne(p.id)} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors inline-flex items-center gap-1">
+            <Trash2 size={12} /> Delete
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -176,9 +251,13 @@ export default function WalletPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {tabButton("package", "SIM Package", <Smartphone size={14} />)}
         {tabButton("loan", "Loan / Advance", <Receipt size={14} />)}
+        <div className="ml-auto flex bg-white rounded-xl border border-gray-200 p-1">
+          {viewButton("table", "Table", <List size={14} />)}
+          {viewButton("cards", "Cards", <LayoutGrid size={14} />)}
+        </div>
       </div>
 
       {/* Stats */}
@@ -215,7 +294,12 @@ export default function WalletPage() {
             </div>
             <span className="px-2.5 py-1 bg-[#0A2647]/10 text-[#0A2647] rounded-lg text-xs font-bold">{packagePayments.length} Issue(s)</span>
           </div>
-          <div className="overflow-x-auto">
+          {view === "cards" && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-5">
+              {[...packagePayments].reverse().map((p) => paymentCard(p, true))}
+            </div>
+          )}
+          {view === "table" && (<div className="overflow-x-auto">
             {selectedIds.length > 0 && (
               <div className="px-6 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
                 <p className="text-red-700 text-sm font-medium">{selectedIds.length} selected</p>
@@ -277,7 +361,7 @@ export default function WalletPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div>)}
           {packagePayments.length === 0 && (
             <div className="px-6 py-12 text-center">
               <Smartphone size={32} className="text-gray-300 mx-auto mb-3" />
@@ -338,7 +422,12 @@ export default function WalletPage() {
             </div>
             <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold">Outstanding: PKR {outstandingLoans.toLocaleString()}</span>
           </div>
-          <div className="overflow-x-auto">
+          {view === "cards" && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-5">
+              {[...loanPayments].reverse().map((p) => paymentCard(p, false))}
+            </div>
+          )}
+          {view === "table" && (<div className="overflow-x-auto">
             {selectedIds.length > 0 && (
               <div className="px-6 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
                 <p className="text-red-700 text-sm font-medium">{selectedIds.length} selected</p>
@@ -413,7 +502,7 @@ export default function WalletPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div>)}
           {loanPayments.length === 0 && (
             <div className="px-6 py-12 text-center">
               <Receipt size={32} className="text-gray-300 mx-auto mb-3" />
