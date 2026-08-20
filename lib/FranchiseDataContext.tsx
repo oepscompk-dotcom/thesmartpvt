@@ -312,7 +312,8 @@ interface FranchiseDataContextType {
   addAttendance: (a: AttendanceRecord) => Promise<void>;
   deleteAttendance: (id: string) => Promise<void>;
   addTarget: (t: Target) => Promise<void>; updateTarget: (id: string, t: Target) => Promise<void>;
-  getTarget: (dsoId: string, month: string) => Target;
+  getTarget: (empId: string, month: string, role?: "DSO" | "DSM") => Target;
+  upsertTarget: (empId: string, month: string, role: "DSO" | "DSM", updates: Partial<Target>) => Promise<void>;
   addWalletTransaction: (w: WalletTransaction) => Promise<void>;
   addPayroll: (p: PayrollRecord) => Promise<void>; updatePayroll: (id: string, p: PayrollRecord) => Promise<void>; deletePayroll: (id: string) => Promise<void>;
   addExpense: (e: Expense) => Promise<void>; deleteExpense: (id: string) => Promise<void>; updateExpense: (id: string, e: Expense) => Promise<void>;
@@ -862,15 +863,27 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     setBankAccounts((p) => p.filter((i) => i.id !== id));
   };
 
-  const getTarget = (dsoId: string, month: string): Target => {
-    const existing = targets.find((t) => t.dsoId === dsoId && t.month === month);
+  const getTarget = (empId: string, month: string, role: "DSO" | "DSM" = "DSO"): Target => {
+    const existing = targets.find((t) => (t.dsoId === empId || t.employeeId === empId) && t.month === month && (t.role === role || (!t.role && role === "DSO")));
     if (existing) return existing;
-    const emp = dso.find((d) => d.id === dsoId);
+    const emp = role === "DSO" ? dso.find((d) => d.id === empId) : dsms.find((d) => d.id === empId);
     return {
-      id: `TGT-${dsoId}-${month}`, employeeId: dsoId, employeeName: emp?.name || "", role: "DSO", period: month,
+      id: `TGT-${empId}-${month}-${role}`, employeeId: empId, employeeName: emp?.name || "", role, period: month,
       dailyTarget: 10, monthlyTarget: 300, achieved: 0, franchiseId: fid,
-      dsoId, month, deviceTarget: 0, deviceAchieved: 0, simTarget: 0, simAchieved: 0,
+      dsoId: empId, month, deviceTarget: 0, deviceAchieved: 0, simTarget: 0, simAchieved: 0,
     };
+  };
+  const upsertTarget = async (empId: string, month: string, role: "DSO" | "DSM", updates: Partial<Target>): Promise<void> => {
+    const existing = targets.find((t) => (t.dsoId === empId || t.employeeId === empId) && t.month === month && (t.role === role || (!t.role && role === "DSO")));
+    if (existing) {
+      const updated = { ...existing, ...updates };
+      await apiUpdate("target", existing.id, updated);
+      setTargets((p) => p.map((i) => (i.id === existing.id ? updated : i)));
+    } else {
+      const created = { ...getTarget(empId, month, role), ...updates };
+      await apiSave("target", created);
+      setTargets((p) => [...p, created]);
+    }
   };
   const addNotification = async (n: FranchiseNotification) => {
     await apiSave("franchiseNotification", n);
@@ -1200,7 +1213,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       addEquipmentIssueRecord, updateEquipmentIssueRecord, returnEquipment,
       deviceIssueRecords, addDeviceIssueRecord, returnDeviceIssueRecord,
       addAttendance, deleteAttendance,
-      addTarget, updateTarget, getTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
+      addTarget, updateTarget, getTarget, upsertTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
       addExpense, deleteExpense, updateExpense, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
       issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,
