@@ -1,11 +1,11 @@
-ï»¿"use client";
+"use client";
 
 import { useState, useMemo } from "react";
 import {
   Wallet as WalletIcon, Plus, ArrowDown, ArrowUp, X, Search, Smartphone, User,
-  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package, Trash2, LayoutGrid, List,
+  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package, Trash2, LayoutGrid, List, Edit, Save,
 } from "lucide-react";
-import { useFranchiseData } from "@/lib/FranchiseDataContext";
+import { useFranchiseData, type StaffWalletPayment } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 
 type Tab = "package" | "loan";
@@ -24,7 +24,7 @@ const PAKISTAN_BANKS = [
 ];
 
 export default function WalletPage() {
-  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest } = useFranchiseData();
+  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, updateStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest } = useFranchiseData();
   const [tab, setTab] = useState<Tab>("package");
   const [view, setView] = useState<"table" | "cards">("table");
   const [showModal, setShowModal] = useState(false);
@@ -32,6 +32,9 @@ export default function WalletPage() {
   const [sending, setSending] = useState(false);
   const [receivingId, setReceivingId] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [editingPayment, setEditingPayment] = useState<StaffWalletPayment | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const patchEdit = (patch: Partial<StaffWalletPayment>) => patchEdit;
 
   // Shared form state
   const [role, setRole] = useState<"DSO" | "DSM">("DSO");
@@ -191,7 +194,7 @@ export default function WalletPage() {
             <div className="w-8 h-8 rounded-lg bg-[#0A2647]/10 flex items-center justify-center shrink-0"><User size={13} className="text-[#0A2647]" /></div>
             <div className="min-w-0">
               <p className="text-gray-900 text-sm font-medium truncate">{p.staffName}</p>
-              <p className="text-gray-400 text-[10px] font-mono truncate">{p.staffId} Â· {p.role}</p>
+              <p className="text-gray-400 text-[10px] font-mono truncate">{p.staffId} · {p.role}</p>
             </div>
           </div>
           {isPackage ? (
@@ -199,7 +202,7 @@ export default function WalletPage() {
               <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><Package size={13} className="text-blue-600" /></div>
               <div className="min-w-0">
                 <p className="text-gray-900 text-xs font-mono font-medium truncate">{p.iccid || p.simNumber || p.simId || "\u2014"}</p>
-                <p className="text-gray-400 text-[10px] truncate">{p.network || ""}{p.simNumber && p.iccid ? ` Â· ${p.simNumber}` : ""}</p>
+                <p className="text-gray-400 text-[10px] truncate">{p.network || ""}{p.simNumber && p.iccid ? ` · ${p.simNumber}` : ""}</p>
               </div>
             </div>
           ) : (
@@ -207,7 +210,7 @@ export default function WalletPage() {
               <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><Landmark size={13} className="text-green-600" /></div>
               <div className="min-w-0">
                 <p className="text-gray-900 text-xs font-medium truncate">{p.bank || p.accountTitle || p.transactionId || p.accountNumber || "Cash"}</p>
-                <p className="text-gray-400 text-[10px] font-mono truncate">{[p.accountNumber, p.transactionId].filter(Boolean).join(" Â· ") || (p.note || "\u2014")}</p>
+                <p className="text-gray-400 text-[10px] font-mono truncate">{[p.accountNumber, p.transactionId].filter(Boolean).join(" · ") || (p.note || "\u2014")}</p>
               </div>
             </div>
           )}
@@ -228,9 +231,14 @@ export default function WalletPage() {
             <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => toggleSelect(p.id)} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
             <span className="text-xs text-gray-500">Select</span>
           </label>
-          <button onClick={() => handleDeleteOne(p.id)} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors inline-flex items-center gap-1">
-            <Trash2 size={12} /> Delete
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setEditingPayment(p)} className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition-colors inline-flex items-center gap-1">
+              <Edit size={12} /> Edit
+            </button>
+            <button onClick={() => handleDeleteOne(p.id)} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors inline-flex items-center gap-1">
+              <Trash2 size={12} /> Delete
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -353,9 +361,14 @@ export default function WalletPage() {
                     <td className="px-6 py-4 text-gray-600 text-sm">{formatDateDDMMYYYY(p.paymentDate)}</td>
                     <td className="px-6 py-4 text-right font-bold text-sm text-green-600">PKR {p.amount.toLocaleString()}</td>
                     <td className="px-4 py-4 text-center">
-                      <button onClick={() => handleDeleteOne(p.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors mx-auto" title="Delete">
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => setEditingPayment(p)} className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-colors mx-auto" title="Edit">
+                          <Edit size={14} />
+                        </button>
+                        <button onClick={() => handleDeleteOne(p.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors mx-auto" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -494,9 +507,14 @@ export default function WalletPage() {
                       {p.settledMonth && <p className="text-[10px] text-gray-400 mt-1">{p.settledMonth}</p>}
                     </td>
                     <td className="px-4 py-4 text-center">
-                      <button onClick={() => handleDeleteOne(p.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors mx-auto" title="Delete">
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => setEditingPayment(p)} className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-colors mx-auto" title="Edit">
+                          <Edit size={14} />
+                        </button>
+                        <button onClick={() => handleDeleteOne(p.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors mx-auto" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -690,6 +708,107 @@ export default function WalletPage() {
               <button onClick={handleSend} disabled={!staffId || amount <= 0 || sending || (modalType === "Package" && !simId)}
                 className="px-6 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
                 <CheckCircle2 size={14} /> {sending ? "Sending..." : modalType === "Package" ? "Issue Amount" : "Send Payment"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Payment Modal */}
+      {editingPayment && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setEditingPayment(null)}>
+          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h3 className="text-lg font-extrabold text-gray-900">Edit {editingPayment.type === "Package" ? "Package" : editingPayment.type === "Advance" ? "Advance Payment" : "Loan Payment"}</h3>
+                <p className="text-xs text-gray-400 font-mono">{editingPayment.id}</p>
+              </div>
+              <button onClick={() => setEditingPayment(null)} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
+                <div className="w-10 h-10 rounded-full bg-[#0A2647] flex items-center justify-center text-white font-bold">{editingPayment.staffName.slice(0, 1)}</div>
+                <div>
+                  <p className="text-gray-900 text-sm font-bold">{editingPayment.staffName}</p>
+                  <p className="text-gray-400 text-xs font-mono">{editingPayment.staffId} &middot; {editingPayment.role} &middot; {editingPayment.type}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Amount (PKR)</label>
+                  <input type="number" value={editingPayment.amount ?? ""} onChange={(e) => patchEdit({ amount: Number(e.target.value) })} min={0}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                </div>
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Date</label>
+                  <input type="date" value={editingPayment.paymentDate || ""} onChange={(e) => patchEdit({ paymentDate: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                </div>
+              </div>
+
+              {editingPayment.type === "Package" ? (
+                <div>
+                  <label className="block text-gray-500 text-xs font-medium mb-1.5">SIM / ICCID</label>
+                  <input type="text" value={editingPayment.iccid || editingPayment.simNumber || editingPayment.simId || ""} onChange={(e) => patchEdit({ iccid: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank</label>
+                    <input type="text" value={editingPayment.bank || ""} onChange={(e) => patchEdit({ bank: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Title</label>
+                    <input type="text" value={editingPayment.accountTitle || ""} onChange={(e) => patchEdit({ accountTitle: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number</label>
+                    <input type="text" value={editingPayment.accountNumber || ""} onChange={(e) => patchEdit({ accountNumber: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Transaction ID</label>
+                    <input type="text" value={editingPayment.transactionId || ""} onChange={(e) => patchEdit({ transactionId: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-gray-500 text-xs font-medium mb-1.5">Note</label>
+                <input type="text" value={editingPayment.note || ""} onChange={(e) => patchEdit({ note: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setEditingPayment(null)} className="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
+              <div className="flex-1" />
+              <button onClick={async () => {
+                if (!editingPayment || savingEdit) return;
+                setSavingEdit(true);
+                try {
+                  await updateStaffWalletPayment(editingPayment.id, {
+                    amount: editingPayment.amount,
+                    paymentDate: editingPayment.paymentDate,
+                    iccid: editingPayment.iccid,
+                    bank: editingPayment.bank,
+                    accountTitle: editingPayment.accountTitle,
+                    accountNumber: editingPayment.accountNumber,
+                    transactionId: editingPayment.transactionId,
+                    note: editingPayment.note,
+                  });
+                  setEditingPayment(null);
+                } catch (e) { console.error(e); alert("Failed to update payment. Please try again."); }
+                setSavingEdit(false);
+              }} disabled={!editingPayment || editingPayment.amount <= 0 || savingEdit}
+                className="px-6 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                <Save size={14} /> {savingEdit ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>

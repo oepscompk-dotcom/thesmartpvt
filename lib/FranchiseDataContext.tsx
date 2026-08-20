@@ -342,6 +342,7 @@ interface FranchiseDataContextType {
   staffWalletPayments: StaffWalletPayment[];
   sendStaffWalletPayment: (p: Omit<StaffWalletPayment, "id" | "status" | "createdAt" | "franchiseId">) => Promise<void>;
   deleteStaffWalletPayment: (id: string) => Promise<void>;
+  updateStaffWalletPayment: (id: string, updates: Partial<StaffWalletPayment>) => Promise<void>;
   settleStaffWalletPayments: (staffId: string, role: string, month: string) => Promise<void>;
   paymentRequests: StaffPaymentRequest[];
   receiveStaffPaymentRequest: (requestId: string) => Promise<void>;
@@ -1078,6 +1079,43 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateStaffWalletPayment = async (id: string, updates: Partial<StaffWalletPayment>) => {
+    const current = staffWalletPayments.find((p) => p.id === id);
+    if (!current) return;
+    const updated: StaffWalletPayment = { ...current, ...updates };
+    const list = staffWalletPayments.map((p) => (p.id === id ? updated : p));
+    setStaffWalletPayments(list);
+    await persistStaffWalletPayments(list);
+
+    // Rebalance the staff's outstanding loan/advance if amount changed
+    if (updated.type !== "Package" && updated.amount !== current.amount) {
+      const model = updated.role === "DSO" ? "dso" : "dsm";
+      const field = updated.type === "Advance" ? "advanceSalary" : "loanDeduction";
+      const staffList = updated.role === "DSO" ? dso : dsms;
+      const rec = staffList.find((x) => x.id === updated.staffId);
+      const newVal = Math.max(0, ((rec as any)?.[field] || 0) + (updated.amount - current.amount));
+      try { await apiUpdate(model, updated.staffId, { [field]: newVal }); } catch (e) { console.error(e); }
+      if (updated.role === "DSO") setDSO((prev) => prev.map((x) => (x.id === updated.staffId ? { ...x, [field]: newVal } : x)));
+      else setDSMs((prev) => prev.map((x) => (x.id === updated.staffId ? { ...x, [field]: newVal } : x)));
+    }
+
+    // Keep the linked expense entry in sync
+    const matched = accounts.find((a) => a.type === "expense" && (a.referenceId === id || (a.description || "").includes(`[ref: ${id}]`)));
+    if (matched) {
+      const typeLabel = updated.type === "Package" ? "SIM Package" : updated.type === "Advance" ? "Advance Payment" : "Loan Payment";
+      const expenseCategory = updated.type === "Package" ? "SIM Package Cost" : updated.type === "Advance" ? "Advance Payment to Staff" : "Loan Payment to Staff";
+      const updatedEntry = {
+        ...matched,
+        amount: updated.amount,
+        category: expenseCategory,
+        description: `${typeLabel} to ${updated.staffName} (${updated.role})${updated.iccid ? ` - ${updated.iccid}` : ""}${updated.note ? ` - ${updated.note}` : ""} [ref: ${id}]`,
+      };
+      const { staffId: _s1, staffName: _s2, referenceId: _r, ...persistable } = updatedEntry;
+      try { await apiUpdate("accountEntry", matched.id, persistable); } catch (e) { console.error(e); }
+      setAccounts((prev) => prev.map((a) => (a.id === matched.id ? updatedEntry : a)));
+    }
+  };
+
   const sendStaffWalletPayment = async (p: Omit<StaffWalletPayment, "id" | "status" | "createdAt" | "franchiseId">) => {
     const today = new Date().toISOString().split("T")[0];
     const payment: StaffWalletPayment = {
@@ -1255,7 +1293,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       addExpense, deleteExpense, updateExpense, expenseCategories, addExpenseCategory, deleteExpenseCategory, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
       issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,
-      staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, settleStaffWalletPayments,
+      staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, updateStaffWalletPayment, settleStaffWalletPayments,
       paymentRequests, receiveStaffPaymentRequest,
     }}>
       {children}
