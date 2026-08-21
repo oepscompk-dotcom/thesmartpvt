@@ -44,6 +44,8 @@ export default function WalletPage() {
   // Package specific
   const [simSearch, setSimSearch] = useState("");
   const [simId, setSimId] = useState("");
+  // Staff search
+  const [staffSearch, setStaffSearch] = useState("");
   // Loan/Advance specific
   const [paymentType, setPaymentType] = useState<"Loan" | "Advance">("Loan");
   const [accountNumber, setAccountNumber] = useState("");
@@ -113,6 +115,11 @@ export default function WalletPage() {
     );
   }, [sims, simSearch]);
 
+  const activeStaff = useMemo(() => {
+    const q = staffSearch.trim().toLowerCase();
+    return staffList.filter((p) => p.status === "Active" && (!q || `${p.name} ${p.id} ${p.mobile || ""}`.toLowerCase().includes(q)));
+  }, [staffList, staffSearch]);
+
   const resetForm = () => {
     setRole("DSO");
     setStaffId("");
@@ -120,6 +127,7 @@ export default function WalletPage() {
     setNote("");
     setSimSearch("");
     setSimId("");
+    setStaffSearch("");
     setPaymentType("Loan");
     setAccountNumber("");
     setBank("");
@@ -592,8 +600,15 @@ export default function WalletPage() {
                     </button>
                   ))}
                 </div>
+                <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all mb-2">
+                  <Search size={16} className="text-gray-400" />
+                  <input type="text" value={staffSearch} onChange={(e) => setStaffSearch(e.target.value)}
+                    placeholder={`Search ${role} by name, ID or mobile...`}
+                    className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
+                  {staffSearch && <button onClick={() => setStaffSearch("")} className="text-gray-400 hover:text-gray-600 flex-shrink-0"><X size={14} /></button>}
+                </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {staffList.filter((p) => p.status === "Active").map((p) => (
+                  {activeStaff.map((p) => (
                     <button key={p.id} onClick={() => setStaffId(p.id)}
                       className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${staffId === p.id ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
                       <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold flex-shrink-0">
@@ -606,8 +621,8 @@ export default function WalletPage() {
                       {staffId === p.id && <Check size={16} className="text-[#0A2647] flex-shrink-0" />}
                     </button>
                   ))}
-                  {staffList.filter((p) => p.status === "Active").length === 0 && (
-                    <p className="text-gray-400 text-sm text-center py-4">No active {role} found</p>
+                  {activeStaff.length === 0 && (
+                    <p className="text-gray-400 text-sm text-center py-4">{staffSearch ? `No ${role} matches "${staffSearch}"` : `No active ${role} found`}</p>
                   )}
                 </div>
               </div>
