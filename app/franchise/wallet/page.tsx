@@ -337,6 +337,7 @@ export default function WalletPage() {
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Issued To</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">SIM / ICCID</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Date</th>
+                  <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Balance</th>
                   <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Amount</th>
                   <th className="text-center px-4 py-4 text-gray-500 text-xs font-medium uppercase w-20">Actions</th>
                 </tr>
@@ -367,6 +368,7 @@ export default function WalletPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">{formatDateDDMMYYYY(p.paymentDate)}</td>
+                    <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">PKR {walletBalanceAt(p.paymentDate, p.amount).toLocaleString()}</td>
                     <td className="px-6 py-4 text-right font-bold text-sm text-green-600">PKR {p.amount.toLocaleString()}</td>
                     <td className="px-4 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -471,6 +473,7 @@ export default function WalletPage() {
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Type</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Payment Detail</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Date</th>
+                  <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Balance</th>
                   <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Amount</th>
                   <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
                   <th className="text-center px-4 py-4 text-gray-500 text-xs font-medium uppercase w-20">Actions</th>
@@ -507,6 +510,7 @@ export default function WalletPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">{formatDateDDMMYYYY(p.paymentDate)}</td>
+                    <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">PKR {walletBalanceAt(p.paymentDate, p.amount).toLocaleString()}</td>
                     <td className="px-6 py-4 text-right font-bold text-sm text-green-600">PKR {p.amount.toLocaleString()}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-lg text-xs font-medium ${p.status === "Deducted" ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
