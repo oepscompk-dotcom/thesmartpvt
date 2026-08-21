@@ -1,79 +1,108 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 import { useDSMData } from "@/lib/DSMDataContext";
+import { VerifyConfirmPopup, VerifySuccessPopup } from "@/lib/VerifyPopup";
 import { apiLoad, apiUpdate } from "@/lib/api";
-import { Hash, User, Phone, Smartphone, MessageSquare, CheckCircle2, Tag, ArrowLeft, ChevronRight, Signal } from "lucide-react";
+import {
+  Hash, X, Filter, ArrowRight, ArrowLeft, CheckCircle, Trash2, Search,
+} from "lucide-react";
+
+interface BYNForm {
+  customerName: string;
+  customerCNIC: string;
+  customerMobile: string;
+  desiredNumber: string;
+  network: string;
+  simNumber: string;
+  iccid: string;
+  deviceId: string;
+  retailerId: string;
+}
 
 interface SIMStock {
   id: string;
-  simNumber: string;
   iccid: string;
+  simNumber: string;
   network: string;
   status: string;
-  deviceId?: string;
+  deviceId: string;
   retailerId?: string;
   type?: "new" | "hlr";
   issuedToId?: string;
 }
 
-export default function BYNRegistration() {
-  const { addActivation, auth } = useDSMData();
-  const router = useRouter();
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [activatingId, setActivatingId] = useState("");
-  const [mounted, setMounted] = useState(false);
+const NETWORKS = ["Telenor", "Jazz", "Ufone", "Zong"];
+
+const initialForm: BYNForm = {
+  customerName: "",
+  customerCNIC: "",
+  customerMobile: "",
+  desiredNumber: "",
+  network: "",
+  simNumber: "",
+  iccid: "",
+  deviceId: "",
+  retailerId: "",
+};
+
+export default function BYNPage() {
+  const { activations, addActivation, updateActivation, deleteActivation, auth } = useDSMData();
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState<BYNForm>(initialForm);
+  const [filter, setFilter] = useState("All");
+  const [simSearch, setSimSearch] = useState("");
   const [simStockList, setSimStockList] = useState<SIMStock[]>([]);
   const [selectedSimId, setSelectedSimId] = useState("");
   const [selectedFranchiseSimId, setSelectedFranchiseSimId] = useState("");
-  const [form, setForm] = useState({
-    customerName: "",
-    customerCNIC: "",
-    contactNumber: "",
-    msisdn: "",
-    simNumber: "",
-    iccid: "",
-    deviceId: "",
-    retailerId: "",
-    network: "Telenor",
-    deviceBrand: "",
-    deviceModel: "",
-    devicePrice: "",
-    notes: "",
-  });
-
-  const networks = ["Telenor", "Ufone", "Zong", "Jazz"];
 
   useEffect(() => {
-    const load = async () => {
-      setMounted(true);
-      if (!auth.franchiseId) return;
+    if (!auth.franchiseId) return;
+    (async () => {
       const allSims = await apiLoad("sim", auth.franchiseId);
-      const mySims = (allSims || []).filter((s: SIMStock) => s.issuedToId === auth.dsmId && s.status === "Issued" && s.type === "new");
+      const sims = Array.isArray(allSims) ? allSims : [];
+      const mySims = sims.filter((s: SIMStock) => s.issuedToId === auth.dsmId && s.status === "Issued" && s.type === "hlr");
       setSimStockList(mySims);
-    };
-    load();
+    })();
   }, [auth.dsmId, auth.franchiseId]);
+
+  const filteredSims = simStockList.filter(
+    (s) => filter === "All" || s.network === filter
+  );
+
+  const searchFilteredSims = filteredSims.filter((s) => {
+    if (!simSearch) return true;
+    const q = simSearch.toLowerCase();
+    return (s.iccid || "").toLowerCase().includes(q) ||
+      (s.simNumber || "").toLowerCase().includes(q) ||
+      (s.network || "").toLowerCase().includes(q);
+  });
 
   const handleSimSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const simId = e.target.value;
     setSelectedSimId(simId);
     if (!simId) {
       setSelectedFranchiseSimId("");
-      setForm((prev) => ({ ...prev, simNumber: "", iccid: "", deviceId: "", retailerId: "", network: "Telenor" }));
+      setForm((p) => ({
+        ...p,
+        simNumber: "",
+        iccid: "",
+        network: "",
+        deviceId: "",
+        retailerId: "",
+      }));
       return;
     }
     const sim = simStockList.find((s) => s.id === simId);
     if (sim) {
       setSelectedFranchiseSimId(simId);
-      setForm((prev) => ({
-        ...prev,
+      setForm((p) => ({
+        ...p,
         simNumber: sim.simNumber,
         iccid: sim.iccid,
-        deviceId: sim.deviceId || "",
+        network: sim.network,
+        deviceId: sim.deviceId,
         retailerId: sim.retailerId || "",
-        network: sim.network || prev.network,
       }));
     }
   };
@@ -81,10 +110,12 @@ export default function BYNRegistration() {
   const updateFranchiseSIMStatus = async (simNumber: string, newStatus: string) => {
     try {
       if (!auth.franchiseId) return;
-      const allSims = await apiLoad("sim", auth.franchiseId);
-      const sim = (allSims || []).find((s: any) => s.simNumber === simNumber);
-      if (sim) {
-        await apiUpdate("sim", sim.id, { ...sim, status: newStatus });
+      const sims = await apiLoad("sim", auth.franchiseId);
+      if (Array.isArray(sims)) {
+        const sim = sims.find((s: any) => s.simNumber === simNumber);
+        if (sim) {
+          await apiUpdate("sim", sim.id, { ...sim, status: newStatus });
+        }
       }
     } catch {}
   };
@@ -96,7 +127,7 @@ export default function BYNRegistration() {
         apiLoad("dsoActivation", auth.franchiseId),
         apiLoad("dsmActivation", auth.franchiseId),
       ]);
-      for (const acts of [dsoActs || [], dsmActs || []]) {
+      for (const acts of [dsoActs, dsmActs]) {
         if (Array.isArray(acts)) {
           const found = acts.find((a: any) => a.simNumber === simNumber && a.status !== "Completed" && a.status !== "Rejected");
           if (found) return true;
@@ -106,331 +137,406 @@ export default function BYNRegistration() {
     return false;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const num = Math.floor(10000 + Math.random() * 90000);
-    const id = `ACT-2026-${num}`;
-    const today = new Date().toISOString().split("T")[0];
-    const customerName = form.customerName.trim() || "XXXXX";
-    const customerCNIC = form.customerCNIC.trim() || "XXXXX-YYYYYYY-X";
-    const contactNumber = form.contactNumber.trim() || "03XX-XXXXXXX";
-    if (await isSIMInPipeline(form.simNumber || "")) {
+  const bynActivations = activations.filter((a) => a.type === "BYN");
+
+  const filtered =
+    filter === "All"
+      ? bynActivations
+      : bynActivations.filter((a) => a.status === filter);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedSimId || !form.desiredNumber) return;
+    const simNum = form.simNumber;
+    if (await isSIMInPipeline(simNum || "")) {
       alert("This SIM is already in a verification pipeline (BVS/FCA/IFCA). Cannot submit until the current process is completed.");
       return;
     }
-    addActivation({
-      id,
+    const customerName = form.customerName.trim() || "XXXXX";
+    const customerCNIC = form.customerCNIC.trim() || "XXXXX-YYYYYYY-X";
+    const customerMobile = form.customerMobile.trim() || "03XX-XXXXXXX";
+
+    await addActivation({
+      id: `BYN-${Date.now()}`,
       type: "BYN",
-      simNumber: form.msisdn || form.simNumber,
+      simId: `SIM-${Date.now()}`,
+      simNumber: simNum,
       network: form.network,
+      iccid: form.iccid,
+      deviceId: form.deviceId,
       customerName,
       customerCNIC,
-      contactNumber,
+      customerMobile,
+      contactNumber: customerMobile,
+      retailerId: form.retailerId,
       status: "Pending BVS",
       bvsStatus: "Pending",
+      bvsDate: "",
+      bvsNotes: "",
       fcaStatus: "Pending",
+      fcaDate: "",
+      fcaNotes: "",
       ifcaStatus: "Pending",
+      ifcaDate: "",
+      ifcaNotes: "",
       progress: 0,
-      createdAt: today,
+      createdAt: new Date().toISOString(),
       dsmId: auth.dsmId,
-      dsoId: "",
+      dsoId: auth.dsmId || "",
       franchiseId: auth.franchiseId,
-    });
-    await updateFranchiseSIMStatus(form.simNumber || "", "Activated");
-    setActivatingId(id);
+    } as any);
+    await updateFranchiseSIMStatus(simNum || "", "Activated");
+    setSimStockList((prev) => prev.filter((s) => s.simNumber !== simNum));
+    setForm(initialForm);
     setSelectedSimId("");
-    try {
-      if (auth.franchiseId) {
-        const allSims = await apiLoad("sim", auth.franchiseId);
-        setSimStockList((allSims || []).filter((s: any) => s.issuedToId === auth.dsmId && s.status === "Issued" && s.type === "new"));
-      }
-    } catch {}
-    setShowSuccess(true);
-    alert("Activation submitted! Pending verification (BVS → FCA → IFCA)");
-    setTimeout(() => router.push("/dsm/dashboard"), 2000);
+    setShowModal(false);
+    alert("Activation submitted successfully! SIM is now pending verification (BVS → FCA → IFCA)");
+  };
+
+  const [verifyConfirm, setVerifyConfirm] = useState<{ step: string; simNumber: string; activation: any } | null>(null);
+  const [verifySuccess, setVerifySuccess] = useState<string | null>(null);
+
+  const handleVerifyStep = (a: any) => {
+    let step = "";
+    if (a.bvsStatus !== "Completed") step = "BVS";
+    else if (a.fcaStatus !== "Completed") step = "FCA";
+    else if (a.ifcaStatus !== "Completed") step = "IFCA";
+    if (!step) return;
+    setVerifyConfirm({ step, simNumber: a.simNumber, activation: a });
+  };
+
+  const doVerifyConfirm = async () => {
+    if (!verifyConfirm) return;
+    const { step, activation } = verifyConfirm;
+    const now = new Date().toISOString();
+    let updates: any = {};
+    if (step === "BVS") updates = { bvsStatus: "Completed", bvsDate: now };
+    else if (step === "FCA") updates = { fcaStatus: "Completed", fcaDate: now };
+    else if (step === "IFCA") updates = { ifcaStatus: "Completed", ifcaDate: now };
+    setVerifyConfirm(null);
+    await updateActivation(activation.id, updates);
+    const nextStep = step === "BVS" ? "FCA" : step === "FCA" ? "IFCA" : null;
+    setVerifySuccess(nextStep ? `${step} Verified! Status updated to Pending ${nextStep}.` : `${step} Verified! All verification completed.`);
+  };
+
+  const verifyLabel = (a: any) => {
+    if (a.bvsStatus !== "Completed") return { label: "Verify BVS", color: "bg-amber-500 hover:bg-amber-600" };
+    if (a.fcaStatus !== "Completed") return { label: "Verify FCA", color: "bg-blue-500 hover:bg-blue-600" };
+    if (a.ifcaStatus !== "Completed") return { label: "Verify IFCA", color: "bg-purple-500 hover:bg-purple-600" };
+    return null;
+  };
+
+  const vcVal = (simNumber: string, field: "bvs" | "fca" | "ifca", fallback: string) => {
+    return fallback === "Completed" ? "0" : "X";
+  };
+  const vcBg = (v: string) => v === "0" || v === "1" ? "bg-green-100 text-green-700" : v === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400";
+  const derivedStatus = (a: any) => {
+    const bvs = a.bvsStatus === "Completed" ? "0" : "X";
+    const fca = a.fcaStatus === "Completed" ? "0" : "X";
+    const ifcaV = a.ifcaStatus === "Completed" ? "0" : "X";
+    const vals = { BVS: bvs, FCA: fca, IFCA: ifcaV };
+    const xItems = Object.entries(vals).filter(([, v]) => v === "X").map(([k]) => k);
+    if (bvs === "X" && fca === "X" && ifcaV === "X") return "Issued";
+    if (xItems.length > 0) return `Pending ${xItems.join(", ")} (${xItems.length})`;
+    if (bvs === "0" && fca === "0" && ifcaV === "0") return "Completed";
+    return "Pending-V";
   };
 
   return (
-    <div className="space-y-6">
-      {showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4 animate-bounce">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 size={32} className="text-green-600" />
-            </div>
-            <h3 className="text-gray-900 font-bold text-xl mb-2">BYN Submitted!</h3>
-            <p className="text-gray-500 text-sm mb-2">ID: {activatingId}</p>
-            <p className="text-gray-400 text-xs">Redirecting to dashboard...</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <button onClick={() => window.history.back()} className="p-2 rounded-lg hover:bg-gray-100 transition min-h-[48px] min-w-[48px] flex items-center justify-center shrink-0">
+            <ArrowLeft className="h-5 w-5" style={{ color: "#0A2647" }} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#0A2647" }}>
+              <Hash className="inline-block mr-2 h-5 w-5 sm:h-6 sm:w-6" style={{ color: "#C8A951" }} />
+              Book Your Number (BYN)
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">Reserve specific mobile numbers for customers</p>
           </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium text-sm min-h-[48px]"
+            style={{ backgroundColor: "#0A2647" }}
+          >
+            <Hash className="h-4 w-4" /> <span className="hidden sm:inline">New BYN</span>
+          </button>
         </div>
-      )}
 
-      <div className="flex items-center gap-3 mb-2">
-        <button
-          type="button"
-          onClick={() => router.push("/dsm/dashboard")}
-          className="w-10 h-10 min-h-[40px] flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 transition-all"
-        >
-          <ArrowLeft size={20} className="text-gray-600" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">BYN Registration</h1>
-          <p className="text-gray-500 text-sm">Bring Your Number registration</p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1">
-        {["Select SIM", "Fill Details", "Submit"].map((step, i) => {
-          const stepNum = i + 1;
-          const isActive = selectedSimId ? stepNum <= 2 : stepNum === 1;
-          const isComplete = selectedSimId ? stepNum === 1 : false;
-          return (
-            <div key={step} className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isActive ? "bg-[#0057FF] text-white" : "bg-gray-100 text-gray-400"}`}>
-                <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${isComplete ? "bg-green-500 text-white" : isActive ? "bg-white/20" : "bg-gray-200 text-gray-400"}`}>
-                  {isComplete ? "✓" : stepNum}
-                </span>
-                <span className="hidden sm:inline">{step}</span>
-              </div>
-              {i < 2 && <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />}
-            </div>
-          );
-        })}
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-          <h2 className="text-gray-900 font-bold text-lg mb-4 flex items-center gap-2">
-            <Tag size={18} className="text-[#0057FF]" />
-            SIM Stock Selection
-          </h2>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Select SIM from Stock</label>
-            <select
-              value={selectedSimId}
-              onChange={handleSimSelect}
-              className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 min-h-[56px] sm:min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF] active:border-[#0057FF]"
-            >
-              <option value="">{mounted && simStockList.length === 0 ? "No issued SIMs available" : "-- Select a SIM --"}</option>
-              {simStockList.map((sim) => (
-                <option key={sim.id} value={sim.id}>
-                  {sim.simNumber} | {sim.network} | {sim.iccid}
-                </option>
-              ))}
-            </select>
-            {selectedSimId && (() => {
-              const sim = simStockList.find((s) => s.id === selectedSimId);
-              if (!sim) return null;
-              return (
-                <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Signal size={16} className="text-[#0057FF]" />
-                    <span className="text-xs font-semibold text-[#0057FF] uppercase tracking-wide">Selected SIM</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 text-sm">
-                    <div>
-                      <p className="text-gray-400 text-xs">SIM Number</p>
-                      <p className="text-gray-900 font-semibold">{sim.simNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">Network</p>
-                      <p className="text-gray-900 font-semibold">{sim.network}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">ICCID</p>
-                      <p className="text-gray-900 font-semibold text-xs break-all">{sim.iccid}</p>
-                    </div>
-                  </div>
+        {/* Workflow */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-sm font-semibold mb-4" style={{ color: "#0A2647" }}>BYN Workflow</h2>
+          <div className="flex items-center justify-between">
+            {["BVS", "FCA", "IFCA", "Complete"].map((step, i) => (
+              <React.Fragment key={step}>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-full border-2 flex items-center justify-center text-sm font-bold"
+                    style={{ borderColor: "#C8A951", color: "#0A2647" }}>{i + 1}</div>
+                  <span className="text-xs font-medium text-gray-600">{step}</span>
                 </div>
-              );
-            })()}
-            {mounted && simStockList.length === 0 && (
-              <p className="text-amber-600 text-xs mt-1.5">No issued SIMs found in franchise stock. Please request SIMs from DSO first.</p>
-            )}
+                {i < 3 && <ArrowRight className="h-5 w-5 text-gray-300" />}
+              </React.Fragment>
+            ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-          <h2 className="text-gray-900 font-bold text-lg mb-4 flex items-center gap-2">
-            <Phone size={18} className="text-[#0057FF]" />
-            SIM Details
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">MSISDN</label>
-              <input
-                type="text"
-                value={form.msisdn}
-                onChange={(e) => setForm({ ...form, msisdn: e.target.value })}
-                placeholder="03XX-XXXXXXX"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">SIM Number</label>
-              <input
-                type="text"
-                value={form.simNumber}
-                onChange={(e) => setForm({ ...form, simNumber: e.target.value })}
-                placeholder="Auto-filled from stock"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">ICCID</label>
-              <input
-                type="text"
-                value={form.iccid}
-                onChange={(e) => setForm({ ...form, iccid: e.target.value })}
-                placeholder="Auto-filled from stock"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Device ID</label>
-              <input
-                type="text"
-                value={form.deviceId}
-                onChange={(e) => setForm({ ...form, deviceId: e.target.value })}
-                placeholder="Auto-filled from stock"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Retailer ID</label>
-              <input
-                type="text"
-                value={form.retailerId}
-                onChange={(e) => setForm({ ...form, retailerId: e.target.value })}
-                placeholder="Auto-filled from stock"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Network</label>
-              <select
-                value={form.network}
-                disabled
-                className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm text-gray-500 cursor-not-allowed"
-              >
-                {networks.map((n) => (
-                  <option key={n} value={n}>{n}</option>
+        {/* Filter */}
+        <div className="flex items-center gap-3">
+          <Filter className="h-4 w-4 text-gray-400" />
+          {["All", "Pending BVS", "Pending FCA", "Pending IFCA", "Completed"].map((f) => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                filter === f ? "text-white border-transparent" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
+              }`}
+              style={filter === f ? { backgroundColor: "#0A2647" } : {}}>
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">#</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Customer</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">CNIC</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Desired Number</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">SIM Number</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Network</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">BVS</th>
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">FCA</th>
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">IFCA</th>
+                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Progress</th>
+                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">No BYN activations found</td>
+                  </tr>
+                ) : (
+                  filtered.map((a, idx) => (
+                    <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="px-3 py-3 text-center">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-sm text-gray-900">{a.customerName}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{a.customerCNIC}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-gray-700">{a.simNumber}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-gray-900 text-sm font-mono font-medium">{a.simNumber}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${a.network === "Jazz" ? "bg-red-50 text-red-600" : a.network === "Telenor" ? "bg-blue-50 text-blue-600" : a.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{a.network}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${derivedStatus(a) === "Completed" || derivedStatus(a) === "Verified" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{derivedStatus(a)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "bvs", a.bvsStatus))}`}>{vcVal(a.simNumber, "bvs", a.bvsStatus)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "fca", a.fcaStatus))}`}>{vcVal(a.simNumber, "fca", a.fcaStatus)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "ifca", a.ifcaStatus))}`}>{vcVal(a.simNumber, "ifca", a.ifcaStatus)}</span>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-2 w-20">
+                            <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${a.progress}%`, backgroundColor: a.progress === 100 ? "#10b981" : "#C8A951" }} />
+                          </div>
+                          <span className="text-xs text-gray-400">{a.progress}%</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          {verifyLabel(a) && (
+                            <button onClick={() => handleVerifyStep(a)} className={`px-2 py-1 rounded-lg text-[10px] font-bold text-white transition-all ${verifyLabel(a)!.color}`}>{verifyLabel(a)!.label}</button>
+                          )}
+                          <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#0A2647] text-white hover:bg-[#144272] transition-all">View</button>
+                          <button onClick={() => { if (confirm("Delete this BYN activation?")) deleteActivation(a.id); }} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"><Trash2 size={14} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg mx-4 shadow-2xl">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold" style={{ color: "#0A2647" }}>Book Your Number</h3>
+                <button onClick={() => setShowModal(false)} className="p-1 rounded-lg hover:bg-gray-100">
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                {/* Step Indicator */}
+                <div className="flex items-center justify-center gap-2 py-2">
+                  {[
+                    { step: 1, label: "Select SIM", current: !selectedSimId },
+                    { step: 2, label: "Fill Details", current: !!selectedSimId },
+                    { step: 3, label: "Submit", current: false },
+                  ].map((s, i) => (
+                    <React.Fragment key={s.step}>
+                      <div className="flex items-center gap-1.5">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                          s.current ? 'bg-[#0A2647] text-white' : selectedSimId ? 'bg-[#C8A951] text-[#0A2647]' : 'bg-gray-200 text-gray-500'
+                        }`}>
+                          {selectedSimId && !s.current ? (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                          ) : s.step}
+                        </div>
+                        <span className={`text-xs font-medium hidden sm:inline ${s.current ? 'text-[#0A2647]' : 'text-gray-400'}`}>{s.label}</span>
+                      </div>
+                      {i < 2 && <ArrowRight className="h-3 w-3 text-gray-300" />}
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                {/* Group 1: SIM Stock Selection */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Select SIM from Stock *</label>
+                  <div className="relative mb-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      value={simSearch}
+                      onChange={(e) => setSimSearch(e.target.value)}
+                      placeholder="Search by ICCID, SIM number or network..."
+                      className="w-full pl-9 pr-8 py-3 min-h-[48px] rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C8A951]"
+                    />
+                    {simSearch && <X size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onClick={() => setSimSearch("")} />}
+                  </div>
+                  <select
+                    value={selectedSimId}
+                    onChange={handleSimSelect}
+                    className="w-full min-h-[56px] px-4 py-3 rounded-xl border-2 border-gray-200 text-sm font-medium focus:outline-none focus:border-[#C8A951] bg-white md:min-h-[40px] md:px-3 md:py-2 md:rounded-lg md:border"
+                  >
+                    <option value="">-- {searchFilteredSims.length > 0 ? "Choose a SIM" : "No SIM matches search"} --</option>
+                    {searchFilteredSims.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.simNumber} | {s.network} | {s.iccid}
+                      </option>
+                    ))}
+                  </select>
+                  {simSearch && (
+                    <p className="text-xs text-gray-400 mt-1.5">{searchFilteredSims.length} SIM(s) found</p>
+                  )}
+                </div>
+
+                {/* Selected SIM Info Card */}
+                {selectedSimId && form.simNumber && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Selected SIM</p>
+                    <div className="grid grid-cols-3 gap-3 text-sm">
+                      <div>
+                        <span className="text-gray-500 text-xs">SIM Number</span>
+                        <p className="font-medium text-[#0A2647]">{form.simNumber}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 text-xs">Network</span>
+                        <p className="font-medium text-[#0A2647]">{form.network}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 text-xs">ICCID</span>
+                        <p className="font-medium text-[#0A2647] text-xs break-all">{form.iccid}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <hr className="border-gray-200" />
+
+                {/* Group 2: SIM Details (auto-filled, editable) */}
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">SIM Details</p>
+                {[
+                  { name: "simNumber", label: "SIM Number" },
+                  { name: "iccid", label: "ICCID" },
+                  { name: "desiredNumber", label: "Desired Number" },
+                ].map((f) => (
+                  <div key={f.name}>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
+                    <input name={f.name} value={(form as unknown as Record<string, string>)[f.name] || ""} onChange={handleChange}
+                      className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none bg-gray-50" />
+                  </div>
                 ))}
-              </select>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Network</label>
+                  <select name="network" value={form.network} disabled
+                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none bg-gray-100 cursor-not-allowed">
+                    <option value="">Select Network</option>
+                    {NETWORKS.map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+
+                <hr className="border-gray-200" />
+
+                {/* Group 3: Customer Info (optional) */}
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Customer Info (Optional)</p>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Customer Name</label>
+                  <input
+                    name="customerName"
+                    value={form.customerName}
+                    onChange={handleChange}
+                    placeholder="XXXXX"
+                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">CNIC</label>
+                  <input
+                    name="customerCNIC"
+                    value={form.customerCNIC}
+                    onChange={handleChange}
+                    placeholder="XXXXX-YYYYYYY-X"
+                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Contact Number</label>
+                  <input
+                    name="customerMobile"
+                    value={form.customerMobile}
+                    onChange={handleChange}
+                    placeholder="03XX-XXXXXXX"
+                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
+                <button onClick={() => setShowModal(false)}
+                  className="w-full sm:w-auto px-4 py-3 min-h-[48px] rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button onClick={handleSubmit}
+                  className="w-full sm:w-auto min-h-[56px] px-6 py-3 rounded-lg text-sm font-medium text-white flex items-center justify-center gap-2"
+                  style={{ backgroundColor: "#C8A951", color: "#0A2647" }}>
+                  <CheckCircle className="h-4 w-4" /> Save BYN
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-          <h2 className="text-gray-900 font-bold text-lg mb-4 flex items-center gap-2">
-            <User size={18} className="text-[#0057FF]" />
-            Customer Information
-            <span className="text-gray-400 text-sm font-normal">(Optional)</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Customer Name</label>
-              <input
-                type="text"
-                value={form.customerName}
-                onChange={(e) => setForm({ ...form, customerName: e.target.value })}
-                placeholder="XXXXX"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">CNIC</label>
-              <input
-                type="text"
-                value={form.customerCNIC}
-                onChange={(e) => setForm({ ...form, customerCNIC: e.target.value })}
-                placeholder="XXXXX-YYYYYYY-X"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Contact Number</label>
-              <input
-                type="text"
-                value={form.contactNumber}
-                onChange={(e) => setForm({ ...form, contactNumber: e.target.value })}
-                placeholder="03XX-XXXXXXX"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-          <h2 className="text-gray-900 font-bold text-lg mb-4 flex items-center gap-2">
-            <Smartphone size={18} className="text-[#0057FF]" />
-            Device Information
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Device Brand</label>
-              <input
-                type="text"
-                value={form.deviceBrand}
-                onChange={(e) => setForm({ ...form, deviceBrand: e.target.value })}
-                placeholder="e.g. Samsung"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Device Model</label>
-              <input
-                type="text"
-                value={form.deviceModel}
-                onChange={(e) => setForm({ ...form, deviceModel: e.target.value })}
-                placeholder="e.g. Galaxy A54"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Device Price (PKR)</label>
-              <input
-                type="number"
-                value={form.devicePrice}
-                onChange={(e) => setForm({ ...form, devicePrice: e.target.value })}
-                placeholder="0"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-          <h2 className="text-gray-900 font-bold text-lg mb-4 flex items-center gap-2">
-            <MessageSquare size={18} className="text-[#0057FF]" />
-            Additional Notes
-          </h2>
-          <textarea
-            value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            placeholder="Notes about this BYN registration..."
-            rows={3}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 min-h-[48px] text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF] resize-none"
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <button
-            type="submit"
-            className="w-full sm:w-auto bg-[#0057FF] text-white px-6 py-3 min-h-[56px] rounded-xl font-semibold hover:bg-[#0047CC] transition-all flex items-center justify-center gap-2"
-          >
-            <CheckCircle2 size={18} />
-            Submit BYN Registration
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/dsm/dashboard")}
-            className="w-full sm:w-auto bg-gray-100 text-gray-700 px-4 py-2 min-h-[48px] rounded-xl font-medium hover:bg-gray-200 transition-all"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+        )}
+        {verifyConfirm && (
+          <VerifyConfirmPopup step={verifyConfirm.step} simNumber={verifyConfirm.simNumber} onConfirm={doVerifyConfirm} onCancel={() => setVerifyConfirm(null)} />
+        )}
+        {verifySuccess && (
+          <VerifySuccessPopup message={verifySuccess} onClose={() => setVerifySuccess(null)} />
+        )}
+      </div>
     </div>
   );
 }
