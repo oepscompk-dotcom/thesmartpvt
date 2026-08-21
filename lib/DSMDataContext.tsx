@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
-import type { StaffWalletPayment } from "@/lib/FranchiseDataContext";
+import type { StaffWalletPayment, StaffPaymentRequest, FranchiseBankAccount } from "@/lib/FranchiseDataContext";
 
 export interface DSMAuth {
   dsmId: string; dsmName: string; franchiseId: string; loggedIn: boolean;
@@ -93,8 +93,12 @@ interface DSMDataContextType {
   dailyReports: DSMDailyReport[];
   weeklyReports: DSMWeeklyReport[];
   targets: DSMTarget[]; updateTarget: (id: string, t: Partial<DSMTarget>) => Promise<void>; addTarget: (t: DSMTarget) => Promise<void>;
-  wallet: DSMWallet[]; addWalletEntry: (w: DSMWallet) => Promise<void>;
+  wallet: DSMWallet[]; addWalletEntry: (w: DSMWallet) => Promise<void>; deleteWalletEntry: (id: string) => Promise<void>;
   staffWalletPayments: StaffWalletPayment[];
+  paymentRequests: StaffPaymentRequest[];
+  submitPaymentRequest: (r: Omit<StaffPaymentRequest, "id" | "status" | "receivedAt" | "createdAt" | "franchiseId">) => Promise<void>;
+  deletePaymentRequest: (id: string) => Promise<void>;
+  bankAccounts: FranchiseBankAccount[];
   notifications: DSMNotification[]; markNotificationRead: (id: string) => Promise<void>;
   reportSubmissions: DSMReportSubmission[]; submitReport: (r: DSMReportSubmission) => Promise<void>;
   teamSize: number; totalSales: number; totalRevenue: number;
@@ -112,6 +116,8 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
   const [targets, setTargets] = useState<DSMTarget[]>([]);
   const [wallet, setWallet] = useState<DSMWallet[]>([]);
   const [staffWalletPayments, setStaffWalletPayments] = useState<StaffWalletPayment[]>([]);
+  const [paymentRequests, setPaymentRequests] = useState<StaffPaymentRequest[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<FranchiseBankAccount[]>([]);
   const [notifications, setNotifications] = useState<DSMNotification[]>([]);
   const [reportSubmissions, setReportSubmissions] = useState<DSMReportSubmission[]>([]);
   const [attendance, setAttendance] = useState<DSODAttendance[]>([]);
@@ -139,7 +145,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
     if (!fId || !mounted) return;
     const loadAll = async () => {
       try {
-        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet] = await Promise.all([
+        const [actRes, tgtRes, wltRes, notifRes, reportRes, simRes, dsoRes, attRes, adminSettings, franchiseRecord, loadedVerifications, loadedStaffWallet, loadedPaymentRequests, loadedSettings] = await Promise.all([
           apiLoad("dsmActivation", fId),
           apiLoad("dsmTargetEntry", fId),
           apiLoad("dsmWalletEntry", fId),
@@ -152,6 +158,8 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
           apiLoadById("franchise", fId).catch(() => null),
           apiLoad("franchiseSimVerification").catch(() => []),
           apiLoadById("franchiseData", "staffWallet-" + fId).catch(() => null),
+          apiLoadById("franchiseData", "paymentRequests-" + fId).catch(() => null),
+          apiLoadById("franchiseData", "settings-" + fId).catch(() => null),
         ]);
         setActivations(actRes);
         setTargets(tgtRes);
@@ -160,6 +168,25 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
           try {
             const parsed = JSON.parse(loadedStaffWallet.data);
             setStaffWalletPayments(Array.isArray(parsed) ? parsed : []);
+          } catch {}
+        }
+        if (loadedPaymentRequests?.data) {
+          try {
+            const parsed = JSON.parse(loadedPaymentRequests.data);
+            setPaymentRequests(Array.isArray(parsed) ? parsed : []);
+          } catch {}
+        }
+        if (loadedSettings?.data) {
+          try {
+            const parsed = JSON.parse(loadedSettings.data);
+            const list = Array.isArray(parsed?.bankAccounts) ? parsed.bankAccounts : [];
+            const fallback: FranchiseBankAccount[] = [];
+            if (parsed?.bankName || parsed?.bankAccountTitle || parsed?.bankAccountNumber) {
+              fallback.push({
+                id: "ACC-1", name: parsed.bankName || "", accountTitle: parsed.bankAccountTitle || "", accountNumber: parsed.bankAccountNumber || "",
+              });
+            }
+            setBankAccounts(list.length > 0 ? list : fallback);
           } catch {}
         }
         setNotifications(notifRes);
@@ -188,10 +215,16 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
     let active = true;
     const reload = async () => {
       try {
-        const sw = await apiLoadById("franchiseData", "staffWallet-" + fId).catch(() => null);
+        const [sw, pr] = await Promise.all([
+          apiLoadById("franchiseData", "staffWallet-" + fId).catch(() => null),
+          apiLoadById("franchiseData", "paymentRequests-" + fId).catch(() => null),
+        ]);
         if (!active) return;
         if (sw?.data) {
           try { const parsed = JSON.parse(sw.data); setStaffWalletPayments(Array.isArray(parsed) ? parsed : []); } catch {}
+        }
+        if (pr?.data) {
+          try { const parsed = JSON.parse(pr.data); setPaymentRequests(Array.isArray(parsed) ? parsed : []); } catch {}
         }
       } catch {}
     };
@@ -295,6 +328,31 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
     try { await apiSave("dsmWalletEntry", w); } catch {}
   };
 
+  const deleteWalletEntry = async (id: string) => {
+    try { await apiDelete("dsmWalletEntry", id); } catch (e) { console.error(e); }
+    setWallet((prev) => prev.filter((w) => w.id !== id));
+  };
+
+  const deletePaymentRequest = async (id: string) => {
+    const updated = paymentRequests.filter((r) => r.id !== id);
+    setPaymentRequests(updated);
+    await apiSave("franchiseData", { id: `paymentRequests-${fId}`, data: JSON.stringify(updated) });
+  };
+
+  const submitPaymentRequest = async (r: Omit<StaffPaymentRequest, "id" | "status" | "receivedAt" | "createdAt" | "franchiseId">) => {
+    const nowStr = new Date().toISOString().split("T")[0];
+    const req: StaffPaymentRequest = {
+      ...r,
+      id: `LPR-${Date.now()}`,
+      status: "Pending",
+      createdAt: nowStr,
+      franchiseId: fId,
+    };
+    const updated = [req, ...paymentRequests];
+    setPaymentRequests(updated);
+    await apiSave("franchiseData", { id: `paymentRequests-${fId}`, data: JSON.stringify(updated) });
+  };
+
   const markNotificationRead = async (id: string) => {
     setNotifications((p) => p.map((n) => (n.id === id ? { ...n, read: true } : n)));
     try { await apiUpdate("dsmNotification", id, { read: true }); } catch {}
@@ -332,8 +390,10 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
       auth, hydrated: mounted, dsmLogin, dsmLogout, updateProfile, activations, addActivation, updateActivation, deleteActivation, dsos, sims, importVerifications, attendance,
       leaveRequests, reviewLeaveRequest, warnings,
       dailyReports, weeklyReports, targets, updateTarget, addTarget,
-      wallet, addWalletEntry, notifications, markNotificationRead,
+      wallet, addWalletEntry, deleteWalletEntry, notifications, markNotificationRead,
       staffWalletPayments,
+      paymentRequests, submitPaymentRequest, deletePaymentRequest,
+      bankAccounts,
       reportSubmissions, submitReport, teamSize, totalSales, totalRevenue, settings,
     }}>
       {children}
