@@ -315,6 +315,7 @@ interface FranchiseDataContextType {
   getTarget: (empId: string, month: string, role?: "DSO" | "DSM") => Target;
   upsertTarget: (empId: string, month: string, role: "DSO" | "DSM", updates: Partial<Target>) => Promise<void>;
   addWalletTransaction: (w: WalletTransaction) => Promise<void>;
+  resetWallet: () => Promise<void>;
   addPayroll: (p: PayrollRecord) => Promise<void>; updatePayroll: (id: string, p: PayrollRecord) => Promise<void>; deletePayroll: (id: string) => Promise<void>;
   addExpense: (e: Expense) => Promise<void>; deleteExpense: (id: string) => Promise<void>; updateExpense: (id: string, e: Expense) => Promise<void>;
   expenseCategories: string[]; addExpenseCategory: (name: string) => Promise<void>; deleteExpenseCategory: (name: string) => Promise<void>;
@@ -663,6 +664,10 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const addWalletTransaction = async (w: WalletTransaction) => {
     await apiSave("walletTransaction", w);
     setWallet((p) => [w, ...p]);
+  };
+  const resetWallet = async () => {
+    await Promise.all(wallet.map((w) => apiDelete("walletTransaction", w.id).catch(() => {})));
+    setWallet([]);
   };
   const addPayroll = async (p: PayrollRecord) => {
     await apiSave("payrollRecord", p);
@@ -1289,7 +1294,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       addEquipmentIssueRecord, updateEquipmentIssueRecord, returnEquipment,
       deviceIssueRecords, addDeviceIssueRecord, returnDeviceIssueRecord,
       addAttendance, deleteAttendance,
-      addTarget, updateTarget, getTarget, upsertTarget, addWalletTransaction, addPayroll, updatePayroll, deletePayroll,
+      addTarget, updateTarget, getTarget, upsertTarget, addWalletTransaction, resetWallet, addPayroll, updatePayroll, deletePayroll,
       addExpense, deleteExpense, updateExpense, expenseCategories, addExpenseCategory, deleteExpenseCategory, addAccountEntry, addAccountingEntry, deleteAccountingEntry, addAccount, updateAccount, deleteAccount, addNotification,
       markNotificationRead, deleteNotification, updateSettings,
       issueRecords, issueSIMs, returnSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords,

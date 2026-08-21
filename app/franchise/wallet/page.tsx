@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import {
   Wallet as WalletIcon, Plus, ArrowDown, ArrowUp, X, Search, Smartphone, User,
-  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package, Trash2, LayoutGrid, List, Edit, Save,
+  Check, CheckSquare, Square, Landmark, Receipt, CheckCircle2, AlertTriangle, Package, Trash2, LayoutGrid, List, Edit, Save, RotateCcw,
 } from "lucide-react";
 import { useFranchiseData, type StaffWalletPayment } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
@@ -24,7 +24,7 @@ const PAKISTAN_BANKS = [
 ];
 
 export default function WalletPage() {
-  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, updateStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest } = useFranchiseData();
+  const { auth, wallet, dso, dsms, sims, staffWalletPayments, sendStaffWalletPayment, deleteStaffWalletPayment, updateStaffWalletPayment, paymentRequests, receiveStaffPaymentRequest, resetWallet } = useFranchiseData();
   const [tab, setTab] = useState<Tab>("package");
   const [view, setView] = useState<"table" | "cards">("table");
   const [showModal, setShowModal] = useState(false);
@@ -82,6 +82,11 @@ export default function WalletPage() {
     if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} selected payment record(s)?`)) return;
     await Promise.all(selectedIds.map((id) => deleteStaffWalletPayment(id)));
     setSelectedIds([]);
+  };
+  const handleResetWallet = async () => {
+    if (!confirm("Reset wallet? This permanently deletes ALL deposit and withdrawal history. Balance, Total Deposits and Total Issued will restart from 0.")) return;
+    if (!confirm("Are you sure? This cannot be undone.")) return;
+    await resetWallet();
   };
 
   const handleReceive = async (requestId: string) => {
@@ -260,10 +265,16 @@ export default function WalletPage() {
           <h1 className="text-2xl font-black text-gray-900">Wallet</h1>
           <p className="text-gray-500 text-sm mt-1">Issue SIM package amounts and manage loan/advance payments</p>
         </div>
-        <button onClick={() => openModal(tab === "package" ? "Package" : "Loan")}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Plus size={16} /> {tab === "package" ? "Issue Package Amount" : "Send Loan / Advance"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleResetWallet}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-red-200 text-red-600 font-bold text-sm rounded-xl hover:bg-red-50 transition-all">
+            <RotateCcw size={15} /> Reset
+          </button>
+          <button onClick={() => openModal(tab === "package" ? "Package" : "Loan")}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
+            <Plus size={16} /> {tab === "package" ? "Issue Package Amount" : "Send Loan / Advance"}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
