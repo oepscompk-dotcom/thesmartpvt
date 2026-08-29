@@ -27,6 +27,15 @@ const config: Config = {
         sans: ["Satoshi", "system-ui", "-apple-system", "sans-serif"],
         mono: ["Satoshi", "sans-serif"],
       },
+      borderRadius: {
+        sm: "0.0625rem",
+        DEFAULT: "0.125rem",
+        md: "0.25rem",
+        lg: "0.375rem",
+        xl: "0.5rem",
+        "2xl": "0.75rem",
+        "3xl": "1rem",
+      },
       backgroundImage: {
         "hero-gradient": "linear-gradient(135deg, #0A2647 0%, #144272 50%, #205295 100%)",
         "card-gradient": "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
