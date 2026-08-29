@@ -80,17 +80,17 @@ function exportXLS(headers: string[], rows: (string | number)[][], title: string
   const ownerLine = profile?.ownerName ? `Owner: ${profile.ownerName}` : "";
   const contactParts = [profile?.phone, profile?.email].filter(Boolean).join(" &bull; ");
   const addressParts = [profile?.address, profile?.city, profile?.province].filter(Boolean).join(", ");
-  const tableRows = rows.map((r) => `<tr>${r.map((c) => `<td style="border:1px solid #ccc;padding:6px 10px;color:#333;font-size:11px;font-family:Arial,sans-serif">${String(c)}</td>`).join("")}</tr>`).join("");
-  const headerRow = headers.map((h) => `<th style="border:1px solid #999;padding:8px 10px;background:#333;color:#fff;font-size:11px;font-weight:700;font-family:Arial,sans-serif;text-align:left">${h}</th>`).join("");
+  const tableRows = rows.map((r) => `<tr>${r.map((c) => `<td style="border:1px solid #ccc;padding:6px 10px;color:#333;font-size:11px;font-family:'Satoshi',sans-serif">${String(c)}</td>`).join("")}</tr>`).join("");
+  const headerRow = headers.map((h) => `<th style="border:1px solid #999;padding:8px 10px;background:#333;color:#fff;font-size:11px;font-weight:700;font-family:'Satoshi',sans-serif;text-align:left">${h}</th>`).join("");
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title></head><body>
-    <div style="text-align:center;margin-bottom:16px;font-family:Arial,sans-serif">
+    <div style="text-align:center;margin-bottom:16px;font-family:'Satoshi',sans-serif">
       <h1 style="font-size:18px;font-weight:700;color:#222;margin:0 0 4px">${companyName}</h1>
       ${ownerLine ? `<p style="font-size:12px;color:#555;margin:0 0 2px">${ownerLine}</p>` : ""}
       <h2 style="font-size:14px;font-weight:600;color:#555;margin:4px 0 2px">${title}</h2>
       <p style="font-size:11px;color:#888;margin:0">Generated: ${date}</p>
     </div>
-    <table style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif">${headerRow ? `<thead>${headerRow}</thead>` : ""}<tbody>${tableRows}</tbody></table>
-    <div style="text-align:center;margin-top:16px;font-size:10px;color:#999;font-family:Arial,sans-serif;border-top:1px solid #ddd;padding-top:8px">
+    <table style="border-collapse:collapse;width:100%;font-family:'Satoshi',sans-serif">${headerRow ? `<thead>${headerRow}</thead>` : ""}<tbody>${tableRows}</tbody></table>
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:#999;font-family:'Satoshi',sans-serif;border-top:1px solid #ddd;padding-top:8px">
       ${companyName}${contactParts ? ` &bull; ${contactParts}` : ""}${addressParts ? ` &bull; ${addressParts}` : ""} &bull; ${date}
     </div>
   </body></html>`;
@@ -677,7 +677,7 @@ export default function CompanyReportsPage() {
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Company Report</title>
       <style>
         @page { margin: 20mm 15mm; }
-        body { font-family:Arial,sans-serif; margin:0; padding:20px; color:#333; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        body { font-family:'Satoshi',sans-serif; margin:0; padding:20px; color:#333; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         .print-header { text-align:center; margin-bottom:20px; border-bottom:2px solid #333; padding-bottom:12px; }
         .print-header h1 { font-size:20px; font-weight:700; color:#000; margin:0 0 4px; }
         .print-header h2 { font-size:14px; font-weight:600; color:#555; margin:0 0 2px; }

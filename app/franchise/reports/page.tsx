@@ -84,7 +84,7 @@ export default function ReportsPage() {
 <html><head><title>${title}</title>
 <style>
   @page { size: A4 landscape; margin: 8mm; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 0; margin: 0; background: #f8fafc; }
+  body { font-family: 'Satoshi', sans-serif; color: #1a1a1a; padding: 0; margin: 0; background: #f8fafc; }
   .header { background: linear-gradient(135deg, #0A2647 0%, #144272 100%); color: #fff; padding: 16px 22px; margin-bottom: 14px; }
   .header h1 { font-size: 18px; margin: 0; font-weight: 800; }
   .header .owner { font-size: 11px; color: #cbd5e1; margin-top: 2px; }
@@ -145,20 +145,20 @@ export default function ReportsPage() {
     const address = settings.address || "";
 
     const header = (label: string) =>
-      `<div style="text-align:center;margin-bottom:14px;font-family:Arial,sans-serif">
+      `<div style="text-align:center;margin-bottom:14px;font-family:'Satoshi',sans-serif">
         <h1 style="font-size:18px;font-weight:700;color:#222;margin:0 0 2px">${franchiseName}</h1>
         ${ownerName ? `<p style="font-size:12px;color:#555;margin:0 0 2px">Owner: ${ownerName}</p>` : ""}
         <h2 style="font-size:14px;font-weight:600;color:#555;margin:4px 0 2px">${label}</h2>
         <p style="font-size:11px;color:#888;margin:0">Generated: ${new Date().toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" })}</p>
       </div>`;
     const footer = () =>
-      `<div style="text-align:center;margin-top:14px;font-size:10px;color:#999;font-family:Arial,sans-serif;border-top:1px solid #ddd;padding-top:8px">
+      `<div style="text-align:center;margin-top:14px;font-size:10px;color:#999;font-family:'Satoshi',sans-serif;border-top:1px solid #ddd;padding-top:8px">
         ${franchiseName}${phone || email ? ` &bull; ${[phone, email].filter(Boolean).join(" Â· ")}` : ""}${address ? ` &bull; ${address}` : ""} &bull; ${new Date().toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" })}
       </div>`;
     const wrapTable = (headers: string[], rows: (string | number)[][], label: string) => {
-      const hr = headers.map((h) => `<th style="border:1px solid #999;padding:8px 10px;background:#333;color:#fff;font-size:11px;font-weight:700;font-family:Arial,sans-serif;text-align:left">${h}</th>`).join("");
-      const rr = rows.map((r) => `<tr>${r.map((c) => `<td style="border:1px solid #ccc;padding:6px 10px;color:#333;font-size:11px;font-family:Arial,sans-serif">${String(c)}</td>`).join("")}</tr>`).join("");
-      return `${header(label)}<table style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif"><thead>${hr}</thead><tbody>${rr}</tbody></table>${footer()}`;
+      const hr = headers.map((h) => `<th style="border:1px solid #999;padding:8px 10px;background:#333;color:#fff;font-size:11px;font-weight:700;font-family:'Satoshi',sans-serif;text-align:left">${h}</th>`).join("");
+      const rr = rows.map((r) => `<tr>${r.map((c) => `<td style="border:1px solid #ccc;padding:6px 10px;color:#333;font-size:11px;font-family:'Satoshi',sans-serif">${String(c)}</td>`).join("")}</tr>`).join("");
+      return `${header(label)}<table style="border-collapse:collapse;width:100%;font-family:'Satoshi',sans-serif"><thead>${hr}</thead><tbody>${rr}</tbody></table>${footer()}`;
     };
 
     if (activeTab === "hr") {
@@ -262,7 +262,7 @@ export default function ReportsPage() {
     win.document.write(`<!DOCTYPE html><html><head><title>${data.title}</title>
       <style>
         @page { size: A4 landscape; margin: 12mm; }
-        body { font-family:Arial,sans-serif; margin:0; padding:20px; color:#333; }
+        body { font-family:'Satoshi',sans-serif; margin:0; padding:20px; color:#333; }
         .print-header { text-align:center; margin-bottom:20px; border-bottom:2px solid #333; padding-bottom:12px; }
         .print-header h1 { font-size:20px; font-weight:700; color:#000; margin:0 0 4px; }
         .print-header p { font-size:11px; color:#888; margin:0; }

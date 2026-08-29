@@ -215,7 +215,7 @@ export default function DSMPage() {
 <style>
   @page { size: A4; margin: 8mm; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: #eef1f5; padding: 20px; color: #1e293b; font-size: 11px; line-height: 1.5; }
+  body { font-family: 'Satoshi', sans-serif; background: #eef1f5; padding: 20px; color: #1e293b; font-size: 11px; line-height: 1.5; }
   .slip { max-width: 190mm; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.06); overflow: hidden; position: relative; }
   .top-accent { height: 4px; background: linear-gradient(90deg, #C8A951 0%, #e0c46a 50%, #C8A951 100%); }
   .header { padding: 24px 32px 16px; text-align: center; position: relative; }
@@ -267,7 +267,7 @@ export default function DSMPage() {
   .amt-words { background: #f0f4ff; border-left: 3px solid #C8A951; padding: 10px 16px; margin: 12px 0; font-size: 10px; color: #475569; border-radius: 0 6px 6px 0; }
   .barcode-wrap { text-align: center; padding: 8px 0 4px; }
   .barcode-wrap canvas { display: inline-block; background: #fff; }
-  .barcode-wrap .bcode-id { font-size: 9px; color: #94a3b8; letter-spacing: 1px; font-family: 'Courier New', monospace; margin-top: 2px; }
+  .barcode-wrap .bcode-id { font-size: 9px; color: #94a3b8; letter-spacing: 1px; font-family: 'Satoshi', monospace; margin-top: 2px; }
   .footer { text-align: center; padding: 12px 32px 16px; border-top: 1px solid #e8ecf0; margin-top: 8px; }
   .footer p { font-size: 8px; color: #94a3b8; margin: 1px 0; }
   .no-print { padding: 14px 32px 0; text-align: right; }

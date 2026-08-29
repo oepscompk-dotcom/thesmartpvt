@@ -242,7 +242,7 @@ export default function SalaryDetailPage() {
       <head><title>Salary Detail - ${month}</title>
       <style>
         @page { size: A4 landscape; margin: 8mm; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 0; margin: 0; background: #f8fafc; }
+        body { font-family: 'Satoshi', sans-serif; color: #1a1a1a; padding: 0; margin: 0; background: #f8fafc; }
         .report-header { background: linear-gradient(135deg, #0A2647 0%, #144272 100%); color: #fff; padding: 18px 24px; border-radius: 0; margin-bottom: 16px; }
         .report-header h1 { font-size: 20px; margin: 0; font-weight: 800; letter-spacing: 0.5px; }
         .report-header .meta { font-size: 10px; color: #94a3b8; margin-top: 4px; }

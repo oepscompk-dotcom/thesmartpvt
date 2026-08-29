@@ -109,7 +109,7 @@ export default function CompanyDashboardPage() {
     w.document.write(`<!DOCTYPE html><html><head><title>${companyName || "Company"} Dashboard</title>
       <style>
         @page { margin: 18mm 15mm; }
-        body { font-family:Arial,sans-serif; margin:0; padding:24px; color:#333; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        body { font-family:'Satoshi',sans-serif; margin:0; padding:24px; color:#333; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         .header { text-align:center; margin-bottom:20px; border-bottom:2px solid #222; padding-bottom:14px; }
         .header h1 { font-size:22px; font-weight:700; color:#000; margin:0 0 4px; }
         .header .owner { font-size:13px; color:#555; margin:0 0 2px; }

@@ -304,7 +304,7 @@ export default function PayrollPage() {
       <head><title>Payroll Detail - ${monthLabel}</title>
       <style>
         @page { size: A4 landscape; margin: 6mm; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 0; margin: 0; background: #f8fafc; }
+        body { font-family: 'Satoshi', sans-serif; color: #1a1a1a; padding: 0; margin: 0; background: #f8fafc; }
         .report-header { background: linear-gradient(135deg, #0A2647 0%, #144272 100%); color: #fff; padding: 16px 22px; border-radius: 0; margin-bottom: 14px; }
         .report-header h1 { font-size: 18px; margin: 0; font-weight: 800; letter-spacing: 0.5px; }
         .report-header .meta { font-size: 10px; color: #94a3b8; margin-top: 4px; }

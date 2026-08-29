@@ -24,7 +24,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Satoshi", "system-ui", "-apple-system", "sans-serif"],
+        mono: ["Satoshi", "sans-serif"],
       },
       backgroundImage: {
         "hero-gradient": "linear-gradient(135deg, #0A2647 0%, #144272 50%, #205295 100%)",
