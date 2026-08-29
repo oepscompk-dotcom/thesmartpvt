@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "crypto";
-import { uploadToR2, deleteFromR2, keyFromUrl, r2Configured } from "@/lib/r2";
+import { uploadToR2, deleteFromR2, keyFromUrl, r2Configured, r2ConfigStatus } from "@/lib/r2";
 
 const FOLDERS = ["logos", "photos", "documents", "media", "files"];
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "image/svg+xml", "image/bmp", "image/avif"];
@@ -22,7 +22,8 @@ function extensionFor(type: string): string {
 
 export async function POST(req: NextRequest) {
   if (!r2Configured) {
-    return NextResponse.json({ error: "R2 storage is not configured. Add R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET and R2_PUBLIC_URL environment variables." }, { status: 503 });
+    const { missing } = r2ConfigStatus();
+    return NextResponse.json({ error: `R2 storage is not configured. Missing env vars: ${missing.join(", ") || "(check values, they may be empty)"}` }, { status: 503 });
   }
   try {
     const form = await req.formData();
