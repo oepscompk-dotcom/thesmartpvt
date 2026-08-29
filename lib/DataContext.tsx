@@ -304,6 +304,16 @@ const defaultNotifications: Notification[] = [];
 
 const defaultAuditLogs: AuditLog[] = [];
 
+const parseJSON = (value: any) => {
+  if (!value) return {};
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+};
+
 const defaultSettings: Settings = {
   companyName: "THE SMART Pvt. Ltd.",
   email: "info@thesmartpvt.com",
@@ -540,30 +550,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (Array.isArray(notifications) && notifications.length) setNotifications(notifications);
         if (Array.isArray(auditLogs) && auditLogs.length) setAuditLogs(auditLogs);
 
-        if (settingsRecord?.data) {
-          const parsed = typeof settingsRecord.data === "string" ? JSON.parse(settingsRecord.data) : settingsRecord.data;
+        if (settingsRecord) {
           setSettings({
-            ...defaultSettings,
-            ...parsed,
-            header: { ...defaultSettings.header, ...parsed.header },
-            footer: { ...defaultSettings.footer, ...parsed.footer },
-            homepage: { ...defaultSettings.homepage, ...parsed.homepage },
+            companyName: settingsRecord.companyName || defaultSettings.companyName,
+            email: settingsRecord.email || defaultSettings.email,
+            phone: settingsRecord.phone || defaultSettings.phone,
+            address: settingsRecord.address || defaultSettings.address,
+            smsApiKey: settingsRecord.smsApiKey || defaultSettings.smsApiKey,
+            whatsappApiKey: settingsRecord.whatsappApiKey || defaultSettings.whatsappApiKey,
+            paymentGatewayKey: settingsRecord.paymentGatewayKey || defaultSettings.paymentGatewayKey,
+            adminName: settingsRecord.adminName || defaultSettings.adminName,
+            adminEmail: settingsRecord.adminEmail || defaultSettings.adminEmail,
+            adminMobile: settingsRecord.adminMobile || defaultSettings.adminMobile,
+            logo: settingsRecord.logo || "",
+            headerLogo: settingsRecord.headerLogo || "",
+            footerLogo: settingsRecord.footerLogo || "",
+            favicon: settingsRecord.favicon || "",
+            header: { ...defaultSettings.header, ...parseJSON(settingsRecord.header) },
+            footer: { ...defaultSettings.footer, ...parseJSON(settingsRecord.footer) },
+            homepage: { ...defaultSettings.homepage, ...parseJSON(settingsRecord.homepage) },
           });
-        }
-
-        if (settingsRecord?.homepage) {
-          const hp = typeof settingsRecord.homepage === "string" ? JSON.parse(settingsRecord.homepage) : settingsRecord.homepage;
-          setSettings((prev) => ({ ...prev, homepage: { ...defaultSettings.homepage, ...hp } }));
-        }
-
-        if (settingsRecord?.header) {
-          const hdr = typeof settingsRecord.header === "string" ? JSON.parse(settingsRecord.header) : settingsRecord.header;
-          setSettings((prev) => ({ ...prev, header: { ...defaultSettings.header, ...hdr } }));
-        }
-
-        if (settingsRecord?.footer) {
-          const ftr = typeof settingsRecord.footer === "string" ? JSON.parse(settingsRecord.footer) : settingsRecord.footer;
-          setSettings((prev) => ({ ...prev, footer: { ...defaultSettings.footer, ...ftr } }));
         }
       } catch (e) {
         console.error("Failed to load data from API", e);
@@ -698,7 +704,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const updateSettings = async (s: Settings) => {
     await apiUpdate("adminSettings", "admin-settings", {
-      data: JSON.stringify(s),
+      companyName: s.companyName,
+      email: s.email,
+      phone: s.phone,
+      address: s.address,
+      smsApiKey: s.smsApiKey,
+      whatsappApiKey: s.whatsappApiKey,
+      paymentGatewayKey: s.paymentGatewayKey,
+      adminName: s.adminName,
+      adminEmail: s.adminEmail,
+      adminMobile: s.adminMobile,
+      logo: s.logo,
+      headerLogo: s.headerLogo,
+      footerLogo: s.footerLogo,
+      favicon: s.favicon,
       header: JSON.stringify(s.header),
       footer: JSON.stringify(s.footer),
       homepage: JSON.stringify(s.homepage),
