@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useCompanyData } from "@/lib/CompanyDataContext";
 import { Building2, User, Mail, Phone, MapPin, Lock, Save, RefreshCw, Image, Camera } from "lucide-react";
 import { apiLoad, apiSave } from "@/lib/api";
+import { uploadFile, deleteRemoteFile } from "@/lib/r2Client";
 
 export default function CompanySettingsPage() {
   const { auth } = useCompanyData();
@@ -96,6 +97,17 @@ export default function CompanySettingsPage() {
     let p = "COMP@";
     for (let i = 0; i < 8; i++) p += chars[Math.floor(Math.random() * chars.length)];
     setSecurity((prev) => ({ ...prev, newPassword: p, confirmPassword: p }));
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert("Max 5MB"); return; }
+    const url = await uploadFile(file, "logos");
+    if (!url) return;
+    await deleteRemoteFile(profile.logo);
+    setProfile((prev) => ({ ...prev, logo: url }));
+    e.target.value = "";
   };
 
   const tabs = [
@@ -222,7 +234,7 @@ export default function CompanySettingsPage() {
                       </div>
                     )}
                     <label className="absolute bottom-0 right-0">
-                      <input type="file" accept="image/*" className="sr-only" />
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="sr-only" />
                       <button type="button" className="w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-blue-600 hover:text-blue-700 transition-colors">
                         <Camera size={16} />
                       </button>

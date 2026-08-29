@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Save, User, Phone, Briefcase, Key, Smartphone, T
 import { useFranchiseData, DSM, genId, genUsername, genPassword } from "@/lib/FranchiseDataContext";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { uploadFile } from "@/lib/r2Client";
 
 const STEPS = [
   { label: "Personal", icon: User },
@@ -137,13 +138,13 @@ export default function DSMCreatePage() {
     return val;
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { alert("Max 5MB"); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => set("photo", ev.target?.result as string);
-    reader.readAsDataURL(file);
+    const url = await uploadFile(file, "photos");
+    if (!url) return;
+    set("photo", url);
   };
 
   const validate = () => {
@@ -489,12 +490,12 @@ export default function DSMCreatePage() {
                 <div key={doc} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                   <p className="text-gray-700 text-sm font-medium mb-2">{doc.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}</p>
                   <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
-                  <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => {
+                  <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (ev) => set(`documents.${doc}`, ev.target?.result as string);
-                    reader.readAsDataURL(file);
+                    const url = await uploadFile(file, "documents");
+                    if (!url) return;
+                    set(`documents.${doc}`, url);
                   }} />
                   {(form.documents as any)?.[doc] && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
                 </div>
@@ -509,12 +510,12 @@ export default function DSMCreatePage() {
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <p className="text-gray-700 text-sm font-medium mb-2">Agreement PDF</p>
               <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload Agreement</label>
-              <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => {
+              <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => set("agreements.agreementPdf", ev.target?.result as string);
-                reader.readAsDataURL(file);
+                const url = await uploadFile(file, "documents");
+                if (!url) return;
+                set("agreements.agreementPdf", url);
               }} />
               {(form.agreements as any)?.agreementPdf && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
             </div>
@@ -527,12 +528,12 @@ export default function DSMCreatePage() {
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <p className="text-gray-700 text-sm font-medium mb-2">Stamp Paper Copy</p>
               <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload Stamp Paper</label>
-              <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => {
+              <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => set("agreements.stampPaperCopy", ev.target?.result as string);
-                reader.readAsDataURL(file);
+                const url = await uploadFile(file, "documents");
+                if (!url) return;
+                set("agreements.stampPaperCopy", url);
               }} />
               {(form.agreements as any)?.stampPaperCopy && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
             </div>
@@ -549,36 +550,36 @@ export default function DSMCreatePage() {
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <p className="text-gray-700 text-sm font-medium mb-2">Guarantee Letter</p>
                 <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
-                <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => {
+                <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = (ev) => set("guarantor.guaranteeLetter", ev.target?.result as string);
-                  reader.readAsDataURL(file);
+                  const url = await uploadFile(file, "documents");
+                  if (!url) return;
+                  set("guarantor.guaranteeLetter", url);
                 }} />
                 {(form.guarantor as any)?.guaranteeLetter && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
               </div>
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <p className="text-gray-700 text-sm font-medium mb-2">Guarantor CNIC Front</p>
                 <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
-                <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => {
+                <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = (ev) => set("guarantor.cnicFront", ev.target?.result as string);
-                  reader.readAsDataURL(file);
+                  const url = await uploadFile(file, "documents");
+                  if (!url) return;
+                  set("guarantor.cnicFront", url);
                 }} />
                 {(form.guarantor as any)?.cnicFront && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
               </div>
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <p className="text-gray-700 text-sm font-medium mb-2">Guarantor CNIC Back</p>
                 <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
-                <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => {
+                <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = (ev) => set("guarantor.cnicBack", ev.target?.result as string);
-                  reader.readAsDataURL(file);
+                  const url = await uploadFile(file, "documents");
+                  if (!url) return;
+                  set("guarantor.cnicBack", url);
                 }} />
                 {(form.guarantor as any)?.cnicBack && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
               </div>

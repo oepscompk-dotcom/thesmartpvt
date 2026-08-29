@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Globe, FileText, ImageIcon, Edit, Plus, Trash2, X, Save } from "lucide-react";
+import { useState, useRef } from "react";
+import { Globe, FileText, ImageIcon, Edit, Plus, Trash2, X, Save, Link2, ExternalLink, Loader2 } from "lucide-react";
+import { uploadFile, deleteRemoteFile } from "@/lib/r2Client";
 import { useData } from "@/lib/DataContext";
 import type { CMSPage } from "@/lib/DataContext";
 
@@ -11,6 +12,10 @@ export default function CMSManager() {
   const [editing, setEditing] = useState<CMSPage | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [viewPage, setViewPage] = useState<CMSPage | null>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const [media, setMedia] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
   const emptyForm: CMSPage = { title: "", status: "Draft", updated: new Date().toISOString().split("T")[0], content: "" };
   const [form, setForm] = useState<CMSPage>(emptyForm);
@@ -31,6 +36,30 @@ export default function CMSManager() {
   const handleDelete = (title: string) => {
     deleteCMSPage(title);
     setShowDeleteConfirm(null);
+  };
+
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadFile(file, "media");
+      if (url) setMedia((m) => [url, ...m]);
+    } finally {
+      setUploading(false);
+      if (mediaInputRef.current) mediaInputRef.current.value = "";
+    }
+  };
+
+  const copyMediaUrl = async (url: string) => {
+    try { await navigator.clipboard.writeText(url); } catch {}
+    setCopied(url);
+    setTimeout(() => setCopied(null), 1500);
+  };
+
+  const removeMedia = async (url: string) => {
+    await deleteRemoteFile(url);
+    setMedia((m) => m.filter((u) => u !== url));
   };
 
   return (
@@ -70,11 +99,30 @@ export default function CMSManager() {
       <div className="bg-white rounded-2xl p-6 border border-gray-200">
         <h3 className="text-gray-900 font-bold mb-4">Media Library</h3>
         <p className="text-gray-500 text-sm mb-4">Upload and manage images, videos, PDFs, and brochures</p>
-        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#C8A951]/30 transition-colors cursor-pointer">
+        <input ref={mediaInputRef} type="file" accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleMediaUpload} className="hidden" />
+        <div onClick={() => mediaInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#C8A951]/30 transition-colors cursor-pointer">
           <ImageIcon size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">Drag & drop files or click to upload</p>
-          <p className="text-gray-300 text-xs mt-1">Supports: JPG, PNG, MP4, PDF</p>
+          <p className="text-gray-400 text-sm">{uploading ? "Uploading..." : "Drag & drop files or click to upload"}</p>
+          <p className="text-gray-300 text-xs mt-1">Supports: JPG, PNG, GIF, MP4, PDF, DOCX (max 100MB)</p>
         </div>
+        {media.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {media.map((url) => (
+              <div key={url} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <span className="text-gray-500 truncate flex-1 text-sm">{url.split("/").pop()}</span>
+                <button onClick={() => copyMediaUrl(url)} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-100 transition-all">
+                  <Link2 size={12} /> {copied === url ? "Copied!" : "Copy URL"}
+                </button>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-100 transition-all">
+                  <ExternalLink size={12} /> Open
+                </a>
+                <button onClick={() => removeMedia(url)} className="p-2 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 transition-all">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* View Page Modal */}

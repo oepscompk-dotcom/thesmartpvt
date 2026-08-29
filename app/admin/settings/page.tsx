@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Save, Upload, CheckCircle, Trash2, Plus, Eye, EyeOff, X } from "lucide-react";
 import { useData, Settings, HeaderNavLink, FooterLinkColumn, FooterBottomLink } from "@/lib/DataContext";
+import { uploadFile, deleteRemoteFile } from "@/lib/r2Client";
 
 const tabs = ["General", "Logo", "Header", "Footer", "Homepage"];
 
@@ -10,21 +11,19 @@ function LogoUploader({ label, sublabel, preview, onChange, onRemove }: { label:
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [localPreview, setLocalPreview] = useState(preview);
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { alert("Please select an image file"); return; }
     if (file.size > 5 * 1024 * 1024) { alert("File size must be less than 5MB"); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const base64 = ev.target?.result as string;
-      setLocalPreview(base64);
-      onChange(base64);
-    };
-    reader.readAsDataURL(file);
+    const url = await uploadFile(file, "logos");
+    if (!url) return;
+    setLocalPreview(url);
+    onChange(url);
   };
 
-  const remove = () => {
+  const remove = async () => {
+    await deleteRemoteFile(preview);
     setLocalPreview("");
     onRemove();
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -217,21 +216,19 @@ function FooterTab({ footer, onChange }: { footer: Settings["footer"]; onChange:
   const centerLogoRef = useRef<HTMLInputElement>(null);
   const [centerLogoPreview, setCenterLogoPreview] = useState(footer.centerLogo || "");
 
-  const handleCenterLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCenterLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { alert("Please select an image file"); return; }
     if (file.size > 5 * 1024 * 1024) { alert("File size must be less than 5MB"); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const base64 = ev.target?.result as string;
-      setCenterLogoPreview(base64);
-      onChange({ ...footer, centerLogo: base64 });
-    };
-    reader.readAsDataURL(file);
+    const url = await uploadFile(file, "logos");
+    if (!url) return;
+    setCenterLogoPreview(url);
+    onChange({ ...footer, centerLogo: url });
   };
 
-  const removeCenterLogo = () => {
+  const removeCenterLogo = async () => {
+    await deleteRemoteFile(footer.centerLogo);
     setCenterLogoPreview("");
     onChange({ ...footer, centerLogo: "" });
     if (centerLogoRef.current) centerLogoRef.current.value = "";

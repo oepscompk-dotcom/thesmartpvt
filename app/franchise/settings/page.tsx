@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Settings as SettingsIcon, Save, Building2, Upload, Clock, Timer, AlertTriangle, Award, Landmark, Wallet, Smartphone, Plus, Trash2 } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { apiLoadById, apiSave } from "@/lib/api";
+import { uploadFile, deleteRemoteFile } from "@/lib/r2Client";
 
 const PAKISTAN_BANKS = [
   "Abhi Microfinance Bank", "Al Baraka Bank Pakistan", "Allied Bank Limited (ABL)", "APNA Microfinance Bank",
@@ -69,13 +70,14 @@ export default function FranchiseSettingsPage() {
     setBankAccounts(bankAccounts.filter((a) => a.id !== id));
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { alert("Max 5MB"); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => { setForm((p) => ({ ...p, logo: ev.target?.result as string })); };
-    reader.readAsDataURL(file);
+    const url = await uploadFile(file, "logos");
+    if (!url) return;
+    await deleteRemoteFile(form.logo);
+    setForm((p) => ({ ...p, logo: url }));
   };
 
   return (
