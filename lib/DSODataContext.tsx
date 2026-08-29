@@ -136,7 +136,7 @@ export function DSODataProvider({ children }: { children: ReactNode }) {
         apiLoad("dsoTargetEntry", fid),
         apiLoad("dsoNotification"),
         apiLoad("sim", fid),
-        apiLoadById("adminSettings", "admin").catch(() => null),
+        apiLoadById("adminSettings", "admin-settings").catch(() => null),
         apiLoadById("franchise", fid).catch(() => null),
         apiLoad("franchiseSimVerification").catch(() => []),
         apiLoadById("franchiseData", "staffWallet-" + fid).catch(() => null),

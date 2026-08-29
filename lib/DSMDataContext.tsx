@@ -154,7 +154,7 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
           apiLoad("sim", fId),
           apiLoad("dso", fId),
           apiLoad("dsoAttendance", fId),
-          apiLoadById("adminSettings", "admin").catch(() => null),
+          apiLoadById("adminSettings", "admin-settings").catch(() => null),
           apiLoadById("franchise", fId).catch(() => null),
           apiLoad("franchiseSimVerification").catch(() => []),
           apiLoadById("franchiseData", "staffWallet-" + fId).catch(() => null),

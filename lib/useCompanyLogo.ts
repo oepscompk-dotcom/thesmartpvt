@@ -12,7 +12,7 @@ export function useCompanyLogo() {
   useEffect(() => {
     (async () => {
       try {
-        const s = await apiLoadById("adminSettings", "admin");
+        const s = await apiLoadById("adminSettings", "admin-settings");
         if (s) {
           if (s.logo) setLogo(s.logo);
           if (s.headerLogo) setHeaderLogo(s.headerLogo);
