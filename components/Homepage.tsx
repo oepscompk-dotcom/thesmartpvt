@@ -148,31 +148,14 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
 
           <div key={`dash-${textKey}`} className={`transition-all duration-700 delay-300 ${animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
             <div className="relative flex items-center justify-center">
-              <div className="relative w-full max-w-[540px] aspect-square">
-                <div className="absolute inset-0 rounded-xl bg-white/10 backdrop-blur-xl border border-white/15 shadow-2xl" />
-                {slide.image ? (
-                  <img src={slide.image} alt={slide.title} className="relative w-full h-full object-contain drop-shadow-2xl animate-float p-6 sm:p-8" />
-                ) : (
-                  <div className="relative h-full w-full flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-full bg-white/10 border border-white/15 flex items-center justify-center">
-                      <ImageIcon size={28} className="text-white/50" />
-                    </div>
-                    <span className="text-white/40 text-sm">Banner Image (1:1)</span>
-                  </div>
-                )}
-                <div className="absolute -top-4 -left-4 animate-float">
-                  <div className="bg-white/10 backdrop-blur-xl rounded px-3 py-2 flex items-center gap-2 border border-white/15">
-                    <Shield size={14} className="text-tele-yellow" />
-                    <span className="text-white text-xs font-medium">Secure</span>
-                  </div>
+              {slide.image ? (
+                <img src={slide.image} alt={slide.title} className="w-full max-w-[560px] h-auto max-h-[560px] object-contain drop-shadow-2xl animate-float" />
+              ) : (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/15 rounded-full">
+                  <ImageIcon size={16} className="text-white/50" />
+                  <span className="text-white/50 text-sm">Upload transparent banner image</span>
                 </div>
-                <div className="absolute -bottom-4 -right-4 animate-float delay-1000">
-                  <div className="bg-white/10 backdrop-blur-xl rounded px-3 py-2 flex items-center gap-2 border border-white/15">
-                    <Globe size={14} className="text-tele-cyan" />
-                    <span className="text-white text-xs font-medium">Online</span>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
