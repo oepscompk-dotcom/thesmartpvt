@@ -102,7 +102,7 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
     <div className="relative min-h-screen overflow-hidden">
       {slides.map((s, i) => (
         <div key={s.id} className={`absolute inset-0 transition-opacity duration-700 ${i === current ? "opacity-100 z-10" : "opacity-0 z-0"}`}>
-          <div className="absolute inset-0 bg-telenor-hero" />
+          <div className="absolute inset-0" style={{ background: s.bgGradient || "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)" }} />
           <div className="absolute top-24 right-10 w-96 h-96 bg-tele-cyan/10 rounded-full blur-3xl" />
           <div className="absolute bottom-20 left-10 w-96 h-96 bg-tele-blue/30 rounded-full blur-3xl" />
           {s.symbol && (

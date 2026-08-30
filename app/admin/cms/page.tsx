@@ -12,6 +12,13 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { StatusPill, toneForStatus } from "@/components/ui/Badge";
 
+const HERO_BG_DEFAULT = "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)";
+const parseGradient = (g?: string) => {
+  const hex = g?.match(/#[0-9a-fA-F]{6}/g) || [];
+  return { from: hex[0] || "#0C1026", via: hex[1] || "#2D28CD", to: hex[2] || "#00C8FF" };
+};
+const buildGradient = (from: string, via: string, to: string) => `linear-gradient(118deg, ${from} 0%, ${via} 55%, ${to} 135%)`;
+
 export default function CMSManager() {
   const { cmsPages, addCMSPage, updateCMSPage, deleteCMSPage, settings, updateSettings } = useData();
   const [showForm, setShowForm] = useState(false);
@@ -39,6 +46,12 @@ export default function CMSManager() {
 
   const updateHeroSlide = (index: number, field: keyof HeroSlide, value: string | string[]) => {
     setHeroSlides((prev) => prev.map((s, i) => (i === index ? ({ ...s, [field]: value } as HeroSlide) : s)));
+  };
+
+  const updateHeroGradient = (index: number, part: "from" | "via" | "to", value: string) => {
+    const cur = parseGradient(heroSlides[index]?.bgGradient);
+    const next = { from: cur.from, via: cur.via, to: cur.to, [part]: value };
+    updateHeroSlide(index, "bgGradient", buildGradient(next.from, next.via, next.to));
   };
 
   const handleHeroImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,6 +118,7 @@ export default function CMSManager() {
       ctaSecondaryText: "Learn More",
       ctaSecondaryLink: "#solutions",
       gradient: "from-[#0A2647] via-[#144272] to-[#0A2647]",
+      bgGradient: HERO_BG_DEFAULT,
       image: "",
       symbol: "",
     };
@@ -280,7 +294,7 @@ export default function CMSManager() {
                 <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
                   {/* Banner preview + transparent PNG upload */}
                   <div>
-                    <div className="relative flex h-44 items-center justify-center overflow-hidden rounded-lg border border-slate-200" style={{ background: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)" }}>
+                    <div className="relative flex h-44 items-center justify-center overflow-hidden rounded-lg border border-slate-200" style={{ background: slide.bgGradient || HERO_BG_DEFAULT }}>
                       {bannerUploading === i ? (
                         <Loader2 size={24} className="animate-spin text-white/70" />
                       ) : slide.image ? (
@@ -362,6 +376,19 @@ export default function CMSManager() {
                     <div className="sm:col-span-2">
                       <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Features (comma separated)</label>
                       <Input type="text" value={slide.features.join(", ")} onChange={(e) => updateHeroSlide(i, "features", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))} />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Background Gradient (Start / Middle / End)</label>
+                      <div className="mb-2 h-10 w-full overflow-hidden rounded-lg border border-slate-200" style={{ background: slide.bgGradient || HERO_BG_DEFAULT }} />
+                      <div className="flex flex-wrap items-center gap-3">
+                        {(["from", "via", "to"] as const).map((part) => (
+                          <label key={part} className="flex items-center gap-2 text-xs text-muted-foreground">
+                            {part === "from" ? "Start" : part === "via" ? "Middle" : "End"}
+                            <input type="color" value={parseGradient(slide.bgGradient)[part]} onChange={(e) => updateHeroGradient(i, part, e.target.value)} className="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" />
+                          </label>
+                        ))}
+                        <Button variant="outline" size="sm" onClick={() => updateHeroSlide(i, "bgGradient", HERO_BG_DEFAULT)}>Reset Default</Button>
+                      </div>
                     </div>
                     <div>
                       <label className="mb-1.5 block text-xs font-medium text-muted-foreground">CTA Text</label>

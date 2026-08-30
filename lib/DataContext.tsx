@@ -144,6 +144,7 @@ export interface HeroSlide {
   ctaSecondaryText: string;
   ctaSecondaryLink: string;
   gradient: string;
+  bgGradient?: string;
   image?: string;
   symbol?: string;
 }
@@ -383,6 +384,7 @@ const defaultSettings: Settings = {
           image: "",
           symbol: "",
           gradient: "from-[#0A2647] via-[#144272] to-[#0A2647]",
+          bgGradient: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)",
         },
         {
           id: "slide-2",
@@ -399,6 +401,7 @@ const defaultSettings: Settings = {
           image: "",
           symbol: "",
           gradient: "from-[#0F172A] via-[#1E3A5F] to-[#0F172A]",
+          bgGradient: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)",
         },
         {
           id: "slide-3",
@@ -415,6 +418,7 @@ const defaultSettings: Settings = {
           image: "",
           symbol: "",
           gradient: "from-[#0A1628] via-[#1A365D] to-[#0A1628]",
+          bgGradient: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)",
         },
         {
           id: "slide-4",
@@ -431,6 +435,7 @@ const defaultSettings: Settings = {
           image: "",
           symbol: "",
           gradient: "from-[#0D1B2A] via-[#1B2838] to-[#0D1B2A]",
+          bgGradient: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)",
         },
       ],
     },
