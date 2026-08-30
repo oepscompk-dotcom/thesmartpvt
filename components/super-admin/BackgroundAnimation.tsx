@@ -156,8 +156,10 @@ export default function BackgroundAnimation() {
 
   return (
     <div className="fixed inset-0 z-0">
-      {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0A2647] via-[#144272] to-[#0F172A]" />
+      {/* Hero gradient background (homepage hero) */}
+      <div className="absolute inset-0 bg-telenor-hero" />
+      <div className="absolute top-24 right-10 w-96 h-96 bg-tele-cyan/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-tele-blue/30 rounded-full blur-3xl" />
 
       {/* Noise overlay */}
       <div className="absolute inset-0 bg-noise" />

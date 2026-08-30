@@ -37,7 +37,7 @@ export default function AdminLoginCard() {
 
   return (
     <div className="w-full max-w-[420px]">
-      <div className="glass-login-card rounded-3xl p-8 sm:p-10 relative overflow-hidden">
+      <div className="glass-login-card rounded-xl p-8 sm:p-10 relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#00C8FF]/5 rounded-full blur-3xl" />

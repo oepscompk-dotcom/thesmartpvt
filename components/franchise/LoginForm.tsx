@@ -36,7 +36,7 @@ export default function LoginForm({ franchiseId }: LoginFormProps) {
   };
 
   return (
-    <div className="glass-login-card rounded-3xl p-8 relative overflow-hidden">
+    <div className="glass-login-card rounded-xl p-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-24 h-24 bg-brand-gold/5 rounded-full blur-2xl" />
       <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#00C8FF]/5 rounded-full blur-2xl" />
 

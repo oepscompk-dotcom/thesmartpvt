@@ -61,11 +61,25 @@ textarea {
   }
 
   .glass-login-card {
-    background: rgba(10, 38, 71, 0.6);
-    backdrop-filter: blur(32px);
-    -webkit-backdrop-filter: blur(32px);
-    border: 1px solid rgba(255, 251, 99, 0.15);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 100px rgba(255, 251, 99, 0.05);
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  }
+
+  .glass-login-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #FFFB63, #F1B308, #FFFB63);
+    pointer-events: none;
+    z-index: 1;
   }
 
   .glass-stat {

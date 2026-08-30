@@ -47,7 +47,7 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
   };
 
   return (
-    <div className="glass-login-card rounded-3xl p-8 relative overflow-hidden">
+    <div className="glass-login-card rounded-xl p-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-24 h-24 bg-[#00C8FF]/5 rounded-full blur-2xl" />
       <div className="relative">
         {step === "select" ? (

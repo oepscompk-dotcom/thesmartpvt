@@ -32,7 +32,7 @@ export default function DSOLoginForm({ franchiseId }: DSOLoginFormProps) {
   };
 
   return (
-    <div className="glass-login-card rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+    <div className="glass-login-card rounded-xl p-6 sm:p-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-20 h-20 bg-[#00C8FF]/5 rounded-full blur-2xl" />
       <div className="absolute bottom-0 left-0 w-16 h-16 bg-[#2D28CD]/5 rounded-full blur-2xl" />
 
