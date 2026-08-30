@@ -184,8 +184,22 @@ export default function CMSManager() {
               </Select>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Slide Interval (seconds)</label>
-              <Input type="number" value={String(heroInterval)} onChange={(e) => setHeroInterval(Number(e.target.value) || 0)} />
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Sliding Timing</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={Math.round((heroInterval || 5000) / 1000)}
+                  onChange={(e) => setHeroInterval(Number(e.target.value) * 1000)}
+                  className="flex-1 accent-[#2D28CD]"
+                />
+                <span className="w-14 shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-center text-sm font-semibold text-foreground">
+                  {Math.round((heroInterval || 5000) / 1000)}s
+                </span>
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">How long each hero banner stays before sliding to the next (1&ndash;10 seconds)</p>
             </div>
           </div>
 

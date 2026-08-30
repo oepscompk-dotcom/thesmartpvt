@@ -149,7 +149,7 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
           <div key={`dash-${textKey}`} className={`transition-all duration-700 delay-300 ${animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
             <div className="relative flex items-center justify-center">
               {slide.image ? (
-                <img src={slide.image} alt={slide.title} className="w-full max-w-[560px] h-auto max-h-[560px] object-contain drop-shadow-2xl animate-float" />
+                <img src={slide.image} alt={slide.title} className="w-full max-w-[680px] h-auto max-h-[680px] object-contain drop-shadow-2xl animate-float sm:-mx-6 lg:-mx-10" />
               ) : (
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/15 rounded-full">
                   <ImageIcon size={16} className="text-white/50" />
