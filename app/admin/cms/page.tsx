@@ -45,7 +45,11 @@ export default function CMSManager() {
     setBannerUploading(index);
     try {
       const url = await uploadFile(file, "photos");
-      if (url) updateHeroSlide(index, "image", url);
+      if (url) {
+        const next = heroSlides.map((s, i) => (i === index ? { ...s, image: url } : s));
+        setHeroSlides(next);
+        await persistHero(next);
+      }
     } finally {
       setBannerUploading(null);
       if (slideInputRefs.current[index]) slideInputRefs.current[index].value = "";
@@ -55,23 +59,31 @@ export default function CMSManager() {
   const removeHeroImage = async (index: number) => {
     const slide = heroSlides[index];
     if (slide?.image) await deleteRemoteFile(slide.image);
-    updateHeroSlide(index, "image", "");
+    const next = heroSlides.map((s, i) => (i === index ? { ...s, image: "" } : s));
+    setHeroSlides(next);
+    await persistHero(next);
   };
 
-  const saveHero = async () => {
-    if (!heroSlides.length) return;
+  const persistHero = async (slides: HeroSlide[]) => {
+    if (!slides.length) return;
     setSavingHero(true);
     try {
       await updateSettings({
         ...settings,
         homepage: {
           ...settings.homepage,
-          hero: { slides: heroSlides, autoPlay: heroAutoPlay, interval: heroInterval },
+          hero: { slides, autoPlay: heroAutoPlay, interval: heroInterval },
         },
       });
+    } catch (err: any) {
+      alert("Failed to save hero banners: " + (err?.message || "Unknown error"));
     } finally {
       setSavingHero(false);
     }
+  };
+
+  const saveHero = async () => {
+    await persistHero(heroSlides);
   };
 
   const emptyForm: CMSPage = { title: "", status: "Draft", updated: new Date().toISOString().split("T")[0], content: "" };
