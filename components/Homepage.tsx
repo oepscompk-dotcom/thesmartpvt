@@ -107,10 +107,10 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
           <div className="absolute bottom-20 left-10 w-96 h-96 bg-tele-blue/30 rounded-full blur-3xl" />
           {s.symbol && (
             <>
-              <img src={s.symbol} alt="" className="pointer-events-none absolute top-[18%] left-[10%] w-28 sm:w-44 opacity-40 animate-fly" style={{ animationDelay: "0s", animationDuration: "9s" }} />
-              <img src={s.symbol} alt="" className="pointer-events-none absolute bottom-[22%] right-[8%] w-24 sm:w-36 opacity-30 animate-fly" style={{ animationDelay: "1.8s", animationDuration: "11s" }} />
-              <img src={s.symbol} alt="" className="pointer-events-none absolute top-[12%] right-[32%] w-20 sm:w-28 opacity-25 animate-fly" style={{ animationDelay: "3.2s", animationDuration: "8s" }} />
-              <img src={s.symbol} alt="" className="pointer-events-none absolute bottom-[12%] left-[38%] w-16 sm:w-24 opacity-20 animate-fly" style={{ animationDelay: "4.5s", animationDuration: "12s" }} />
+              <img src={s.symbol} alt="" className="pointer-events-none absolute top-[16%] left-[8%] w-36 sm:w-52 opacity-70 animate-fly" style={{ animationDelay: "0s", animationDuration: "9s", filter: "drop-shadow(0 0 16px rgba(0,200,255,0.5))" }} />
+              <img src={s.symbol} alt="" className="pointer-events-none absolute bottom-[20%] right-[6%] w-28 sm:w-44 opacity-60 animate-fly" style={{ animationDelay: "1.8s", animationDuration: "11s", filter: "drop-shadow(0 0 16px rgba(255,251,99,0.4))" }} />
+              <img src={s.symbol} alt="" className="pointer-events-none absolute top-[12%] right-[30%] w-24 sm:w-36 opacity-50 animate-fly" style={{ animationDelay: "3.2s", animationDuration: "8s", filter: "drop-shadow(0 0 16px rgba(255,251,99,0.4))" }} />
+              <img src={s.symbol} alt="" className="pointer-events-none absolute bottom-[10%] left-[36%] w-20 sm:w-28 opacity-45 animate-fly" style={{ animationDelay: "4.5s", animationDuration: "12s", filter: "drop-shadow(0 0 16px rgba(0,200,255,0.5))" }} />
             </>
           )}
         </div>
@@ -165,7 +165,7 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
                 </div>
               )}
               {slide.symbol && (
-                <img src={slide.symbol} alt="" className="pointer-events-none animate-fly drop-shadow-2xl absolute -bottom-4 right-6 w-16 h-16 sm:w-20 sm:h-20 opacity-60" style={{ animationDuration: "10s" }} />
+                <img src={slide.symbol} alt="" className="pointer-events-none animate-fly absolute -top-6 right-8 w-24 h-24 sm:w-32 sm:h-32 opacity-90" style={{ animationDuration: "10s", filter: "drop-shadow(0 0 20px rgba(255,251,99,0.55)) drop-shadow(0 8px 24px rgba(0,0,0,0.5))" }} />
               )}
             </div>
           </div>
