@@ -44,7 +44,7 @@ export default function CMSManager() {
     if (!file) return;
     setBannerUploading(index);
     try {
-      const url = await uploadFile(file, "hero-banners");
+      const url = await uploadFile(file, "photos");
       if (url) updateHeroSlide(index, "image", url);
     } finally {
       setBannerUploading(null);
