@@ -88,7 +88,7 @@ export default function BackgroundAnimation() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200, 169, 81, ${p.opacity})`;
+        ctx.fillStyle = `rgba(255, 251, 99, ${p.opacity})`;
         ctx.fill();
       });
 

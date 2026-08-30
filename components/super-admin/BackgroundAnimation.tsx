@@ -59,8 +59,8 @@ export default function BackgroundAnimation() {
           opacity: Math.random() * 0.5 + 0.1,
           color:
             Math.random() > 0.5
-              ? "rgba(200, 169, 81,"
-              : "rgba(77, 168, 218,",
+              ? "rgba(255, 251, 99,"
+              : "rgba(0, 200, 255,",
         });
       }
     };
@@ -114,7 +114,7 @@ export default function BackgroundAnimation() {
         ctx.beginPath();
         ctx.moveTo(line.x1, line.y1);
         ctx.lineTo(line.x2, line.y2);
-        ctx.strokeStyle = `rgba(200, 169, 81, ${line.opacity})`;
+        ctx.strokeStyle = `rgba(255, 251, 99, ${line.opacity})`;
         ctx.lineWidth = 0.5;
         ctx.stroke();
       });

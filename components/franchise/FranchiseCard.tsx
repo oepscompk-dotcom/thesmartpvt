@@ -163,7 +163,7 @@ export default function FranchiseCard({ onVerified }: FranchiseCardProps) {
                 {verifiedCompany && (
                   <div className="flex items-center justify-between py-2 border-t border-white/5">
                     <span className="text-white/40 text-xs">Under Company</span>
-                    <span className="text-blue-400 text-sm font-medium">{verifiedCompany}</span>
+                    <span className="text-[#00C8FF] text-sm font-medium">{verifiedCompany}</span>
                   </div>
                 )}
               </div>

@@ -48,12 +48,12 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
 
   return (
     <div className="glass-login-card rounded-3xl p-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl" />
+      <div className="absolute top-0 right-0 w-24 h-24 bg-[#00C8FF]/5 rounded-full blur-2xl" />
       <div className="relative">
         {step === "select" ? (
           <>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+              <div className="w-10 h-10 rounded-xl bg-[#00C8FF]/10 flex items-center justify-center text-[#00C8FF]">
                 <Building2 size={18} />
               </div>
               <div>
@@ -68,7 +68,7 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
               onChange={(e) => { setCompanyId(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="e.g. COMP-001"
-              className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-center text-lg font-mono tracking-widest placeholder:text-white/25 placeholder:tracking-normal focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all mb-4"
+              className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-center text-lg font-mono tracking-widest placeholder:text-white/25 placeholder:tracking-normal focus:outline-none focus:border-[#00C8FF]/50 focus:ring-2 focus:ring-[#00C8FF]/10 transition-all mb-4"
             />
 
             {error && (
@@ -81,7 +81,7 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
             <button
               onClick={handleSubmit}
               disabled={!companyId.trim() || loading}
-              className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold rounded-xl hover:shadow-[0_0_25px_rgba(14,165,233,0.3)] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-gradient-to-r from-[#2D28CD] to-[#00C8FF] text-white font-bold rounded-xl hover:shadow-[0_0_25px_rgba(45,40,205,0.3)] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Verifying..." : "Verify Company"}
             </button>
@@ -92,7 +92,7 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
                 <button
                   key={id}
                   onClick={() => { setCompanyId(id); setError(""); }}
-                  className="text-blue-400/50 text-xs font-mono hover:text-blue-400 transition-colors"
+                  className="text-[#00C8FF]/50 text-xs font-mono hover:text-[#00C8FF] transition-colors"
                 >
                   {id}
                 </button>
@@ -113,7 +113,7 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
 
             <div className="bg-white/5 rounded-xl p-5 border border-white/5 mb-6">
               <div className="text-center mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#2D28CD] to-[#00C8FF] flex items-center justify-center mx-auto mb-3 shadow-lg">
                   <span className="text-white font-black text-lg">{verifiedId.split("-")[0]}</span>
                 </div>
                 <h4 className="text-white font-bold text-base">{verifiedName}</h4>
@@ -144,7 +144,7 @@ export default function CompanyCard({ onVerified }: CompanyCardProps) {
               </button>
               <button
                 onClick={handleContinue}
-                className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-bold rounded-xl hover:shadow-[0_0_25px_rgba(14,165,233,0.3)] transition-all hover:scale-[1.02]"
+                className="flex-1 py-3 bg-gradient-to-r from-[#2D28CD] to-[#00C8FF] text-white text-sm font-bold rounded-xl hover:shadow-[0_0_25px_rgba(45,40,205,0.3)] transition-all hover:scale-[1.02]"
               >
                 Continue to Login
               </button>

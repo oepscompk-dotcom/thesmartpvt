@@ -44,8 +44,8 @@ export default function BackgroundAnimation() {
           opacity: Math.random() * 0.4 + 0.1,
           color:
             Math.random() > 0.6
-              ? "rgba(200, 169, 81,"
-              : "rgba(14, 165, 233,",
+              ? "rgba(255, 251, 99,"
+              : "rgba(0, 200, 255,",
         });
       }
     };
@@ -78,7 +78,7 @@ export default function BackgroundAnimation() {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(200, 169, 81, ${0.08 * (1 - dist / 150)})`;
+            ctx.strokeStyle = `rgba(255, 251, 99, ${0.08 * (1 - dist / 150)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -123,7 +123,7 @@ export default function BackgroundAnimation() {
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(200,169,81,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(200,169,81,0.4) 1px, transparent 1px)",
+              "linear-gradient(rgba(255,251,99,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,251,99,0.4) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
         />
