@@ -89,6 +89,7 @@ const config: Config = {
         "slide-down": "slideDown 0.3s ease-out",
         "scale-in": "scaleIn 0.5s ease-out forwards",
         float: "float 6s ease-in-out infinite",
+        fly: "fly 7s ease-in-out infinite",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         shimmer: "shimmer 2s linear infinite",
       },
@@ -112,6 +113,12 @@ const config: Config = {
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-20px)" },
+        },
+        fly: {
+          "0%, 100%": { transform: "translate(0px, 0px) rotate(0deg)" },
+          "25%": { transform: "translate(22px, -32px) rotate(10deg)" },
+          "50%": { transform: "translate(-18px, -44px) rotate(-8deg)" },
+          "75%": { transform: "translate(18px, -12px) rotate(6deg)" },
         },
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },

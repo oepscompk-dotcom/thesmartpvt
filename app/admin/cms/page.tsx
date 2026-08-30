@@ -27,7 +27,9 @@ export default function CMSManager() {
   const [heroInterval, setHeroInterval] = useState(settings.homepage.hero.interval);
   const [savingHero, setSavingHero] = useState(false);
   const [bannerUploading, setBannerUploading] = useState<number | null>(null);
+  const [symbolUploading, setSymbolUploading] = useState<number | null>(null);
   const slideInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const symbolInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     setHeroSlides(settings.homepage.hero.slides);
@@ -60,6 +62,60 @@ export default function CMSManager() {
     const slide = heroSlides[index];
     if (slide?.image) await deleteRemoteFile(slide.image);
     const next = heroSlides.map((s, i) => (i === index ? { ...s, image: "" } : s));
+    setHeroSlides(next);
+    await persistHero(next);
+  };
+
+  const handleHeroSymbolUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSymbolUploading(index);
+    try {
+      const url = await uploadFile(file, "photos");
+      if (url) {
+        const next = heroSlides.map((s, i) => (i === index ? { ...s, symbol: url } : s));
+        setHeroSlides(next);
+        await persistHero(next);
+      }
+    } finally {
+      setSymbolUploading(null);
+      if (symbolInputRefs.current[index]) symbolInputRefs.current[index].value = "";
+    }
+  };
+
+  const removeHeroSymbol = async (index: number) => {
+    const slide = heroSlides[index];
+    if (slide?.symbol) await deleteRemoteFile(slide.symbol);
+    const next = heroSlides.map((s, i) => (i === index ? { ...s, symbol: "" } : s));
+    setHeroSlides(next);
+    await persistHero(next);
+  };
+
+  const addHeroSlide = () => {
+    const slide: HeroSlide = {
+      id: `slide-${Date.now()}`,
+      badge: "NEW BANNER",
+      title: "New Banner",
+      titleHighlight: "Highlight",
+      subtitle: "Banner Subtitle",
+      description: "Describe this banner.",
+      features: [],
+      ctaText: "Get Started",
+      ctaLink: "#login",
+      ctaSecondaryText: "Learn More",
+      ctaSecondaryLink: "#solutions",
+      gradient: "from-[#0A2647] via-[#144272] to-[#0A2647]",
+      image: "",
+      symbol: "",
+    };
+    setHeroSlides((prev) => [...prev, slide]);
+  };
+
+  const removeHeroSlide = async (index: number) => {
+    const slide = heroSlides[index];
+    if (slide?.image) await deleteRemoteFile(slide.image);
+    if (slide?.symbol) await deleteRemoteFile(slide.symbol);
+    const next = heroSlides.filter((_, i) => i !== index);
     setHeroSlides(next);
     await persistHero(next);
   };
@@ -172,7 +228,7 @@ export default function CMSManager() {
       <Card>
         <CardHeader>
           <CardTitle>Homepage Hero Banners</CardTitle>
-          <CardDescription>Upload transparent images (PNG recommended). They auto-fit into the homepage hero banner with no box or size restriction.</CardDescription>
+          <CardDescription>Upload transparent images (PNG recommended) for each hero banner, plus an optional SVG icon (e.g. SIM/network symbol) that flies over the banner.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -203,12 +259,22 @@ export default function CMSManager() {
             </div>
           </div>
 
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-foreground">Banners ({heroSlides.length})</h4>
+            <Button size="sm" onClick={addHeroSlide}><Plus className="h-4 w-4" /> Add Banner</Button>
+          </div>
+
           <div className="space-y-4">
             {heroSlides.map((slide, i) => (
               <div key={slide.id} className="rounded-lg border border-slate-200 p-5">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <p className="text-sm font-medium text-foreground">Banner {i + 1} &mdash; {slide.title || "Untitled"}</p>
-                  <span className="truncate text-xs text-muted-foreground">{slide.badge}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-xs text-muted-foreground">{slide.badge}</span>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-600" onClick={() => removeHeroSlide(i)} title="Delete banner">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
@@ -246,6 +312,25 @@ export default function CMSManager() {
                           onClick={() => removeHeroImage(i)}
                           title="Remove image"
                         >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <input
+                      ref={(el) => { symbolInputRefs.current[i] = el; }}
+                      type="file"
+                      accept=".svg,image/svg+xml"
+                      onChange={(e) => handleHeroSymbolUpload(i, e)}
+                      className="hidden"
+                    />
+                    <div className="mt-2 flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => symbolInputRefs.current[i]?.click()} title="Flying SVG symbol (e.g. SIM network icon)">
+                        {symbolUploading === i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : slide.symbol ? <ImageIcon className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                        {symbolUploading === i ? "Uploading..." : slide.symbol ? "Replace SVG Icon" : "Upload SVG Icon"}
+                      </Button>
+                      {slide.symbol && (
+                        <Button variant="outline" size="sm" className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700" onClick={() => removeHeroSymbol(i)} title="Remove SVG icon" aria-label="Remove SVG icon">
                           <X className="h-3.5 w-3.5" />
                         </Button>
                       )}

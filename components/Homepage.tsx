@@ -156,6 +156,9 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
                   <span className="text-white/50 text-sm">Upload transparent banner image</span>
                 </div>
               )}
+              {slide.symbol && (
+                <img src={slide.symbol} alt="" className="pointer-events-none absolute -top-8 -right-2 sm:-top-12 sm:-right-6 w-24 h-24 sm:w-36 sm:h-36 animate-fly drop-shadow-2xl" />
+              )}
             </div>
           </div>
         </div>
