@@ -144,6 +144,7 @@ export interface HeroSlide {
   ctaSecondaryText: string;
   ctaSecondaryLink: string;
   gradient: string;
+  image?: string;
 }
 
 export interface HomepageStat {
@@ -378,6 +379,7 @@ const defaultSettings: Settings = {
           ctaLink: "#login",
           ctaSecondaryText: "Request Demo",
           ctaSecondaryLink: "#demo",
+          image: "",
           gradient: "from-[#0A2647] via-[#144272] to-[#0A2647]",
         },
         {
@@ -392,6 +394,7 @@ const defaultSettings: Settings = {
           ctaLink: "#login",
           ctaSecondaryText: "Learn More",
           ctaSecondaryLink: "#solutions",
+          image: "",
           gradient: "from-[#0F172A] via-[#1E3A5F] to-[#0F172A]",
         },
         {
@@ -406,6 +409,7 @@ const defaultSettings: Settings = {
           ctaLink: "#features",
           ctaSecondaryText: "Contact Us",
           ctaSecondaryLink: "#contact",
+          image: "",
           gradient: "from-[#0A1628] via-[#1A365D] to-[#0A1628]",
         },
         {
@@ -420,6 +424,7 @@ const defaultSettings: Settings = {
           ctaLink: "#demo",
           ctaSecondaryText: "Request Demo",
           ctaSecondaryLink: "#contact",
+          image: "",
           gradient: "from-[#0D1B2A] via-[#1B2838] to-[#0D1B2A]",
         },
       ],

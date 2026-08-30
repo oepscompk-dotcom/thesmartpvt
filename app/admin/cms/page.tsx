@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Globe, FileText, ImageIcon, Edit, Plus, Trash2, X, Save, Link2, ExternalLink, Loader2 } from "lucide-react";
 import { uploadFile, deleteRemoteFile } from "@/lib/r2Client";
 import { useData } from "@/lib/DataContext";
-import type { CMSPage } from "@/lib/DataContext";
+import type { CMSPage, HeroSlide } from "@/lib/DataContext";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +13,7 @@ import { Select } from "@/components/ui/Select";
 import { StatusPill, toneForStatus } from "@/components/ui/Badge";
 
 export default function CMSManager() {
-  const { cmsPages, addCMSPage, updateCMSPage, deleteCMSPage } = useData();
+  const { cmsPages, addCMSPage, updateCMSPage, deleteCMSPage, settings, updateSettings } = useData();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<CMSPage | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -22,6 +22,57 @@ export default function CMSManager() {
   const [media, setMedia] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(settings.homepage.hero.slides);
+  const [heroAutoPlay, setHeroAutoPlay] = useState(settings.homepage.hero.autoPlay);
+  const [heroInterval, setHeroInterval] = useState(settings.homepage.hero.interval);
+  const [savingHero, setSavingHero] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState<number | null>(null);
+  const slideInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    setHeroSlides(settings.homepage.hero.slides);
+    setHeroAutoPlay(settings.homepage.hero.autoPlay);
+    setHeroInterval(settings.homepage.hero.interval);
+  }, [settings.homepage.hero]);
+
+  const updateHeroSlide = (index: number, field: keyof HeroSlide, value: string | string[]) => {
+    setHeroSlides((prev) => prev.map((s, i) => (i === index ? ({ ...s, [field]: value } as HeroSlide) : s)));
+  };
+
+  const handleHeroImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBannerUploading(index);
+    try {
+      const url = await uploadFile(file, "hero-banners");
+      if (url) updateHeroSlide(index, "image", url);
+    } finally {
+      setBannerUploading(null);
+      if (slideInputRefs.current[index]) slideInputRefs.current[index].value = "";
+    }
+  };
+
+  const removeHeroImage = async (index: number) => {
+    const slide = heroSlides[index];
+    if (slide?.image) await deleteRemoteFile(slide.image);
+    updateHeroSlide(index, "image", "");
+  };
+
+  const saveHero = async () => {
+    if (!heroSlides.length) return;
+    setSavingHero(true);
+    try {
+      await updateSettings({
+        ...settings,
+        homepage: {
+          ...settings.homepage,
+          hero: { slides: heroSlides, autoPlay: heroAutoPlay, interval: heroInterval },
+        },
+      });
+    } finally {
+      setSavingHero(false);
+    }
+  };
 
   const emptyForm: CMSPage = { title: "", status: "Draft", updated: new Date().toISOString().split("T")[0], content: "" };
   const [form, setForm] = useState<CMSPage>(emptyForm);
@@ -104,6 +155,133 @@ export default function CMSManager() {
           </Card>
         ))}
       </div>
+
+      {/* Homepage Hero Banners */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Homepage Hero Banners</CardTitle>
+          <CardDescription>Upload transparent PNG images to replace the hero dashboard chart. Manage all 4 homepage banner slides.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Auto Play</label>
+              <Select value={String(heroAutoPlay)} onChange={(e) => setHeroAutoPlay(e.target.value === "true")}>
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </Select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Slide Interval (seconds)</label>
+              <Input type="number" value={String(heroInterval)} onChange={(e) => setHeroInterval(Number(e.target.value) || 0)} />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {heroSlides.map((slide, i) => (
+              <div key={slide.id} className="rounded-lg border border-slate-200 p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-foreground">Banner {i + 1} &mdash; {slide.title || "Untitled"}</p>
+                  <span className="truncate text-xs text-muted-foreground">{slide.badge}</span>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
+                  {/* Banner preview + transparent PNG upload */}
+                  <div>
+                    <div className="relative flex h-40 items-center justify-center overflow-hidden rounded-lg border border-slate-200" style={{ background: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)" }}>
+                      {bannerUploading === i ? (
+                        <Loader2 size={24} className="animate-spin text-white/70" />
+                      ) : slide.image ? (
+                        <img src={slide.image} alt={slide.title} className="h-full w-full object-contain p-2" />
+                      ) : (
+                        <div className="text-center">
+                          <ImageIcon size={24} className="mx-auto mb-1 text-white/50" />
+                          <span className="text-[11px] text-white/60">No image &mdash; shows chart</span>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      ref={(el) => { slideInputRefs.current[i] = el; }}
+                      type="file"
+                      accept="image/png,image/*"
+                      onChange={(e) => handleHeroImageUpload(i, e)}
+                      className="hidden"
+                    />
+                    <div className="mt-3 flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => slideInputRefs.current[i]?.click()}>
+                        {slide.image ? <ImageIcon className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                        {slide.image ? "Replace PNG" : "Upload PNG"}
+                      </Button>
+                      {slide.image && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
+                          onClick={() => removeHeroImage(i)}
+                          title="Remove image"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Banner fields */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Badge</label>
+                      <Input type="text" value={slide.badge} onChange={(e) => updateHeroSlide(i, "badge", e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Title</label>
+                      <Input type="text" value={slide.title} onChange={(e) => updateHeroSlide(i, "title", e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Title Highlight</label>
+                      <Input type="text" value={slide.titleHighlight} onChange={(e) => updateHeroSlide(i, "titleHighlight", e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Subtitle</label>
+                      <Input type="text" value={slide.subtitle} onChange={(e) => updateHeroSlide(i, "subtitle", e.target.value)} />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Description</label>
+                      <textarea value={slide.description} onChange={(e) => updateHeroSlide(i, "description", e.target.value)} rows={2} className="w-full resize-none rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Features (comma separated)</label>
+                      <Input type="text" value={slide.features.join(", ")} onChange={(e) => updateHeroSlide(i, "features", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">CTA Text</label>
+                      <Input type="text" value={slide.ctaText} onChange={(e) => updateHeroSlide(i, "ctaText", e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">CTA Link</label>
+                      <Input type="text" value={slide.ctaLink} onChange={(e) => updateHeroSlide(i, "ctaLink", e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Secondary CTA Text</label>
+                      <Input type="text" value={slide.ctaSecondaryText} onChange={(e) => updateHeroSlide(i, "ctaSecondaryText", e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Secondary CTA Link</label>
+                      <Input type="text" value={slide.ctaSecondaryLink} onChange={(e) => updateHeroSlide(i, "ctaSecondaryLink", e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+            <p className="text-xs text-muted-foreground">Changes apply to the live homepage hero banners.</p>
+            <Button onClick={saveHero} disabled={savingHero}>
+              {savingHero ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Hero Banners
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

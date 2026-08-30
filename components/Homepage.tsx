@@ -147,6 +147,11 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
           </div>
 
           <div key={`dash-${textKey}`} className={`transition-all duration-700 delay-300 ${animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+            {slide.image ? (
+              <div className="relative flex items-center justify-center">
+                <img src={slide.image} alt={slide.title} className="w-full max-h-[560px] object-contain drop-shadow-2xl animate-float" />
+              </div>
+            ) : (
             <div className="bg-white/10 backdrop-blur-xl border border-white/15 rounded-xl p-6 sm:p-8 relative shadow-2xl">
               <div className="absolute -top-3 -right-3 w-24 h-24 bg-tele-cyan/10 rounded-full blur-2xl" />
               <div className="flex items-center justify-between mb-6">
@@ -197,6 +202,7 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>
