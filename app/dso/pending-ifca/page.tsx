@@ -1,11 +1,22 @@
 ﻿"use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useDSOData } from "@/lib/DSODataContext";
 import {
-  ArrowLeft, Wifi, CheckCircle, Clock, Filter, Search, Square, CheckSquare, X, AlertCircle, ChevronDown, ChevronUp, Phone, ShieldCheck,
+  Wifi, CheckCircle, Clock, Square, CheckSquare, X, ChevronDown, ChevronUp, Phone,
 } from "lucide-react";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { Select } from "@/components/ui/Select";
+import { StatusPill } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
+
+const PAGE_SIZE = 10;
 
 interface Activation {
   id: string;
@@ -53,6 +64,7 @@ export default function PendingIFCAPage() {
   const [networkFilter, setNetworkFilter] = useState("All");
   const [showCompleted, setShowCompleted] = useState(false);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
 
   const pending = useMemo(() => {
     return activations.filter(
@@ -97,6 +109,13 @@ export default function PendingIFCAPage() {
     }
     return list;
   }, [pending, networkFilter, searchQuery]);
+
+  const pagedPending = filteredPending.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filteredPending.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, networkFilter]);
 
   const groupedCompleted = useMemo(() => {
     const groups: Record<string, Activation[]> = {};
@@ -188,221 +207,164 @@ export default function PendingIFCAPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {successMsg && (
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-green-50 border border-green-200 text-green-800 text-sm font-medium">
-            <CheckCircle className="h-5 w-5 flex-shrink-0" />
-            {successMsg}
-          </div>
-        )}
+    <div className="mx-auto max-w-6xl space-y-6">
+      {successMsg && (
+        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-800">
+          <CheckCircle className="h-5 w-5 flex-shrink-0" />
+          {successMsg}
+        </div>
+      )}
 
-        {/* Progress Indicator */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Verification Progress</p>
+      {/* Progress Indicator */}
+      <Card>
+        <div className="px-4 py-4 sm:px-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Verification Progress</p>
           <div className="flex items-center gap-2">
-            <div className="flex-1 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-emerald-500 text-white">
+            <div className="flex flex-1 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white">
                 <CheckCircle className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs font-medium text-emerald-600">BVS</p>
-                <p className="text-[10px] text-gray-400">Done</p>
+                <p className="text-xs font-medium text-green-600">BVS</p>
+                <p className="text-[10px] text-muted-foreground">Done</p>
               </div>
             </div>
-            <div className="flex-1 h-0.5 bg-emerald-300 rounded" />
-            <div className="flex-1 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-emerald-500 text-white">
+            <div className="h-0.5 flex-1 rounded bg-green-300" />
+            <div className="flex flex-1 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white">
                 <CheckCircle className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs font-medium text-emerald-600">FCA</p>
-                <p className="text-[10px] text-gray-400">Done</p>
+                <p className="text-xs font-medium text-green-600">FCA</p>
+                <p className="text-[10px] text-muted-foreground">Done</p>
               </div>
             </div>
-            <div className="flex-1 h-0.5 bg-emerald-300 rounded" />
-            <div className="flex-1 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#C8A951" }}>3</div>
+            <div className="h-0.5 flex-1 rounded bg-green-300" />
+            <div className="flex flex-1 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">3</div>
               <div>
-                <p className="text-xs font-bold" style={{ color: "#0A2647" }}>IFCA</p>
-                <p className="text-[10px] text-gray-400">Current</p>
+                <p className="text-xs font-bold text-brand-700">IFCA</p>
+                <p className="text-[10px] text-muted-foreground">Current</p>
               </div>
             </div>
           </div>
         </div>
+      </Card>
 
-        {/* Header */}
-        <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: "#0A2647" }}>
-          <div className="flex items-center gap-3 mb-4">
-            <a
-              href="/dso/dashboard"
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+      {/* Header */}
+      <PageHeader
+        breadcrumb={[{ label: "DSO Dashboard", href: "/dso/dashboard" }, { label: "IFCA Verification" }]}
+        title="IFCA Verification"
+        description={`Final data & connectivity check — ${pending.length} pending`}
+        actions={
+          <div className="flex items-center gap-3">
+            {selectedCount > 0 && (
+              <Button onClick={handleBulkComplete}>
+                <CheckCircle size={16} /> Complete ({selectedCount})
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setShowCompleted(!showCompleted)}>
+              <Clock size={16} />
+              {showCompleted ? "Hide" : "Show"} Done ({completed.length})
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Total Pending" value={pending.length} icon={Clock} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="Completed Today" value={completedToday.length} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Total Completed" value={completed.length} icon={Wifi} />
+      </div>
+
+      {/* Search & Filter */}
+      <Card className="p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <SearchInput
+            placeholder="Search by ID, name, CNIC, SIM number..."
+            value={searchQuery}
+            onSearch={setSearchQuery}
+            className="flex-1"
+          />
+          <div className="flex items-center gap-2">
+            <Select
+              value={networkFilter}
+              onChange={(e) => setNetworkFilter(e.target.value)}
+              className="w-full sm:w-auto"
             >
-              <ArrowLeft className="h-5 w-5" />
-            </a>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Wifi className="h-7 w-7" style={{ color: "#C8A951" }} />
-                IFCA Verification
-              </h1>
-              <p className="text-sm text-gray-300 mt-0.5">
-                Final data &amp; connectivity check â€” {pending.length} pending
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {selectedCount > 0 && (
-                <button
-                  onClick={handleBulkComplete}
-                  className="flex items-center gap-2 px-4 py-2 min-h-[48px] rounded-xl text-sm font-bold text-white transition hover:opacity-90"
-                  style={{ backgroundColor: "#22C55E" }}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Complete ({selectedCount})
-                </button>
-              )}
-              <button
-                onClick={() => setShowCompleted(!showCompleted)}
-                className="flex items-center gap-2 px-4 py-2 min-h-[48px] rounded-xl text-sm font-medium transition border"
-                style={{ borderColor: "#C8A951", color: "#C8A951" }}
-              >
-                <Clock className="h-4 w-4" />
-                {showCompleted ? "Hide" : "Show"} Done ({completed.length})
-              </button>
-            </div>
+              <option value="All">All Networks</option>
+              <option value="Telenor">Telenor</option>
+              <option value="Jazz">Jazz</option>
+              <option value="Ufone">Ufone</option>
+              <option value="Zong">Zong</option>
+            </Select>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm min-h-[80px]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Total Pending</p>
-                <p className="text-3xl font-bold mt-1" style={{ color: "#0A2647" }}>{pending.length}</p>
-              </div>
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#FFF7E0" }}>
-                <Clock className="h-7 w-7" style={{ color: "#C8A951" }} />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm min-h-[80px]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Completed Today</p>
-                <p className="text-3xl font-bold mt-1 text-green-600">{completedToday.length}</p>
-              </div>
-              <div className="w-14 h-14 rounded-xl bg-green-50 flex items-center justify-center">
-                <CheckCircle className="h-7 w-7 text-green-500" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm min-h-[80px]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Total Completed</p>
-                <p className="text-3xl font-bold mt-1" style={{ color: "#0A2647" }}>{completed.length}</p>
-              </div>
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#EBF5FF" }}>
-                <Wifi className="h-7 w-7 text-blue-500" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by ID, name, CNIC, SIM number..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-400" />
-              <select
-                value={networkFilter}
-                onChange={(e) => setNetworkFilter(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-              >
-                <option value="All">All Networks</option>
-                <option value="Telenor">Telenor</option>
-                <option value="Jazz">Jazz</option>
-                <option value="Ufone">Ufone</option>
-                <option value="Zong">Zong</option>
-              </select>
-            </div>
-          </div>
-        </div>
+      </Card>
 
         {filteredPending.length === 0 && !showCompleted ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <CheckCircle className="h-14 w-14 mx-auto mb-4 text-emerald-400" />
-            <p className="text-lg font-semibold text-gray-700">All IFCA verifications completed</p>
-            <p className="text-sm text-gray-400 mt-1">No pending activations for IFCA verification</p>
-          </div>
+          <Card>
+            <EmptyState
+              icon={CheckCircle}
+              title="All IFCA verifications completed"
+              description="No pending activations for IFCA verification"
+            />
+          </Card>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <Card>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100">
+                  <tr className="border-b border-slate-200 bg-slate-50">
                     <th className="w-12 px-4 py-3">
-                      <button onClick={toggleSelectAll} className="flex items-center justify-center min-h-[48px]">
+                      <button onClick={toggleSelectAll} className="flex min-h-[48px] items-center justify-center">
                         {allChecked ? (
-                          <CheckSquare className="h-5 w-5" style={{ color: "#C8A951" }} />
+                          <CheckSquare className="h-5 w-5 text-brand-600" />
                         ) : (
-                          <Square className="h-5 w-5 text-gray-300" />
+                          <Square className="h-5 w-5 text-slate-300" />
                         )}
                       </button>
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activation</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">SIM Details</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Activation</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Customer</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">SIM Details</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Type</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {filteredPending.map((a: Activation) => (
+                <tbody className="divide-y divide-slate-100">
+                  {pagedPending.map((a: Activation) => (
                     <tr
                       key={a.id}
-                      className={`hover:bg-gray-50 transition ${selectedIds.has(a.id) ? "bg-amber-50" : ""}`}
+                      className={`transition-colors ${selectedIds.has(a.id) ? "bg-brand-50/60" : "hover:bg-slate-50"}`}
                     >
                       <td className="px-4 py-3">
                         <button onClick={() => toggleSelect(a.id)} className="flex items-center justify-center">
                           {selectedIds.has(a.id) ? (
-                            <CheckSquare className="h-5 w-5" style={{ color: "#C8A951" }} />
+                            <CheckSquare className="h-5 w-5 text-brand-600" />
                           ) : (
-                            <Square className="h-5 w-5 text-gray-300" />
+                            <Square className="h-5 w-5 text-slate-300" />
                           )}
                         </button>
                       </td>
                       <td className="px-4 py-3">
-                        <div>
-                          <p className="font-mono text-sm font-semibold" style={{ color: "#0A2647" }}>{a.id}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{formatDateDDMMYYYY(a.createdAt)}</p>
-                        </div>
+                        <p className="font-mono text-sm font-semibold text-foreground">{a.id}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{formatDateDDMMYYYY(a.createdAt)}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <div>
-                          <p className="text-sm font-medium text-gray-800">{a.customerName}</p>
-                          <p className="text-xs text-gray-400">{a.customerCNIC}</p>
-                        </div>
+                        <p className="text-sm font-medium text-foreground">{a.customerName}</p>
+                        <p className="text-xs text-muted-foreground">{a.customerCNIC}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <div>
-                          <p className="text-sm text-gray-700 font-medium">{a.simNumber}</p>
-                          <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">
-                            <Phone className="h-2.5 w-2.5" />
-                            {a.network}
-                          </span>
-                        </div>
+                        <p className="text-sm font-medium text-foreground">{a.simNumber}</p>
+                        <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                          <Phone className="h-2.5 w-2.5" />
+                          {a.network}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${typeBadge(a.type)}`}>
+                        <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${typeBadge(a.type)}`}>
                           {a.type}
                         </span>
                       </td>
@@ -410,17 +372,14 @@ export default function PendingIFCAPage() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleCompleteSingle(a.id)}
-                            className="px-3 py-2 min-h-[48px] rounded-lg text-xs font-medium text-white transition hover:opacity-90"
-                            style={{ backgroundColor: "#22C55E" }}
+                            className="flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-green-700"
                           >
+                            <CheckCircle size={14} />
                             Complete
                           </button>
-                          <button
-                            onClick={() => openModal(a.id)}
-                            className="px-3 py-2 min-h-[48px] rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
-                          >
+                          <Button variant="outline" size="sm" onClick={() => openModal(a.id)}>
                             Verify
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -428,49 +387,48 @@ export default function PendingIFCAPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+          </Card>
         )}
 
         {showCompleted && groupedCompleted.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: "#0A2647" }}>
-                <CheckCircle className="h-5 w-5" style={{ color: "#C8A951" }} />
+          <Card>
+            <div className="border-b border-slate-100 px-6 py-4">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                <CheckCircle className="h-5 w-5 text-brand-600" />
                 Completed IFCA Records
               </h2>
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-slate-100">
               {groupedCompleted.map(([date, records]) => (
                 <div key={date} className="p-4">
                   <button
                     onClick={() => toggleDate(date)}
-                    className="w-full flex items-center justify-between mb-3 hover:bg-gray-100 rounded-lg p-2 transition"
+                    className="mb-3 flex w-full items-center justify-between rounded-lg p-2 transition hover:bg-slate-100"
                   >
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
-                      <h3 className="text-sm font-semibold text-gray-600">{formatDateDDMMYYYY(date)}</h3>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
-                        {records.length} completed
-                      </span>
+                      <Clock className="h-4 w-4 text-brand-600" />
+                      <h3 className="text-sm font-semibold text-foreground">{formatDateDDMMYYYY(date)}</h3>
+                      <StatusPill label={`${records.length} completed`} tone="positive" />
                     </div>
                     {expandedDates.has(date) ? (
-                      <ChevronUp className="h-4 w-4 text-gray-400" />
+                      <ChevronUp className="h-4 w-4 text-slate-400" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
                     )}
                   </button>
                   {expandedDates.has(date) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {records.map((a: Activation) => (
-                        <div key={a.id} className="p-3 rounded-xl bg-gray-50 border border-gray-100 min-h-[80px]">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-mono text-xs font-semibold" style={{ color: "#0A2647" }}>{a.id}</span>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${typeBadge(a.type)}`}>
+                        <div key={a.id} className="min-h-[80px] rounded-xl border border-slate-200 bg-slate-50 p-3">
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="font-mono text-xs font-semibold text-foreground">{a.id}</span>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeBadge(a.type)}`}>
                               {a.type}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-700">{a.customerName}</p>
-                          <p className="text-xs text-gray-400">{a.simNumber} &middot; {a.network}</p>
+                          <p className="text-sm text-foreground">{a.customerName}</p>
+                          <p className="text-xs text-muted-foreground">{a.simNumber} · {a.network}</p>
                         </div>
                       ))}
                     </div>
@@ -478,45 +436,48 @@ export default function PendingIFCAPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
         {selected && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md mx-4 shadow-2xl">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+            <div className="mx-4 w-full max-w-md rounded-lg border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
                 <div>
-                  <h3 className="text-lg font-bold" style={{ color: "#0A2647" }}>IFCA Verification</h3>
-                  <p className="text-xs text-gray-500">{selected.id} &middot; {selected.customerName}</p>
+                  <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <Wifi className="h-5 w-5 text-brand-600" />
+                    IFCA Verification
+                  </h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{selected.id} · {selected.customerName}</p>
                 </div>
-                <button onClick={() => setModalId(null)} className="p-1 rounded-lg hover:bg-gray-100">
-                  <X className="h-5 w-5 text-gray-500" />
+                <button onClick={() => setModalId(null)} className="rounded-lg p-1 text-muted-foreground hover:text-foreground">
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="px-6 py-3 border-b border-gray-100 bg-gray-50 rounded-t-2xl">
+              <div className="border-b border-slate-100 bg-slate-50 px-6 py-3">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-xs text-gray-400">SIM Number</p>
-                    <p className="font-medium text-gray-700">{selected.simNumber}</p>
+                    <p className="text-xs text-muted-foreground">SIM Number</p>
+                    <p className="font-medium text-foreground">{selected.simNumber}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Network</p>
-                    <p className="font-medium text-gray-700">{selected.network}</p>
+                    <p className="text-xs text-muted-foreground">Network</p>
+                    <p className="font-medium text-foreground">{selected.network}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">ICCID</p>
-                    <p className="font-medium text-gray-700 font-mono text-xs">{selected.iccid}</p>
+                    <p className="text-xs text-muted-foreground">ICCID</p>
+                    <p className="font-mono text-xs font-medium text-foreground">{selected.iccid}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Device ID</p>
-                    <p className="font-medium text-gray-700">{selected.deviceId}</p>
+                    <p className="text-xs text-muted-foreground">Device ID</p>
+                    <p className="font-medium text-foreground">{selected.deviceId}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="px-6 py-5 space-y-3">
-                <p className="text-sm font-semibold text-gray-700 mb-2">IFCA Checklist</p>
+              <div className="space-y-3 px-6 py-5">
+                <p className="mb-2 text-sm font-semibold text-foreground">IFCA Checklist</p>
                 {[
                   { key: "dataPackageActive" as ChecklistKey, label: "Data Package Active" },
                   { key: "networkConnected" as ChecklistKey, label: "Network Connected" },
@@ -525,45 +486,29 @@ export default function PendingIFCAPage() {
                 ].map((item) => (
                   <label
                     key={item.key}
-                    className="flex items-center gap-3 p-4 min-h-[56px] rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition"
+                    className="flex min-h-[56px] cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-4 transition hover:bg-slate-50"
                   >
                     <input
                       type="checkbox"
                       checked={checklist[item.key]}
                       onChange={() => toggleCheck(item.key)}
-                      className="w-5 h-5 rounded border-gray-300"
-                      style={{ accentColor: "#C8A951" }}
+                      className="h-5 w-5 rounded accent-brand-600"
                     />
-                    <span className="text-sm font-semibold text-gray-700">{item.label}</span>
-                    {checklist[item.key] && <CheckCircle className="h-5 w-5 text-emerald-500 ml-auto" />}
+                    <span className="text-sm font-semibold text-foreground">{item.label}</span>
+                    {checklist[item.key] && <CheckCircle className="h-5 w-5 text-green-500 ml-auto" />}
                   </label>
                 ))}
               </div>
 
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-                <button
-                  onClick={() => setModalId(null)}
-                  className="px-4 py-2 min-h-[48px] rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCompleteFromModal}
-                  disabled={!allChecklistChecked}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 min-h-[56px] rounded-xl text-sm font-bold text-white transition disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    backgroundColor: allChecklistChecked ? "#C8A951" : "#9CA3AF",
-                    color: allChecklistChecked ? "#0A2647" : "#fff",
-                  }}
-                >
-                  <CheckCircle className="h-5 w-5" />
-                  Complete IFCA
-                </button>
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
+                <Button variant="secondary" onClick={() => setModalId(null)}>Cancel</Button>
+                <Button onClick={handleCompleteFromModal} disabled={!allChecklistChecked}>
+                  <CheckCircle size={16} /> Complete IFCA
+                </Button>
               </div>
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

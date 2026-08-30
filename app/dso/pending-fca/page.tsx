@@ -1,24 +1,21 @@
 ﻿"use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useDSOData } from "@/lib/DSODataContext";
 import {
-  ArrowLeft,
-  PhoneCall,
-  CheckCircle,
-  Clock,
-  Filter,
-  Search,
-  Square,
-  CheckSquare,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Phone,
-  ShieldCheck,
-  Wifi,
+  PhoneCall, CheckCircle, Clock, Square, CheckSquare, X, ChevronDown, ChevronUp, Phone,
 } from "lucide-react";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
+
+const PAGE_SIZE = 10;
 
 export default function PendingFCAPage() {
   const { activations, updateActivation } = useDSOData();
@@ -33,6 +30,7 @@ export default function PendingFCAPage() {
     voiceActive: false,
     networkRegistered: false,
   });
+  const [page, setPage] = useState(1);
 
   const pending = useMemo(
     () =>
@@ -62,6 +60,13 @@ export default function PendingFCAPage() {
         a.id.toLowerCase().includes(q)
     );
   }, [pending, search]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -155,290 +160,191 @@ export default function PendingFCAPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Progress Indicator */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Verification Progress</p>
+    <div className="mx-auto max-w-6xl space-y-6">
+      {/* Progress Indicator */}
+      <Card>
+        <div className="px-4 py-4 sm:px-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Verification Progress</p>
           <div className="flex items-center gap-2">
-            <div className="flex-1 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-emerald-500 text-white">
+            <div className="flex flex-1 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white">
                 <CheckCircle className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs font-medium text-emerald-600">BVS</p>
-                <p className="text-[10px] text-gray-400">Done</p>
+                <p className="text-xs font-medium text-green-600">BVS</p>
+                <p className="text-[10px] text-muted-foreground">Done</p>
               </div>
             </div>
-            <div className="flex-1 h-0.5 bg-emerald-300 rounded" />
-            <div className="flex-1 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#C8A951" }}>2</div>
+            <div className="h-0.5 flex-1 rounded bg-green-300" />
+            <div className="flex flex-1 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">2</div>
               <div>
-                <p className="text-xs font-bold" style={{ color: "#0A2647" }}>FCA</p>
-                <p className="text-[10px] text-gray-400">Current</p>
+                <p className="text-xs font-bold text-brand-700">FCA</p>
+                <p className="text-[10px] text-muted-foreground">Current</p>
               </div>
             </div>
-            <div className="flex-1 h-0.5 bg-gray-200 rounded" />
-            <div className="flex-1 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-400">3</div>
+            <div className="h-0.5 flex-1 rounded bg-slate-200" />
+            <div className="flex flex-1 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-400">3</div>
               <div>
-                <p className="text-xs font-medium text-gray-400">IFCA</p>
-                <p className="text-[10px] text-gray-400">Next</p>
+                <p className="text-xs font-medium text-muted-foreground">IFCA</p>
+                <p className="text-[10px] text-muted-foreground">Next</p>
               </div>
             </div>
           </div>
         </div>
+      </Card>
 
-        {/* Header */}
-        <div
-          className="rounded-2xl px-6 py-5 text-white"
-          style={{ backgroundColor: "#0A2647" }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <a
-              href="/dso/dashboard"
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </a>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <PhoneCall className="h-6 w-6" style={{ color: "#C8A951" }} />
-                FCA Verification
-              </h1>
-              <p className="text-sm text-gray-300 mt-0.5">
-                Voice &amp; call verification for activated SIMs
-              </p>
-            </div>
-            {selectedIds.length > 0 && (
-              <button
-                onClick={handleBulkComplete}
-                className="flex items-center gap-2 px-5 py-2.5 min-h-[48px] rounded-xl font-semibold text-sm transition hover:opacity-90"
-                style={{ backgroundColor: "#C8A951", color: "#0A2647" }}
-              >
-                <CheckCircle className="h-4 w-4" />
-                Complete Selected ({selectedIds.length})
-              </button>
-            )}
-          </div>
-        </div>
+      {/* Header */}
+      <PageHeader
+        breadcrumb={[{ label: "DSO Dashboard", href: "/dso/dashboard" }, { label: "FCA Verification" }]}
+        title="FCA Verification"
+        description="Voice & call verification for activated SIMs"
+        actions={
+          selectedIds.length > 0 ? (
+            <Button onClick={handleBulkComplete}>
+              <CheckCircle size={16} /> Complete Selected ({selectedIds.length})
+            </Button>
+          ) : undefined
+        }
+      />
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            {
-              label: "Total Pending",
-              value: pending.length,
-              icon: Clock,
-              bg: "bg-amber-50",
-              color: "#C8A951",
-            },
-            {
-              label: "Completed Today",
-              value: completedAll.length,
-              icon: CheckCircle,
-              bg: "bg-emerald-50",
-              color: "#059669",
-            },
-            {
-              label: "Total Completed",
-              value: totalCompleted.length,
-              icon: PhoneCall,
-              bg: "bg-blue-50",
-              color: "#0A2647",
-            },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className={`${s.bg} rounded-2xl p-5 flex items-center gap-4 min-h-[80px]`}
-            >
-              <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: `${s.color}20` }}
-              >
-                <s.icon className="h-7 w-7" style={{ color: s.color }} />
-              </div>
-              <div>
-                <p className="text-3xl font-bold" style={{ color: "#0A2647" }}>
-                  {s.value}
-                </p>
-                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{s.label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Total Pending" value={pending.length} icon={Clock} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="Completed Today" value={completedAll.length} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Total Completed" value={totalCompleted.length} icon={PhoneCall} />
+      </div>
 
-        {/* Search */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, CNIC, SIM number, or ID..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A951]"
-            />
-          </div>
-        </div>
+      {/* Search */}
+      <Card className="p-4">
+        <SearchInput
+          placeholder="Search by name, CNIC, SIM number, or ID..."
+          value={search}
+          onSearch={setSearch}
+        />
+      </Card>
 
-        {/* Pending Table */}
-        {filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-            <CheckCircle className="h-12 w-12 mx-auto mb-3 text-emerald-400" />
-            <p className="text-gray-500 font-medium">
-              {pending.length === 0
-                ? "All FCA verifications completed"
-                : "No results match your search"}
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            {/* Select All Header */}
-            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
-              <button onClick={toggleSelectAll} className="flex items-center gap-2 min-h-[48px]">
-                {allSelected ? (
-                  <CheckSquare className="h-5 w-5" style={{ color: "#C8A951" }} />
-                ) : (
-                  <Square className="h-5 w-5 text-gray-400" />
-                )}
-                <span className="text-sm font-medium text-gray-600">
-                  Select All ({filtered.length})
-                </span>
-              </button>
-            </div>
-
-            <div className="divide-y divide-gray-100">
-              {filtered.map((a) => (
-                <div
-                  key={a.id}
-                  className={`px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition ${
-                    selectedIds.includes(a.id) ? "bg-blue-50/50" : ""
-                  }`}
-                >
-                  <button onClick={() => toggleSelect(a.id)}>
-                    {selectedIds.includes(a.id) ? (
-                      <CheckSquare className="h-5 w-5" style={{ color: "#C8A951" }} />
-                    ) : (
-                      <Square className="h-5 w-5 text-gray-300" />
-                    )}
-                  </button>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className="font-mono text-xs font-semibold"
-                        style={{ color: "#0A2647" }}
-                      >
-                        {a.id}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${typeColor(
-                          a.type
-                        )}`}
-                      >
-                        {a.type}
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">
-                        <Phone className="h-2.5 w-2.5" />
-                        {a.network}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 mt-1.5 text-sm text-gray-600">
-                      <span>{a.customerName}</span>
-                      <span className="text-gray-300">|</span>
-                      <span>{a.customerCNIC}</span>
-                      <span className="text-gray-300">|</span>
-                      <span className="font-medium">{a.simNumber}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => openModal(a.id)}
-                    className="px-4 py-2 min-h-[48px] rounded-xl text-xs font-semibold text-white shrink-0 transition hover:opacity-90"
-                    style={{ backgroundColor: "#0A2647" }}
+      {/* Pending Table */}
+      {filtered.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={CheckCircle}
+            title={pending.length === 0 ? "All FCA verifications completed" : "No results match your search"}
+            description={pending.length === 0 ? "Great work! All SIMs have been voice verified." : "Try a different search term."}
+          />
+        </Card>
+      ) : (
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="w-10 px-4 py-3 text-left">
+                    <button onClick={toggleSelectAll} className="flex items-center justify-center">
+                      {allSelected ? (
+                        <CheckSquare className="h-5 w-5 text-brand-600" />
+                      ) : (
+                        <Square className="h-5 w-5 text-slate-300" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Customer</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground md:table-cell">SIM Details</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground lg:table-cell">CNIC</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Type</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {paged.map((a) => (
+                  <tr
+                    key={a.id}
+                    className={`transition-colors ${selectedIds.includes(a.id) ? "bg-brand-50/60" : "hover:bg-slate-50"}`}
                   >
-                    Complete FCA
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <td className="px-4 py-3">
+                      <button onClick={() => toggleSelect(a.id)} className="flex items-center justify-center">
+                        {selectedIds.includes(a.id) ? (
+                          <CheckSquare className="h-5 w-5 text-brand-600" />
+                        ) : (
+                          <Square className="h-5 w-5 text-slate-300" />
+                        )}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-foreground">{a.customerName}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{a.id}</p>
+                    </td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <div className="flex min-h-[60px] flex-col justify-center">
+                        <p className="text-sm font-medium text-foreground">{a.simNumber}</p>
+                        <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                          <Phone className="h-2.5 w-2.5" />
+                          {a.network}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="hidden px-4 py-3 lg:table-cell">
+                      <p className="font-mono text-xs text-muted-foreground">{a.customerCNIC}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${typeColor(a.type)}`}>{a.type}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button size="sm" onClick={() => openModal(a.id)}>
+                        <PhoneCall size={14} /> Complete FCA
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        </Card>
+      )}
 
-        {/* Date-wise Completed Records */}
+      {/* Date-wise Completed Records */}
         {completedByDate.length > 0 && (
           <div className="space-y-4">
-            <h2
-              className="text-lg font-bold"
-              style={{ color: "#0A2647" }}
-            >
+            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <Clock className="h-5 w-5 text-brand-600" />
               Completed Records
             </h2>
             {completedByDate.map(([date, records]) => (
-              <div
-                key={date}
-                className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
-              >
+              <div key={date} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
                 <button
                   onClick={() => toggleDate(date)}
-                  className="w-full px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition"
-                  style={{ backgroundColor: "#0A264708" }}
+                  className="flex w-full items-center justify-between px-5 py-3 transition hover:bg-slate-50"
                 >
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" style={{ color: "#C8A951" }} />
-                    <span
-                      className="text-sm font-bold"
-                      style={{ color: "#0A2647" }}
-                    >
-                      {formatDateDDMMYYYY(date)}
-                    </span>
+                    <Clock className="h-4 w-4 text-brand-600" />
+                    <span className="text-sm font-bold text-foreground">{formatDateDDMMYYYY(date)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span
-                      className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                      style={{
-                        backgroundColor: "#C8A95120",
-                        color: "#0A2647",
-                      }}
-                    >
-                      {records.length} record{records.length !== 1 && "s"}
-                    </span>
+                    <StatusPill label={`${records.length} record${records.length !== 1 ? "s" : ""}`} tone="positive" />
                     {expandedDates.has(date) ? (
-                      <ChevronUp className="h-4 w-4 text-gray-400" />
+                      <ChevronUp className="h-4 w-4 text-slate-400" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
                     )}
                   </div>
                 </button>
                 {expandedDates.has(date) && (
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-slate-100">
                     {records.map((a) => (
-                      <div
-                        key={a.id}
-                        className="px-5 py-3 flex items-center gap-4 min-h-[72px]"
-                      >
-                        <CheckCircle className="h-5 w-5 text-emerald-500 shrink-0" />
-                        <div className="flex-1 min-w-0">
+                      <div key={a.id} className="flex min-h-[72px] items-center gap-4 px-5 py-3">
+                        <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-500" />
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span
-                              className="font-mono text-xs font-semibold"
-                              style={{ color: "#0A2647" }}
-                            >
-                              {a.id}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${typeColor(
-                                a.type
-                              )}`}
-                            >
-                              {a.type}
-                            </span>
+                            <span className="font-mono text-xs font-semibold text-foreground">{a.id}</span>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeColor(a.type)}`}>{a.type}</span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-0.5">
-                            {a.customerName} &middot; {a.simNumber}
+                          <p className="mt-0.5 text-sm text-muted-foreground">
+                            {a.customerName} · {a.simNumber}
                           </p>
                         </div>
-                        <span className="text-xs text-gray-400 shrink-0">
+                        <span className="flex-shrink-0 text-xs text-muted-foreground">
                           {formatDateDDMMYYYY(a.fcaDate)}
                         </span>
                       </div>
@@ -450,95 +356,65 @@ export default function PendingFCAPage() {
           </div>
         )}
 
-        {/* Modal */}
-        {selected && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md mx-4 shadow-2xl">
-              <div
-                className="flex items-center justify-between px-6 py-4 rounded-t-2xl text-white"
-                style={{ backgroundColor: "#0A2647" }}
-              >
-                <div>
-                  <h3 className="text-lg font-bold">FCA Verification</h3>
-                  <p className="text-xs text-gray-300">
-                    {selected.id} &middot; {selected.customerName}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setModalId(null)}
-                  className="p-1 rounded-lg hover:bg-white/10"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="px-6 py-5 space-y-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                  Verification Checklist
+      {/* Modal */}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-md rounded-lg border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <div>
+                <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <PhoneCall className="h-5 w-5 text-brand-600" />
+                  FCA Verification
+                </h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {selected.id} · {selected.customerName}
                 </p>
+              </div>
+              <button
+                onClick={() => setModalId(null)}
+                className="rounded-lg p-1 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Verification Checklist
+              </p>
+              <div className="space-y-3">
                 {[
-                  {
-                    key: "incomingCall" as const,
-                    label: "Incoming Call Test Passed",
-                  },
-                  {
-                    key: "outgoingCall" as const,
-                    label: "Outgoing Call Test Passed",
-                  },
-                  {
-                    key: "voiceActive" as const,
-                    label: "Voice Service Active",
-                  },
-                  {
-                    key: "networkRegistered" as const,
-                    label: "Network Registered Successfully",
-                  },
+                  { key: "incomingCall" as const, label: "Incoming Call Test Passed" },
+                  { key: "outgoingCall" as const, label: "Outgoing Call Test Passed" },
+                  { key: "voiceActive" as const, label: "Voice Service Active" },
+                  { key: "networkRegistered" as const, label: "Network Registered Successfully" },
                 ].map((item) => (
                   <label
                     key={item.key}
-                    className="flex items-center gap-3 p-4 min-h-[56px] rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition"
+                    className="flex min-h-[56px] cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-4 transition hover:bg-slate-50"
                   >
                     <input
                       type="checkbox"
                       checked={checklist[item.key]}
                       onChange={() => toggleCheck(item.key)}
-                      className="w-5 h-5 rounded border-gray-300"
-                      style={{ accentColor: "#C8A951" }}
+                      className="h-5 w-5 rounded accent-brand-600"
                     />
-                    <span className="text-sm font-semibold text-gray-700 flex-1">
-                      {item.label}
-                    </span>
-                    {checklist[item.key] && (
-                      <CheckCircle className="h-5 w-5 text-emerald-500" />
-                    )}
+                    <span className="flex-1 text-sm font-semibold text-foreground">{item.label}</span>
+                    {checklist[item.key] && <CheckCircle className="h-5 w-5 text-green-500" />}
                   </label>
                 ))}
               </div>
+            </div>
 
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-                <button
-                  onClick={() => setModalId(null)}
-                  className="px-4 py-2 min-h-[48px] rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleIndividualComplete(selected.id)}
-                  disabled={!allChecked}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 min-h-[56px] rounded-xl text-sm font-bold transition disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    backgroundColor: allChecked ? "#C8A951" : "#9CA3AF",
-                    color: allChecked ? "#0A2647" : "#fff",
-                  }}
-                >
-                  <CheckCircle className="h-5 w-5" />
-                  Complete FCA
-                </button>
-              </div>
+            <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="secondary" onClick={() => setModalId(null)}>Cancel</Button>
+              <Button onClick={() => handleIndividualComplete(selected.id)} disabled={!allChecked}>
+                <CheckCircle size={16} /> Complete FCA
+              </Button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

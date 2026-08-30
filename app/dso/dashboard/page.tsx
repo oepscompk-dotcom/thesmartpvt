@@ -8,12 +8,17 @@ import {
   Plus, ArrowRightLeft, Repeat, Hash, Wallet, Target, TrendingUp,
   TrendingDown, Fingerprint, PhoneCall, Wifi, CheckCircle, Clock,
   AlertTriangle, ClipboardCheck, Smartphone, Bell, ChevronRight, ArrowRight,
-  Shield, UserCheck, CreditCard, Activity, Calendar, Eye, Zap,
-  BarChart3, Home, Package, CircleDot, DollarSign, RefreshCw,
-  CheckCircle2, FileText, Star, X, BookOpen, Search, Filter
+  Shield, UserCheck, CreditCard, Activity, Zap,
+  BarChart3, Home, DollarSign, RefreshCw,
+  CheckCircle2, X, BookOpen, Package
 } from "lucide-react";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 import { apiLoadById } from "@/lib/api";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/SearchInput";
 
 export default function DSODashboardPage() {
   const { activations, attendance, wallet, targets, device, notifications, settings, auth, hydrated, sims } = useDSOData();
@@ -145,10 +150,10 @@ export default function DSODashboardPage() {
   }
 
   const primaryStats = [
-    { label: "Today's Activations", value: metrics.todayActs, icon: Activity, color: "from-blue-500 to-blue-600", light: "bg-blue-50", trend: metrics.todayActs > 0 ? `+${metrics.todayActs}` : "0", up: metrics.todayActs > 0 },
-    { label: "Pending Verifications", value: metrics.pendingTotal, icon: Clock, color: "from-amber-500 to-amber-600", light: "bg-amber-50", trend: `${metrics.pendingTotal}`, up: metrics.pendingTotal === 0 },
-    { label: "Completed Today", value: metrics.completedToday, icon: CheckCircle, color: "from-emerald-500 to-emerald-600", light: "bg-emerald-50", trend: `+${metrics.completedToday}`, up: metrics.completedToday > 0 },
-    { label: "Wallet", value: `PKR ${walletInfo.balance.toLocaleString()}`, icon: Wallet, color: "from-purple-500 to-purple-600", light: "bg-purple-50", trend: `+${walletInfo.count} txns`, up: true },
+    { label: "Today's Activations", value: metrics.todayActs, icon: Activity, iconClass: "text-blue-600 bg-blue-50", trend: metrics.todayActs > 0 ? `+${metrics.todayActs}` : "0", up: metrics.todayActs > 0 },
+    { label: "Pending Verifications", value: metrics.pendingTotal, icon: Clock, iconClass: "text-amber-600 bg-amber-50", trend: `${metrics.pendingTotal}`, up: metrics.pendingTotal === 0 },
+    { label: "Completed Today", value: metrics.completedToday, icon: CheckCircle, iconClass: "text-emerald-600 bg-emerald-50", trend: `+${metrics.completedToday}`, up: metrics.completedToday > 0 },
+    { label: "Wallet", value: `PKR ${walletInfo.balance.toLocaleString()}`, icon: Wallet, iconClass: "text-purple-600 bg-purple-50", trend: `+${walletInfo.count} txns`, up: true },
   ];
 
   return (
@@ -182,58 +187,50 @@ export default function DSODashboardPage() {
         </div>
       )}
 
-      {/* â”€â”€â”€ Greeting Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="bg-gradient-to-r from-[#0A2647] via-[#144272] to-[#205295] rounded-2xl p-6 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        <div className="relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <Home size={14} className="text-white/60 flex-shrink-0" />
-                  <span className="text-white/60 text-xs font-medium uppercase tracking-wider truncate">DSO Dashboard</span>
-                </div>
-                <h1 className="text-xl sm:text-2xl font-black leading-snug break-words">Welcome back, {settings.dsoName || auth.dsoName || "DSO"}!</h1>
-                <p className="text-white/70 text-xs sm:text-sm mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
-                  <span className="truncate">{settings.franchiseName || "THE SMART ERP"}</span>
-                  <span>| {todayDate}</span>
-                  <span>| ID: {auth.dsoId}</span>
-                </p>
-              </div>
-              <button onClick={() => setShowActivatePopup(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#C8A951] text-[#0A2647] rounded-xl font-bold text-sm hover:bg-[#d4b55e] transition-all shadow-lg flex-shrink-0">
-                <Plus size={16} /> Activate
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => router.push("/dso/guideline")}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-all">
-                <BookOpen size={16} /> Guide
-              </button>
-              <button onClick={() => router.push("/dso/notifications")}
-                className="relative p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-all">
-                <Bell size={18} />
-                {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center animate-pulse">
-                    {notifications.filter((n) => !n.read).length}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* â”€â”€â”€ Page Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <PageHeader
+        breadcrumb={[{ label: "DSO", href: "/dso" }, { label: "Dashboard" }]}
+        title={`Welcome back, ${settings.dsoName || auth.dsoName || "DSO"}!`}
+        description={
+          <span className="flex flex-wrap gap-x-2 gap-y-0.5">
+            <span className="truncate">{settings.franchiseName || "THE SMART ERP"}</span>
+            <span>| {todayDate}</span>
+            <span>| ID: {auth.dsoId}</span>
+          </span>
+        }
+        actions={
+          <>
+            <Button onClick={() => setShowActivatePopup(true)}>
+              <Plus size={16} /> Activate
+            </Button>
+            <Button variant="outline" onClick={() => router.push("/dso/guideline")}>
+              <BookOpen size={16} /> Guide
+            </Button>
+            <button
+              onClick={() => router.push("/dso/notifications")}
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+              aria-label="Notifications"
+            >
+              <Bell size={18} />
+              {notifications.filter((n) => !n.read).length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center animate-pulse">
+                  {notifications.filter((n) => !n.read).length}
+                </span>
+              )}
+            </button>
+          </>
+        }
+      />
 
       {/* â”€â”€â”€ Tab Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
+      <div className="flex gap-1 w-fit p-1 bg-slate-100 rounded-lg">
         {[
           { key: "overview" as const, label: "Overview", icon: Home },
           { key: "performance" as const, label: "Performance", icon: Target },
           { key: "finance" as const, label: "Finance", icon: Wallet },
         ].map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab.key ? "bg-white text-[#0A2647] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${activeTab === tab.key ? "bg-white text-brand-700 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             <tab.icon size={14} /> {tab.label}
           </button>
         ))}
@@ -243,87 +240,73 @@ export default function DSODashboardPage() {
       {activeTab === "overview" && (
         <>
           {/* â”€â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {primaryStats.map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg transition-all group">
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`w-11 h-11 rounded-xl ${s.light} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <s.icon size={20} className={s.color.split(" ")[0].replace("from-", "text-")} />
-                  </div>
-                  {s.trend && (
-                    <span className={`flex items-center gap-0.5 text-xs font-bold ${s.up ? "text-green-600" : "text-red-600"}`}>
-                      {s.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {s.trend}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xl sm:text-3xl font-black text-gray-900 truncate">{s.value}</p>
-                <p className="text-gray-500 text-xs font-medium mt-0.5">{s.label}</p>
-              </div>
+              <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} iconClass={s.iconClass} trend={s.trend} trendUp={s.up} />
             ))}
           </div>
 
           {/* â”€â”€â”€ Secondary Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Pending BVS", value: metrics.pendingBVS, icon: Fingerprint, color: "text-amber-600", light: "bg-amber-50" },
-              { label: "Pending FCA", value: metrics.pendingFCA, icon: PhoneCall, color: "text-blue-600", light: "bg-blue-50" },
-              { label: "Pending IFCA", value: metrics.pendingIFCA, icon: Wifi, color: "text-purple-600", light: "bg-purple-50" },
-              { label: "Total Completed", value: metrics.totalCompleted, icon: CheckCircle2, color: "text-green-600", light: "bg-green-50" },
+              { label: "Pending BVS", value: metrics.pendingBVS, icon: Fingerprint, iconClass: "text-amber-600 bg-amber-50" },
+              { label: "Pending FCA", value: metrics.pendingFCA, icon: PhoneCall, iconClass: "text-blue-600 bg-blue-50" },
+              { label: "Pending IFCA", value: metrics.pendingIFCA, icon: Wifi, iconClass: "text-purple-600 bg-purple-50" },
+              { label: "Total Completed", value: metrics.totalCompleted, icon: CheckCircle2, iconClass: "text-green-600 bg-green-50" },
             ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-all">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center`}>
-                    <s.icon size={18} className={s.color} />
-                  </div>
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{s.value}</p>
-                    <p className="text-gray-500 text-[11px]">{s.label}</p>
-                  </div>
-                </div>
-              </div>
+              <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} iconClass={s.iconClass} />
             ))}
           </div>
 
           {/* â”€â”€â”€ Quick Actions + Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <Zap size={16} className="text-[#C8A951]" /> Quick Actions
+          <Card>
+            <CardHeader className="flex-row items-center justify-between sm:items-center gap-3">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Zap size={16} className="text-amber-500" /> Quick Actions
               </h3>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 max-w-xs">
-                <Search size={14} className="text-gray-400" />
-                <input placeholder="Search activations..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-0 p-0 text-xs focus:outline-none w-full text-gray-700 placeholder:text-gray-400" />
-                {searchQuery && <X size={14} className="text-gray-400 cursor-pointer" onClick={() => setSearchQuery("")} />}
+              <div className="flex items-center gap-2">
+                <SearchInput
+                  placeholder="Search activations..."
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  className="min-w-[200px] max-w-[220px]"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-muted-foreground transition-colors hover:bg-slate-50" aria-label="Clear search">
+                    <X size={14} />
+                  </button>
+                )}
               </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: "New SIM", href: "/dso/activation", icon: Plus, color: "bg-blue-50 text-blue-600" },
-                { label: "MNP", href: "/dso/mnp", icon: ArrowRightLeft, color: "bg-purple-50 text-purple-600" },
-                { label: "Replacement", href: "/dso/replacement", icon: Repeat, color: "bg-orange-50 text-orange-600" },
-                { label: "BYN", href: "/dso/byn", icon: Hash, color: "bg-teal-50 text-teal-600" },
-              ].map((a) => (
-                <Link key={a.label} href={a.href}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.color} hover:scale-105 transition-all`}>
-                  <a.icon size={20} />
-                  <span className="text-[11px] font-bold">{a.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "New SIM", href: "/dso/activation", icon: Plus, color: "bg-blue-50 text-blue-600" },
+                  { label: "MNP", href: "/dso/mnp", icon: ArrowRightLeft, color: "bg-purple-50 text-purple-600" },
+                  { label: "Replacement", href: "/dso/replacement", icon: Repeat, color: "bg-orange-50 text-orange-600" },
+                  { label: "BYN", href: "/dso/byn", icon: Hash, color: "bg-teal-50 text-teal-600" },
+                ].map((a) => (
+                  <Link key={a.label} href={a.href}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.color} hover:scale-105 transition-all`}>
+                    <a.icon size={20} />
+                    <span className="text-[11px] font-bold">{a.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* â”€â”€â”€ Main Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {/* Verification Pipeline */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Shield size={16} className="text-[#0A2647]" /> Verification Pipeline
+              <Card>
+                <CardHeader>
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <Shield size={16} className="text-brand-600" /> Verification Pipeline
                   </h3>
-                </div>
-                <div className="p-4">
+                </CardHeader>
+                <CardContent>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
                       { label: "BVS Pending", count: metrics.pendingBVS, color: "bg-amber-50 text-amber-700 border-amber-200", href: "/dso/pending-bvs" },
@@ -352,17 +335,18 @@ export default function DSODashboardPage() {
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Recent Activations with Search */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Activity size={16} className="text-[#0A2647]" /> Recent Activations
+              <Card className="overflow-hidden">
+                <CardHeader className="flex-row items-center justify-between sm:items-center">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <Activity size={16} className="text-brand-600" /> Recent Activations
                   </h3>
-                  <span className="text-xs text-gray-400">{filteredActivations.length} records</span>
-                </div>
+                  <span className="text-sm text-muted-foreground">{filteredActivations.length} records</span>
+                </CardHeader>
+                <CardContent className="p-0">
                 <div className="md:hidden divide-y divide-gray-50">
                   {filteredActivations.slice(0, 6).map((a) => (
                     <div key={a.id} className="px-4 py-3 flex items-center justify-between gap-3">
@@ -420,16 +404,17 @@ export default function DSODashboardPage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Recent Activity */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <BarChart3 size={16} className="text-[#0A2647]" /> Recent Activity
+              <Card>
+                <CardHeader>
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <BarChart3 size={16} className="text-brand-600" /> Recent Activity
                   </h3>
-                </div>
-                <div className="p-4">
+                </CardHeader>
+                <CardContent>
                   {recentActivity.length > 0 ? (
                     <div className="space-y-3">
                       {recentActivity.map((item, i) => (
@@ -448,20 +433,20 @@ export default function DSODashboardPage() {
                   ) : (
                     <p className="text-gray-400 text-sm text-center py-8">No recent activity</p>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Right Column */}
             <div className="space-y-6">
               {/* Target Gauges */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Target size={16} className="text-[#0A2647]" /> Target Achievement
+              <Card>
+                <CardHeader>
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <Target size={16} className="text-brand-600" /> Target Achievement
                   </h3>
-                </div>
-                <div className="p-6">
+                </CardHeader>
+                <CardContent>
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { label: "New SIM", achieved: targets.newSIMAchieved, target: targets.newSIM, color: "#0A2647" },
@@ -490,46 +475,46 @@ export default function DSODashboardPage() {
                       );
                     })}
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Performance Bars */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <TrendingUp size={16} className="text-[#0A2647]" /> Performance Overview
+              <Card>
+                <CardHeader>
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <TrendingUp size={16} className="text-brand-600" /> Performance Overview
                   </h3>
-                </div>
-                <div className="p-4 space-y-4">
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="text-center">
-                    <p className="text-4xl font-black text-[#0A2647]">{targetData.progress}%</p>
-                    <p className="text-gray-400 text-xs">Monthly Progress</p>
+                    <p className="text-4xl font-black text-brand-700">{targetData.progress}%</p>
+                    <p className="text-muted-foreground text-xs">Monthly Progress</p>
                   </div>
                   {targetData.items.map((t) => {
                     const pct = safePct(t.achieved, t.target);
                     return (
                       <div key={t.label}>
                         <div className="flex justify-between text-xs mb-1.5">
-                          <span className="text-gray-500 font-medium">{t.label}</span>
-                          <span className="font-bold text-gray-700">{t.achieved}/{t.target}</span>
+                          <span className="text-muted-foreground font-medium">{t.label}</span>
+                          <span className="font-bold text-foreground">{t.achieved}/{t.target}</span>
                         </div>
-                        <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
                           <div className={`h-full rounded-full transition-all duration-700 ${t.color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                         </div>
                       </div>
                     );
                   })}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Attendance */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <ClipboardCheck size={16} className="text-[#0A2647]" /> Today&apos;s Attendance
+              <Card>
+                <CardHeader>
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <ClipboardCheck size={16} className="text-brand-600" /> Today&apos;s Attendance
                   </h3>
-                </div>
-                <div className="p-4">
+                </CardHeader>
+                <CardContent>
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div className="bg-green-50 rounded-xl p-3 text-center">
                       <p className="text-2xl font-black text-green-600">{todayAttendance?.checkIn || "--:--"}</p>
@@ -551,22 +536,22 @@ export default function DSODashboardPage() {
                   </div>
                   {!todayAttendance && (
                     <Link href="/dso/attendance" className="mt-3 block">
-                      <button className="w-full min-h-[48px] bg-[#0A2647] text-white font-bold rounded-xl hover:bg-[#144272] transition-all flex items-center justify-center gap-2">
+                      <Button size="lg" className="w-full">
                         <ClipboardCheck size={16} /> Mark Attendance
-                      </button>
+                      </Button>
                     </Link>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Notifications */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Bell size={16} className="text-[#0A2647]" /> Notifications
+              <Card>
+                <CardHeader>
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <Bell size={16} className="text-brand-600" /> Notifications
                   </h3>
-                </div>
-                <div className="p-4 space-y-3">
+                </CardHeader>
+                <CardContent className="space-y-3">
                   {notifications.slice(0, 3).map((n) => (
                     <div key={n.id} className={`flex items-start gap-3 p-3 rounded-xl ${n.read ? "bg-gray-50" : "bg-blue-50/50"}`}>
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${n.type === "warning" ? "bg-amber-100 text-amber-600" : n.type === "success" ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"}`}>
@@ -579,18 +564,18 @@ export default function DSODashboardPage() {
                     </div>
                   ))}
                   {notifications.length === 0 && <p className="text-gray-400 text-sm text-center py-4">No notifications</p>}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* SIM Stock */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Package size={16} className="text-[#0A2647]" /> My SIM Stock
+              <Card>
+                <CardHeader className="flex-row items-center justify-between sm:items-center">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <Package size={16} className="text-brand-600" /> My SIM Stock
                   </h3>
-                  <Link href="/dso/sim-stock" className="text-[10px] text-[#0A2647] font-bold hover:underline">View All</Link>
-                </div>
-                <div className="p-4">
+                  <Link href="/dso/sim-stock" className="text-xs text-brand-600 font-semibold hover:underline">View All</Link>
+                </CardHeader>
+                <CardContent>
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="bg-blue-50 rounded-xl p-3 text-center">
                       <p className="text-lg font-black text-blue-600">{simStock.total}</p>
@@ -630,24 +615,24 @@ export default function DSODashboardPage() {
                   ) : (
                     <p className="text-gray-400 text-xs text-center py-4">No SIMs issued yet</p>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Assigned Device */}
               {device && (
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-100">
-                    <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                      <Smartphone size={16} className="text-[#0A2647]" /> Assigned Device
+                <Card>
+                  <CardHeader>
+                    <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                      <Smartphone size={16} className="text-brand-600" /> Assigned Device
                     </h3>
-                  </div>
-                  <div className="p-4 space-y-3">
-                    <div className="bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-xl p-4 text-white">
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="bg-gradient-to-r from-brand-700 to-brand-800 rounded-xl p-4 text-white">
                       <div className="flex items-center gap-3">
-                        <Smartphone size={20} className="text-[#C8A951]" />
+                        <Smartphone size={20} className="text-amber-400" />
                         <div>
                           <p className="font-bold text-sm">{device.brand} {device.model}</p>
-                          <p className="text-gray-400 text-xs font-mono">{device.id}</p>
+                          <p className="text-white/60 text-xs font-mono">{device.id}</p>
                         </div>
                       </div>
                     </div>
@@ -661,8 +646,8 @@ export default function DSODashboardPage() {
                         <p className="text-gray-900 font-mono">{device.bvsNumber}</p>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </div>
@@ -672,130 +657,121 @@ export default function DSODashboardPage() {
       {/* â•â•â•â•â•â•â•â•â•â•â• PERFORMANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "performance" && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Overall Progress", value: `${targetData.progress}%`, icon: Target, color: "text-[#0A2647]", light: "bg-blue-50" },
-              { label: "Total Activations", value: activations.length, icon: Activity, color: "text-blue-600", light: "bg-blue-50" },
-              { label: "Completed", value: metrics.totalCompleted, icon: CheckCircle2, color: "text-green-600", light: "bg-green-50" },
-              { label: "Pending", value: metrics.pendingTotal, icon: Clock, color: "text-amber-600", light: "bg-amber-50" },
+              { label: "Overall Progress", value: `${targetData.progress}%`, icon: Target, iconClass: "text-brand-700 bg-brand-50" },
+              { label: "Total Activations", value: activations.length, icon: Activity, iconClass: "text-blue-600 bg-blue-50" },
+              { label: "Completed", value: metrics.totalCompleted, icon: CheckCircle2, iconClass: "text-green-600 bg-green-50" },
+              { label: "Pending", value: metrics.pendingTotal, icon: Clock, iconClass: "text-amber-600 bg-amber-50" },
             ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center mb-3`}>
-                  <s.icon size={20} className={s.color} />
-                </div>
-                <p className="text-2xl font-black text-gray-900">{s.value}</p>
-                <p className="text-gray-500 text-xs">{s.label}</p>
-              </div>
+              <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} iconClass={s.iconClass} />
             ))}
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <BarChart3 size={16} className="text-[#0A2647]" /> All Activations
+          <Card className="overflow-hidden">
+            <CardHeader className="flex-row items-center justify-between sm:items-center gap-3">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <BarChart3 size={16} className="text-brand-600" /> All Activations
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">{filteredActivations.length} records</span>
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-1.5 flex-1 sm:flex-none max-w-[220px]">
-                  <Search size={12} className="text-gray-400 flex-shrink-0" />
-                  <input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-transparent border-0 p-0 text-xs focus:outline-none w-full text-gray-700 placeholder:text-gray-400" />
-                </div>
+                <span className="text-sm text-muted-foreground">{filteredActivations.length} records</span>
+                <SearchInput
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  className="min-w-[160px] max-w-[220px]"
+                />
               </div>
-            </div>
-            <div className="md:hidden divide-y divide-gray-50">
-              {filteredActivations.map((a) => (
-                <div key={a.id} className="px-4 py-3">
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-gray-400 text-[10px]">{a.id}</span>
-                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
-                    </div>
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap ${getStatusBadge(a.status)}`}>{a.status}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-gray-900 text-sm font-medium truncate">{a.customerName}</p>
-                      <p className="text-gray-400 text-[10px] truncate">{a.network} | {a.simNumber}</p>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="md:hidden divide-y divide-slate-100">
+                {filteredActivations.map((a) => (
+                  <div key={a.id} className="px-4 py-3">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-mono text-muted-foreground text-[10px]">{a.id}</span>
+                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
                       </div>
-                      <span className="text-[10px] font-bold text-gray-600 w-7 text-right">{a.progress}%</span>
+                      <span className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap ${getStatusBadge(a.status)}`}>{a.status}</span>
                     </div>
-                  </div>
-                  <p className="text-gray-400 text-[10px] mt-1.5">{formatDateDDMMYYYY(a.createdAt)}</p>
-                </div>
-              ))}
-              {filteredActivations.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No activations found</p>}
-            </div>
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">ID</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Type</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Customer</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Network</th>
-                    <th className="px-4 py-3 text-center text-gray-500 text-xs font-medium uppercase">Progress</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredActivations.map((a) => (
-                    <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-4 py-3 font-mono text-gray-500 text-xs">{a.id}</td>
-                      <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getTypeBadge(a.type)}`}>{a.type}</span></td>
-                      <td className="px-4 py-3 font-medium text-gray-900">{a.customerName}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-sm">{a.network}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 justify-center">
-                          <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
-                          </div>
-                          <span className="text-xs font-bold text-gray-600 w-8 text-right">{a.progress}%</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-gray-900 text-sm font-medium truncate">{a.customerName}</p>
+                        <p className="text-gray-400 text-[10px] truncate">{a.network} | {a.simNumber}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
                         </div>
-                      </td>
-                      <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getStatusBadge(a.status)}`}>{a.status}</span></td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-gray-400 text-xs">{formatDateDDMMYYYY(a.createdAt)}</td>
+                        <span className="text-[10px] font-bold text-gray-600 w-7 text-right">{a.progress}%</span>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-[10px] mt-1.5">{formatDateDDMMYYYY(a.createdAt)}</p>
+                  </div>
+                ))}
+                {filteredActivations.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No activations found</p>}
+              </div>
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50">
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">ID</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Type</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Customer</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase hidden md:table-cell">Network</th>
+                      <th className="px-4 py-3 text-center text-muted-foreground text-xs font-medium uppercase">Progress</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase hidden lg:table-cell">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  </thead>
+                  <tbody>
+                    {filteredActivations.map((a) => (
+                      <tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="px-4 py-3 font-mono text-muted-foreground text-xs">{a.id}</td>
+                        <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getTypeBadge(a.type)}`}>{a.type}</span></td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{a.customerName}</td>
+                        <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-sm">{a.network}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2 justify-center">
+                            <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+                            </div>
+                            <span className="text-xs font-bold text-gray-600 w-8 text-right">{a.progress}%</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getStatusBadge(a.status)}`}>{a.status}</span></td>
+                        <td className="px-4 py-3 hidden lg:table-cell text-gray-400 text-xs">{formatDateDDMMYYYY(a.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </>
       )}
 
       {/* â•â•â•â•â•â•â•â•â•â•â• FINANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "finance" && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Wallet Balance", value: `PKR ${walletInfo.balance.toLocaleString()}`, icon: Wallet, color: "text-green-600", light: "bg-green-50" },
-              { label: "Total Credits", value: `PKR ${walletInfo.totalCredits.toLocaleString()}`, icon: TrendingUp, color: "text-green-600", light: "bg-green-50" },
-              { label: "Total Debits", value: `PKR ${walletInfo.totalDebits.toLocaleString()}`, icon: TrendingDown, color: "text-red-600", light: "bg-red-50" },
-              { label: "Transactions", value: walletInfo.count, icon: CreditCard, color: "text-blue-600", light: "bg-blue-50" },
+              { label: "Wallet Balance", value: `PKR ${walletInfo.balance.toLocaleString()}`, icon: Wallet, iconClass: "text-green-600 bg-green-50" },
+              { label: "Total Credits", value: `PKR ${walletInfo.totalCredits.toLocaleString()}`, icon: TrendingUp, iconClass: "text-green-600 bg-green-50" },
+              { label: "Total Debits", value: `PKR ${walletInfo.totalDebits.toLocaleString()}`, icon: TrendingDown, iconClass: "text-red-600 bg-red-50" },
+              { label: "Transactions", value: walletInfo.count, icon: CreditCard, iconClass: "text-blue-600 bg-blue-50" },
             ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center mb-3`}>
-                  <s.icon size={20} className={s.color} />
-                </div>
-                <p className="text-lg sm:text-xl font-black text-gray-900 truncate">{s.value}</p>
-                <p className="text-gray-500 text-xs">{s.label}</p>
-              </div>
+              <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} iconClass={s.iconClass} />
             ))}
           </div>
 
           {/* Salary Detail Link */}
           <Link href="/dso/salary-detail"
-            className="block bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-2xl p-5 text-white hover:shadow-xl transition-all group">
+            className="block bg-gradient-to-r from-brand-700 to-brand-800 rounded-2xl p-5 text-white shadow-sm hover:shadow-lg transition-all group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <DollarSign size={22} className="text-[#C8A951]" />
+                  <DollarSign size={22} className="text-amber-400" />
                 </div>
                 <div>
                   <h3 className="font-bold text-base">Salary Detail</h3>
@@ -807,13 +783,13 @@ export default function DSODashboardPage() {
           </Link>
 
           {salarySummary && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                  <DollarSign size={16} className="text-[#0A2647]" /> My Salary Summary
+            <Card>
+              <CardHeader>
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <DollarSign size={16} className="text-brand-600" /> My Salary Summary
                 </h3>
-              </div>
-              <div className="p-5">
+              </CardHeader>
+              <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
                     <h4 className="text-gray-500 text-xs font-bold uppercase mb-3">Earnings</h4>
@@ -850,23 +826,23 @@ export default function DSODashboardPage() {
                         <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {mySalary.otherDeduction.toLocaleString()}</span></div>
                       </div>
                     </div>
-                    <div className="mt-4 p-3 bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-xl text-white flex items-center justify-between gap-3">
+                    <div className="mt-4 p-3 bg-gradient-to-r from-brand-700 to-brand-800 rounded-xl text-white flex items-center justify-between gap-3">
                       <span className="text-sm font-semibold">Net Payable</span>
                       <span className="text-lg font-black whitespace-nowrap">PKR {salarySummary.netPay.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+                </CardContent>
+              </Card>
           )}
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <Wallet size={16} className="text-[#0A2647]" /> Wallet Transactions
+          <Card>
+            <CardHeader>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Wallet size={16} className="text-brand-600" /> Wallet Transactions
               </h3>
-            </div>
-            <div className="divide-y divide-gray-50">
+            </CardHeader>
+            <CardContent className="p-0 divide-y divide-slate-100">
               {wallet.slice(0, 10).map((w) => (
                 <div key={w.id} className="px-6 py-3 flex items-center justify-between">
                   <div>
@@ -879,8 +855,8 @@ export default function DSODashboardPage() {
                 </div>
               ))}
               {wallet.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No transactions recorded</p>}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

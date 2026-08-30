@@ -1,9 +1,15 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Bell, AlertTriangle, CheckCircle2, Info, Check } from "lucide-react";
+import { Bell, AlertTriangle, CheckCircle2, Info, Check, Inbox } from "lucide-react";
 import { useDSOData } from "@/lib/DSODataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, QuickChip } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function DSONotificationsPage() {
   const { notifications, markNotificationRead } = useDSOData();
@@ -20,75 +26,69 @@ export default function DSONotificationsPage() {
     }
   };
 
-  const getTypeStyle = (type: string) => {
-    switch (type) {
-      case "warning": return "bg-yellow-50 border-yellow-200";
-      case "success": return "bg-green-50 border-green-200";
-      default: return "bg-blue-50 border-blue-200";
-    }
-  };
-
   const handleClick = (id: string, read: boolean) => {
     if (!read) markNotificationRead(id);
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Notifications</h1>
-        <p className="text-gray-500 text-sm mt-1">Stay updated on your activities</p>
+      <PageHeader
+        breadcrumb={[{ label: "DSO Dashboard", href: "/dso" }, { label: "Notifications" }]}
+        title="Notifications"
+        description="Stay updated on your activities"
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StatCard label="Total Notifications" value={notifications.length} icon={Bell} iconClass="text-brand-600 bg-brand-50" />
+        <StatCard label="Unread" value={unreadCount} icon={AlertTriangle} iconClass="text-yellow-600 bg-yellow-50" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl p-5 border border-gray-200 text-center">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 mx-auto mb-2"><Bell size={18} /></div>
-          <p className="text-3xl font-black text-gray-900">{notifications.length}</p>
-          <p className="text-gray-500 text-xs mt-1">Total</p>
-        </div>
-        <div className="bg-white rounded-2xl p-5 border border-gray-200 text-center">
-          <div className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 mx-auto mb-2"><AlertTriangle size={18} /></div>
-          <p className="text-3xl font-black text-gray-900">{unreadCount}</p>
-          <p className="text-gray-500 text-xs mt-1">Unread</p>
-        </div>
-      </div>
-
-      <div className="flex gap-3">
-        <button onClick={() => setFilter("all")} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${filter === "all" ? "bg-[#0A2647] text-white shadow-md" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
-          All ({notifications.length})
-        </button>
-        <button onClick={() => setFilter("unread")} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${filter === "unread" ? "bg-[#0A2647] text-white shadow-md" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
-          Unread ({unreadCount})
-        </button>
+      <div className="flex flex-wrap gap-2">
+        <QuickChip label="All" count={notifications.length} active={filter === "all"} onClick={() => setFilter("all")} />
+        <QuickChip label="Unread" count={unreadCount} active={filter === "unread"} onClick={() => setFilter("unread")} />
       </div>
 
       <div className="space-y-3">
         {filtered.map((n) => (
-          <div key={n.id} onClick={() => handleClick(n.id, n.read)} className={`bg-white rounded-2xl p-5 border transition-all cursor-pointer hover:shadow-md ${n.read ? "border-gray-200" : getTypeStyle(n.type)}`}>
+          <Card
+            key={n.id}
+            onClick={() => handleClick(n.id, n.read)}
+            className={`group cursor-pointer p-4 sm:p-5 transition-shadow hover:shadow-md ${n.read ? "" : "border-yellow-200 bg-yellow-50/40"}`}
+          >
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 mt-0.5">
                 {getTypeIcon(n.type)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-gray-900 font-bold text-sm">{n.title}</h4>
-                  {!n.read && <span className="w-2 h-2 rounded-full bg-[#C8A951] flex-shrink-0" />}
+                  <h4 className="text-foreground font-semibold text-sm">{n.title}</h4>
+                  {!n.read && <StatusPill label="New" tone="warning" />}
                 </div>
-                <p className="text-gray-600 text-sm">{n.message}</p>
-                <p className="text-gray-400 text-xs mt-2">{formatDateDDMMYYYY(n.time)}</p>
+                <p className="text-sm text-muted-foreground">{n.message}</p>
+                <p className="text-xs text-muted-foreground/70 mt-2 font-mono">{formatDateDDMMYYYY(n.time)}</p>
               </div>
               {!n.read && (
-                <button onClick={(e) => { e.stopPropagation(); markNotificationRead(n.id); }} className="flex-shrink-0 p-2 text-gray-400 hover:text-[#0A2647] hover:bg-gray-100 rounded-lg transition-all" title="Mark as read">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); markNotificationRead(n.id); }}
+                  className="flex-shrink-0"
+                  title="Mark as read"
+                >
                   <Check size={14} />
-                </button>
+                </Button>
               )}
             </div>
-          </div>
+          </Card>
         ))}
         {filtered.length === 0 && (
-          <div className="bg-white rounded-2xl p-12 border border-gray-200 text-center">
-            <Bell size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">{filter === "unread" ? "All caught up! No unread notifications." : "No notifications yet."}</p>
-          </div>
+          <Card>
+            <EmptyState
+              icon={Inbox}
+              title={filter === "unread" ? "All caught up!" : "No notifications yet"}
+              description={filter === "unread" ? "You have no unread notifications." : "Notifications will appear here when they arrive."}
+            />
+          </Card>
         )}
       </div>
     </div>

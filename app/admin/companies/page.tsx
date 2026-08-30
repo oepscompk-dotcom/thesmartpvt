@@ -1,13 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Eye, Edit, Trash2, Building2, X, Save, RefreshCw } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Building2, X, Save, RefreshCw } from "lucide-react";
 import { useData, Company } from "@/lib/DataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
+import { Pagination } from "@/components/ui/Pagination";
+import { EmptyState } from "@/components/ui/EmptyState";
+
+const PAGE_SIZE = 8;
 
 export default function CompaniesPage() {
   const { companies, addCompany, updateCompany, deleteCompany } = useData();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [page, setPage] = useState(1);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -22,6 +34,10 @@ export default function CompaniesPage() {
     const matchStatus = statusFilter === "All" || c.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const openAdd = () => {
     setEditingCompany(null);
@@ -59,74 +75,84 @@ export default function CompaniesPage() {
     setForm((prev) => ({ ...prev, password: p }));
   };
 
+  const submitSearch = (v: string) => {
+    setSearch(v);
+    setPage(1);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Company Management</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage all company accounts that supervise multiple franchises</p>
-        </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Plus size={16} /> Add Company
-        </button>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Companies" }]}
+        title="Company Management"
+        description="Manage all company accounts that supervise multiple franchises"
+        actions={
+          <Button onClick={openAdd}>
+            <Plus className="h-4 w-4" /> Add Company
+          </Button>
+        }
+      />
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-          <Search size={16} className="text-gray-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by ID, name, or owner..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-        </div>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <SearchInput placeholder="Search by ID, name, or owner..." value={search} onSearch={submitSearch} />
+        <div className="flex flex-wrap gap-2">
           {["All", "Active", "Suspended"].map((s) => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${statusFilter === s ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>{s}</button>
+            <Button
+              key={s}
+              size="md"
+              variant={statusFilter === s ? "primary" : "outline"}
+              onClick={() => { setStatusFilter(s); setPage(1); }}
+            >
+              {s}
+            </Button>
           ))}
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Company</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Owner</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Location</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Franchises</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
-                <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Actions</th>
+              <tr className="border-b border-slate-100 bg-muted/50">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Company</th>
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Owner</th>
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Location</th>
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Franchises</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((c) => (
-                <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              {paginated.map((c) => (
+                <tr key={c.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xs font-bold">{c.id.split("-")[1]}</div>
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-50 text-xs font-bold text-brand-700">{c.id.split("-")[1]}</div>
                       <div>
-                        <p className="text-gray-900 text-sm font-medium">{c.id}</p>
-                        <p className="text-gray-500 text-xs">{c.name}</p>
+                        <p className="text-sm font-medium text-foreground">{c.name}</p>
+                        <p className="font-mono text-xs text-muted-foreground">{c.id}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 hidden md:table-cell">
-                    <p className="text-gray-700 text-sm">{c.owner}</p>
-                    <p className="text-gray-400 text-xs">{c.mobile}</p>
+                  <td className="hidden px-6 py-4 md:table-cell">
+                    <p className="text-sm text-foreground">{c.owner}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{c.mobile}</p>
                   </td>
-                  <td className="px-6 py-4 hidden lg:table-cell">
-                    <p className="text-gray-700 text-sm">{c.city}</p>
-                    <p className="text-gray-400 text-xs">{c.province}</p>
+                  <td className="hidden px-6 py-4 lg:table-cell">
+                    <p className="text-sm text-foreground">{c.city}</p>
+                    <p className="text-xs text-muted-foreground">{c.province}</p>
                   </td>
-                  <td className="px-6 py-4 hidden lg:table-cell">
-                    <span className="text-gray-700 text-sm font-medium">{c.franchiseCount}</span>
+                  <td className="hidden px-6 py-4 lg:table-cell">
+                    <span className="text-sm font-medium text-foreground">{c.franchiseCount}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${c.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{c.status}</span>
+                    <StatusPill label={c.status} tone={toneForStatus(c.status)} />
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => openView(c)} className="p-2 text-gray-400 hover:text-[#0A2647] hover:bg-gray-100 rounded-lg transition-all" title="View"><Eye size={14} /></button>
-                      <button onClick={() => openEdit(c)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit"><Edit size={14} /></button>
-                      <button onClick={() => setShowDeleteConfirm(c.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete"><Trash2 size={14} /></button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openView(c)} title="View"><Eye className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(c)} title="Edit"><Edit className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => setShowDeleteConfirm(c.id)} title="Delete"><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -134,29 +160,30 @@ export default function CompaniesPage() {
             </tbody>
           </table>
         </div>
-        {filtered.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <Building2 size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No companies found</p>
-          </div>
+        {filtered.length === 0 ? (
+          <EmptyState icon={Building2} title="No companies found" description="Try adjusting your search or status filter." />
+        ) : (
+          <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
         )}
-      </div>
+      </Card>
 
       {/* View Modal */}
       {showViewModal && selectedCompany && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowViewModal(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">Company Details</h3>
-              <button onClick={() => setShowViewModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowViewModal(false)}>
+          <div className="w-full max-w-lg overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-base font-semibold text-foreground">Company Details</h3>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowViewModal(false)} title="Close"><X className="h-4 w-4" /></Button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="text-center mb-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white font-black text-xl">{selectedCompany.id.split("-")[1]}</span>
+            <div className="space-y-4 p-6">
+              <div className="mb-4 text-center">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-brand-50 text-xl font-bold text-brand-700">
+                  {selectedCompany.id.split("-")[1]}
                 </div>
-                <h4 className="text-gray-900 font-bold text-lg">{selectedCompany.name}</h4>
-                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${selectedCompany.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{selectedCompany.status}</span>
+                <h4 className="text-lg font-bold text-foreground">{selectedCompany.name}</h4>
+                <div className="mt-2">
+                  <StatusPill label={selectedCompany.status} tone={toneForStatus(selectedCompany.status)} />
+                </div>
               </div>
               {[
                 ["Company ID", selectedCompany.id],
@@ -170,14 +197,14 @@ export default function CompaniesPage() {
                 ["Agreement Start", selectedCompany.agreementStart || "—"],
                 ["Agreement End", selectedCompany.agreementEnd || "—"],
               ].map(([label, value]) => (
-                <div key={label as string} className="flex items-center justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500 text-sm">{label}</span>
-                  <span className="text-gray-900 text-sm font-medium">{value}</span>
+                <div key={label as string} className="flex items-center justify-between gap-4 border-b border-slate-100 py-2">
+                  <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                  <span className={`text-sm font-medium text-foreground ${label === "Company ID" ? "font-mono text-xs text-muted-foreground" : ""}`}>{value}</span>
                 </div>
               ))}
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => { setShowViewModal(false); openEdit(selectedCompany); }} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] transition-all">Edit Company</button>
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button className="flex-1" onClick={() => { setShowViewModal(false); openEdit(selectedCompany); }}>Edit Company</Button>
             </div>
           </div>
         </div>
@@ -185,13 +212,13 @@ export default function CompaniesPage() {
 
       {/* Add/Edit Modal */}
       {showFormModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowFormModal(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">{editingCompany ? "Edit Company" : "Add Company"}</h3>
-              <button onClick={() => setShowFormModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowFormModal(false)}>
+          <div className="w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-base font-semibold text-foreground">{editingCompany ? "Edit Company" : "Add Company"}</h3>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowFormModal(false)} title="Close"><X className="h-4 w-4" /></Button>
             </div>
-            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
               {[
                 { label: "Company ID", field: "id" as const, type: "text", required: true },
                 { label: "Company Name", field: "name" as const, type: "text", required: true },
@@ -206,31 +233,31 @@ export default function CompaniesPage() {
                 { label: "Password", field: "password" as const, type: "text", required: false },
               ].map((f) => (
                 <div key={f.field}>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">{f.label} {f.required && <span className="text-red-500">*</span>}</label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{f.label} {f.required && <span className="text-red-500">*</span>}</label>
                   {f.type === "select" ? (
-                    <select value={form[f.field] as string} onChange={(e) => setField(f.field, e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 focus:ring-2 focus:ring-[#0A2647]/10 transition-all">
+                    <Select value={form[f.field] as string} onChange={(e) => setField(f.field, e.target.value)}>
                       {f.options!.map((o) => <option key={o} value={o}>{o}</option>)}
-                    </select>
+                    </Select>
                   ) : f.field === "password" ? (
                     <div className="flex gap-2">
-                      <input type="text" value={form[f.field] as string} onChange={(e) => setField(f.field, e.target.value)} className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 focus:ring-2 focus:ring-[#0A2647]/10 transition-all font-mono" />
-                      <button type="button" onClick={generatePassword} title="Generate Password" className="px-3 py-2.5 bg-[#0A2647] text-white rounded-xl hover:bg-[#144272] transition-all inline-flex items-center gap-1.5 text-sm font-medium whitespace-nowrap">
-                        <RefreshCw size={14} /> Generate
-                      </button>
+                      <Input type="text" value={form[f.field] as string} onChange={(e) => setField(f.field, e.target.value)} className="flex-1 font-mono" />
+                      <Button type="button" onClick={generatePassword} title="Generate Password" variant="outline" className="whitespace-nowrap">
+                        <RefreshCw className="h-4 w-4" /> Generate
+                      </Button>
                     </div>
                   ) : (
-                    <input type={f.type} value={form[f.field] as string} onChange={(e) => setField(f.field, e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 focus:ring-2 focus:ring-[#0A2647]/10 transition-all" />
+                    <Input type={f.type} value={form[f.field] as string} onChange={(e) => setField(f.field, e.target.value)} />
                   )}
                 </div>
               ))}
               <div className="sm:col-span-2">
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Address</label>
-                <textarea value={form.address} onChange={(e) => setField("address", e.target.value)} rows={2} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 focus:ring-2 focus:ring-[#0A2647]/10 transition-all resize-none" />
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Address</label>
+                <textarea value={form.address} onChange={(e) => setField("address", e.target.value)} rows={2} className="w-full resize-none rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowFormModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition-all">Cancel</button>
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] transition-all inline-flex items-center justify-center gap-2"><Save size={14} /> {editingCompany ? "Update" : "Create"}</button>
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => setShowFormModal(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSave}><Save className="h-4 w-4" /> {editingCompany ? "Update" : "Create"}</Button>
             </div>
           </div>
         </div>
@@ -238,16 +265,16 @@ export default function CompaniesPage() {
 
       {/* Delete Confirmation */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(null)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(null)}>
+          <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 text-center shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
               <Trash2 size={20} className="text-red-600" />
             </div>
-            <h3 className="text-gray-900 font-bold mb-2">Delete Company?</h3>
-            <p className="text-gray-500 text-sm mb-6">This action cannot be undone. Company <span className="font-mono font-medium">{showDeleteConfirm}</span> will be permanently removed. Associated franchises will become Self Work.</p>
+            <h3 className="mb-2 text-base font-semibold text-foreground">Delete Company?</h3>
+            <p className="mb-6 text-sm text-muted-foreground">This action cannot be undone. Company <span className="font-mono font-medium text-foreground">{showDeleteConfirm}</span> will be permanently removed. Associated franchises will become Self Work.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(null)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition-all">Cancel</button>
-              <button onClick={() => handleDelete(showDeleteConfirm)} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-all">Delete</button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowDeleteConfirm(null)}>Cancel</Button>
+              <Button variant="destructive" className="flex-1" onClick={() => handleDelete(showDeleteConfirm)}>Delete</Button>
             </div>
           </div>
         </div>

@@ -4,11 +4,16 @@ import { useState, useMemo, Fragment } from "react";
 import {
   Search, Calendar, Users, DollarSign, Wallet, TrendingUp,
   AlertTriangle, CheckCircle2, Printer, ChevronDown, ChevronUp,
-  Filter, ArrowRight, X, Check,
 } from "lucide-react";
 import { useFranchiseData, DSO, DSM } from "@/lib/FranchiseDataContext";
 import { useDSOData } from "@/lib/DSODataContext";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function SalaryDetailPage() {
   const { dso, dsms } = useFranchiseData();
@@ -316,213 +321,205 @@ export default function SalaryDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Salary Detail</h1>
-          <p className="text-gray-500 text-sm mt-1">Monthly salary breakdown for all employees</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/franchise/payroll"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all">
-            <DollarSign size={14} /> Payroll
-          </Link>
-          <button onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#C8A951] text-[#0A2647] font-bold text-sm rounded-xl hover:bg-[#d4b560] shadow-md transition-all">
-            <Printer size={14} /> Print
-          </button>
-        </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Payroll", href: "/franchise/payroll" }, { label: "Salary Detail" }]}
+        title="Salary Detail"
+        description="Monthly salary breakdown for all employees"
+        actions={
+          <>
+            <Link href="/franchise/payroll" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
+              <DollarSign size={14} /> Payroll
+            </Link>
+            <Button className="bg-[#C8A951] text-[#0A2647] hover:bg-[#d4b560]" onClick={handlePrint}>
+              <Printer size={14} /> Print
+            </Button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+        <StatCard label="Employees" value={totals.count} icon={Users} />
+        <StatCard label="Total Basic" value={`PKR ${totals.basic.toLocaleString()}`} icon={DollarSign} iconClass="bg-blue-50 text-blue-600" />
+        <StatCard label="Total Allowances" value={`PKR ${totals.allow.toLocaleString()}`} icon={Wallet} iconClass="bg-green-50 text-green-600" />
+        <StatCard label="Total Commission" value={`PKR ${totals.comm.toLocaleString()}`} icon={TrendingUp} iconClass="bg-purple-50 text-purple-600" />
+        <StatCard label="Total Deductions" value={`PKR ${totals.ded.toLocaleString()}`} icon={AlertTriangle} iconClass="bg-red-50 text-red-600" />
+        <StatCard label="Total Net Pay" value={`PKR ${totals.net.toLocaleString()}`} icon={CheckCircle2} iconClass="bg-amber-50 text-amber-600" />
       </div>
 
-      {/* Totals */}
-      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
-        {[
-          { label: "Employees", value: totals.count, icon: Users, color: "bg-[#0A2647]" },
-          { label: "Total Basic", value: `PKR ${totals.basic.toLocaleString()}`, icon: DollarSign, color: "bg-blue-500" },
-          { label: "Total Allowances", value: `PKR ${totals.allow.toLocaleString()}`, icon: Wallet, color: "bg-green-500" },
-          { label: "Total Commission", value: `PKR ${totals.comm.toLocaleString()}`, icon: TrendingUp, color: "bg-purple-500" },
-          { label: "Total Deductions", value: `PKR ${totals.ded.toLocaleString()}`, icon: AlertTriangle, color: "bg-red-500" },
-          { label: "Total Net Pay", value: `PKR ${totals.net.toLocaleString()}`, icon: CheckCircle2, color: "bg-[#C8A951]" },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl ${s.color} flex items-center justify-center`}>
-              <s.icon size={16} className="text-white" />
+      <Card>
+        <CardContent className="pt-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2">
+              <Calendar size={14} className="text-muted-foreground" />
+              <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
+                className="h-9 px-3 rounded-lg border border-slate-200 bg-white text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
             </div>
-            <div>
-              <p className="text-gray-400 text-[10px] font-medium">{s.label}</p>
-              <p className="text-gray-900 text-xs font-black">{s.value}</p>
+            <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+              {(["All", "DSO", "DSM"] as const).map((r) => (
+                <button key={r} onClick={() => setRoleFilter(r)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${roleFilter === r ? "bg-brand-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}>
+                  {r}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 transition-all focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20">
+              <Search size={16} className="text-muted-foreground" />
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name or ID..."
+                className="w-full bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none" />
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex items-center gap-2">
-            <Calendar size={14} className="text-gray-400" />
-            <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
-              className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
-          </div>
-          <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-            {(["All", "DSO", "DSM"] as const).map((r) => (
-              <button key={r} onClick={() => setRoleFilter(r)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${roleFilter === r ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-200"}`}>
-                {r}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2 flex-1 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-[#0A2647]/30 transition-all">
-            <Search size={16} className="text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name or ID..."
-              className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
-                <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase">Role</th>
-                <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Basic</th>
-                <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Allow.</th>
-                <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Activations</th>
-                <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Commission</th>
-                <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Bonuses</th>
-                <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Deductions</th>
-                <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase font-bold">Net Pay</th>
-                <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase">Details</th>
+              <tr className="border-b bg-slate-50">
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Employee</th>
+                <th className="text-center px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Role</th>
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden md:table-cell">Basic</th>
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden lg:table-cell">Allow.</th>
+                <th className="text-center px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden lg:table-cell">Activations</th>
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden xl:table-cell">Commission</th>
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden xl:table-cell">Bonuses</th>
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden xl:table-cell">Deductions</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Net Pay</th>
+                <th className="text-center px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Details</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {filtered.map((emp) => {
                 const isExpanded = expandedRow === emp.id;
                 const c = calcPayroll(emp);
                 return (
                   <Fragment key={emp.id}>
-                    <tr className={`border-b border-gray-50 transition-colors ${isExpanded ? "bg-blue-50/30" : "hover:bg-gray-50"}`}>
+                    <tr className={`transition-colors ${isExpanded ? "bg-brand-50/30" : "hover:bg-slate-50"}`}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl ${emp.role === "DSM" ? "bg-blue-50 text-blue-600" : "bg-green-50 text-green-600"} flex items-center justify-center text-xs font-bold`}>
+                          <div className={`flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold ${emp.role === "DSM" ? "bg-brand-50 text-brand-600" : "bg-green-50 text-green-600"}`}>
                             {emp.name.split(" ").map((n) => n[0]).join("")}
                           </div>
                           <div>
-                            <p className="text-gray-900 text-sm font-medium">{emp.name}</p>
-                            <p className="text-gray-400 text-xs font-mono">{emp.id}</p>
+                            <p className="text-sm font-medium text-foreground">{emp.name}</p>
+                            <p className="font-mono text-xs text-muted-foreground">{emp.id}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${emp.role === "DSM" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{emp.role}</span>
+                        <StatusPill label={emp.role} tone={emp.role === "DSM" ? "positive" : "warning"} />
                       </td>
-                      <td className="px-4 py-3 text-right text-gray-700 text-xs hidden md:table-cell">PKR {c.basic.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-gray-600 text-xs hidden lg:table-cell">PKR {c.totalAllowances.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-xs text-foreground hidden md:table-cell">PKR {c.basic.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden lg:table-cell">PKR {c.totalAllowances.toLocaleString()}</td>
                       <td className="px-4 py-3 text-center hidden lg:table-cell">
                         <div className="flex items-center justify-center gap-1 text-[10px]">
-                          <span className="px-1.5 py-0.5 bg-gray-900 text-white rounded font-bold" title="Total">{c.newSimCount + c.mnpCount + c.replacementCount + c.bynCount}</span>
+                          <span className="px-1.5 py-0.5 bg-slate-900 text-white rounded font-bold" title="Total">{c.newSimCount + c.mnpCount + c.replacementCount + c.bynCount}</span>
                           <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded font-bold" title="BVS">{c.newSimBvsCount + c.mnpBvsCount + c.replacementBvsCount + c.bynBvsCount}</span>
                           <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-bold" title="FCA">{c.newSimFcaCount + c.mnpFcaCount + c.replacementFcaCount + c.bynFcaCount}</span>
                           <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold" title="IFCA">{c.newSimIfcaCount + c.mnpIfcaCount + c.replacementIfcaCount + c.bynIfcaCount}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right text-green-600 text-xs font-medium hidden xl:table-cell">PKR {c.totalCommission.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-blue-600 text-xs hidden xl:table-cell">PKR {(c.targetBonus + c.perfBonus).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-red-500 text-xs hidden xl:table-cell">PKR {c.totalDeductions.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-xs font-medium text-green-600 hidden xl:table-cell">PKR {c.totalCommission.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-xs text-blue-600 hidden xl:table-cell">PKR {(c.targetBonus + c.perfBonus).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-xs text-red-500 hidden xl:table-cell">PKR {c.totalDeductions.toLocaleString()}</td>
                       <td className="px-4 py-3 text-right">
-                        <span className="text-gray-900 text-sm font-black">PKR {c.netPay.toLocaleString()}</span>
+                        <span className="text-sm font-bold text-foreground">PKR {c.netPay.toLocaleString()}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button onClick={() => setExpandedRow(isExpanded ? null : emp.id)}
-                          className="p-1.5 text-gray-400 hover:text-[#0A2647] hover:bg-gray-100 rounded-lg transition-all">
+                          className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-slate-100 hover:text-brand-600">
                           {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr className="bg-gray-50/80">
+                      <tr className="bg-slate-50/80">
                         <td colSpan={10} className="px-4 py-4">
                           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {/* Allowances */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <Wallet size={14} className="text-green-500" /> Allowances
-                              </h4>
-                              <div className="space-y-2 text-xs">
-                                <div className="flex justify-between"><span className="text-gray-500">Basic Salary</span><span className="font-medium">PKR {c.basic.toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">Fuel</span><span className="font-medium">PKR {c.fuel.toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">Mobile</span><span className="font-medium">PKR {c.mobile.toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">Daily</span><span className="font-medium">PKR {c.daily.toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">Residence</span><span className="font-medium">PKR {c.residence.toLocaleString()}</span></div>
-                                <div className="border-t border-gray-200 pt-2 flex justify-between font-bold"><span>Total Allowances</span><span>PKR {c.totalAllowances.toLocaleString()}</span></div>
-                              </div>
-                            </div>
+                            <Card>
+                              <CardContent className="pt-4">
+                                <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                                  <Wallet size={14} className="text-green-500" /> Allowances
+                                </h4>
+                                <div className="space-y-2 text-xs">
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Basic Salary</span><span className="font-medium">PKR {c.basic.toLocaleString()}</span></div>
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Fuel</span><span className="font-medium">PKR {c.fuel.toLocaleString()}</span></div>
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Mobile</span><span className="font-medium">PKR {c.mobile.toLocaleString()}</span></div>
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Daily</span><span className="font-medium">PKR {c.daily.toLocaleString()}</span></div>
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Residence</span><span className="font-medium">PKR {c.residence.toLocaleString()}</span></div>
+                                  <div className="flex justify-between border-t border-slate-200 pt-2 font-bold"><span>Total Allowances</span><span>PKR {c.totalAllowances.toLocaleString()}</span></div>
+                                </div>
+                              </CardContent>
+                            </Card>
                             {/* Commissions */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <TrendingUp size={14} className="text-blue-500" /> Commissions
-                              </h4>
-                              <div className="space-y-2 text-xs">
-                                {c.newSimCount > 0 && (
-                                  <>
-                                    <div className="flex justify-between"><span className="text-gray-500">New SIM ({c.newSimCount})</span><span className="font-medium text-green-600">PKR {c.newSimComm.toLocaleString()}</span></div>
-                                    {c.newSimBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.newSimBvsCount} Ã— Rs.{c.newSimBvsRate})</span><span className="text-green-600">PKR {c.newSimBvsComm.toLocaleString()}</span></div>}
-                                    {c.newSimFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.newSimFcaCount} Ã— Rs.{c.newSimFcaRate})</span><span className="text-green-600">PKR {c.newSimFcaComm.toLocaleString()}</span></div>}
-                                    {c.newSimIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.newSimIfcaCount} Ã— Rs.{c.newSimIfcaRate})</span><span className="text-green-600">PKR {c.newSimIfcaComm.toLocaleString()}</span></div>}
-                                  </>
-                                )}
-                                {c.mnpCount > 0 && (
-                                  <>
-                                    <div className="flex justify-between"><span className="text-gray-500">MNP ({c.mnpCount})</span><span className="font-medium text-green-600">PKR {c.mnpComm.toLocaleString()}</span></div>
-                                    {c.mnpBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.mnpBvsCount} Ã— Rs.{c.mnpBvsRate})</span><span className="text-green-600">PKR {c.mnpBvsComm.toLocaleString()}</span></div>}
-                                    {c.mnpFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.mnpFcaCount} Ã— Rs.{c.mnpFcaRate})</span><span className="text-green-600">PKR {c.mnpFcaComm.toLocaleString()}</span></div>}
-                                    {c.mnpIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.mnpIfcaCount} Ã— Rs.{c.mnpIfcaRate})</span><span className="text-green-600">PKR {c.mnpIfcaComm.toLocaleString()}</span></div>}
-                                  </>
-                                )}
-                                {c.replacementCount > 0 && (
-                                  <>
-                                    <div className="flex justify-between"><span className="text-gray-500">Replace ({c.replacementCount})</span><span className="font-medium text-green-600">PKR {c.replComm.toLocaleString()}</span></div>
-                                    {c.replacementBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.replacementBvsCount} Ã— Rs.{c.replacementBvsRate})</span><span className="text-green-600">PKR {c.replacementBvsComm.toLocaleString()}</span></div>}
-                                    {c.replacementFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.replacementFcaCount} Ã— Rs.{c.replacementFcaRate})</span><span className="text-green-600">PKR {c.replacementFcaComm.toLocaleString()}</span></div>}
-                                    {c.replacementIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.replacementIfcaCount} Ã— Rs.{c.replacementIfcaRate})</span><span className="text-green-600">PKR {c.replacementIfcaComm.toLocaleString()}</span></div>}
-                                  </>
-                                )}
-                                {c.bynCount > 0 && (
-                                  <>
-                                    <div className="flex justify-between"><span className="text-gray-500">BYN ({c.bynCount})</span><span className="font-medium text-green-600">PKR {c.bynComm.toLocaleString()}</span></div>
-                                    {c.bynBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">BVS ({c.bynBvsCount} Ã— Rs.{c.bynBvsRate})</span><span className="text-green-600">PKR {c.bynBvsComm.toLocaleString()}</span></div>}
-                                    {c.bynFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">FCA ({c.bynFcaCount} Ã— Rs.{c.bynFcaRate})</span><span className="text-green-600">PKR {c.bynFcaComm.toLocaleString()}</span></div>}
-                                    {c.bynIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-gray-400">IFCA ({c.bynIfcaCount} Ã— Rs.{c.bynIfcaRate})</span><span className="text-green-600">PKR {c.bynIfcaComm.toLocaleString()}</span></div>}
-                                  </>
-                                )}
-                                <div className="flex justify-between"><span className="text-gray-500">Hike + Other</span><span className="font-medium text-green-600">PKR {(c.hike + c.other).toLocaleString()}</span></div>
-                                <div className="border-t border-gray-200 pt-2 flex justify-between font-bold"><span>Total Commission</span><span className="text-green-600">PKR {c.totalCommission.toLocaleString()}</span></div>
-                              </div>
-                            </div>
+                            <Card>
+                              <CardContent className="pt-4">
+                                <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                                  <TrendingUp size={14} className="text-blue-500" /> Commissions
+                                </h4>
+                                <div className="space-y-2 text-xs">
+                                  {c.newSimCount > 0 && (
+                                    <>
+                                      <div className="flex justify-between"><span className="text-muted-foreground">New SIM ({c.newSimCount})</span><span className="font-medium text-green-600">PKR {c.newSimComm.toLocaleString()}</span></div>
+                                      {c.newSimBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">BVS ({c.newSimBvsCount} &times; Rs.{c.newSimBvsRate})</span><span className="text-green-600">PKR {c.newSimBvsComm.toLocaleString()}</span></div>}
+                                      {c.newSimFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">FCA ({c.newSimFcaCount} &times; Rs.{c.newSimFcaRate})</span><span className="text-green-600">PKR {c.newSimFcaComm.toLocaleString()}</span></div>}
+                                      {c.newSimIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">IFCA ({c.newSimIfcaCount} &times; Rs.{c.newSimIfcaRate})</span><span className="text-green-600">PKR {c.newSimIfcaComm.toLocaleString()}</span></div>}
+                                    </>
+                                  )}
+                                  {c.mnpCount > 0 && (
+                                    <>
+                                      <div className="flex justify-between"><span className="text-muted-foreground">MNP ({c.mnpCount})</span><span className="font-medium text-green-600">PKR {c.mnpComm.toLocaleString()}</span></div>
+                                      {c.mnpBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">BVS ({c.mnpBvsCount} &times; Rs.{c.mnpBvsRate})</span><span className="text-green-600">PKR {c.mnpBvsComm.toLocaleString()}</span></div>}
+                                      {c.mnpFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">FCA ({c.mnpFcaCount} &times; Rs.{c.mnpFcaRate})</span><span className="text-green-600">PKR {c.mnpFcaComm.toLocaleString()}</span></div>}
+                                      {c.mnpIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">IFCA ({c.mnpIfcaCount} &times; Rs.{c.mnpIfcaRate})</span><span className="text-green-600">PKR {c.mnpIfcaComm.toLocaleString()}</span></div>}
+                                    </>
+                                  )}
+                                  {c.replacementCount > 0 && (
+                                    <>
+                                      <div className="flex justify-between"><span className="text-muted-foreground">Replace ({c.replacementCount})</span><span className="font-medium text-green-600">PKR {c.replComm.toLocaleString()}</span></div>
+                                      {c.replacementBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">BVS ({c.replacementBvsCount} &times; Rs.{c.replacementBvsRate})</span><span className="text-green-600">PKR {c.replacementBvsComm.toLocaleString()}</span></div>}
+                                      {c.replacementFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">FCA ({c.replacementFcaCount} &times; Rs.{c.replacementFcaRate})</span><span className="text-green-600">PKR {c.replacementFcaComm.toLocaleString()}</span></div>}
+                                      {c.replacementIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">IFCA ({c.replacementIfcaCount} &times; Rs.{c.replacementIfcaRate})</span><span className="text-green-600">PKR {c.replacementIfcaComm.toLocaleString()}</span></div>}
+                                    </>
+                                  )}
+                                  {c.bynCount > 0 && (
+                                    <>
+                                      <div className="flex justify-between"><span className="text-muted-foreground">BYN ({c.bynCount})</span><span className="font-medium text-green-600">PKR {c.bynComm.toLocaleString()}</span></div>
+                                      {c.bynBvsCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">BVS ({c.bynBvsCount} &times; Rs.{c.bynBvsRate})</span><span className="text-green-600">PKR {c.bynBvsComm.toLocaleString()}</span></div>}
+                                      {c.bynFcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">FCA ({c.bynFcaCount} &times; Rs.{c.bynFcaRate})</span><span className="text-green-600">PKR {c.bynFcaComm.toLocaleString()}</span></div>}
+                                      {c.bynIfcaCount > 0 && <div className="flex justify-between pl-4"><span className="text-muted-foreground">IFCA ({c.bynIfcaCount} &times; Rs.{c.bynIfcaRate})</span><span className="text-green-600">PKR {c.bynIfcaComm.toLocaleString()}</span></div>}
+                                    </>
+                                  )}
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Hike + Other</span><span className="font-medium text-green-600">PKR {(c.hike + c.other).toLocaleString()}</span></div>
+                                  <div className="flex justify-between border-t border-slate-200 pt-2 font-bold"><span>Total Commission</span><span className="text-green-600">PKR {c.totalCommission.toLocaleString()}</span></div>
+                                </div>
+                              </CardContent>
+                            </Card>
                             {/* Bonuses & Deductions */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <DollarSign size={14} className="text-[#C8A951]" /> Bonuses & Deductions
-                              </h4>
-                              <div className="space-y-2 text-xs">
-                                <div className="flex justify-between"><span className="text-gray-500">Target Bonus</span><span className="font-medium text-blue-600">PKR {(c.targetBonus).toLocaleString()}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">Performance Bonus</span><span className="font-medium text-blue-600">PKR {(c.perfBonus).toLocaleString()}</span></div>
-                                <div className="border-t border-gray-200 pt-2">
-                                  <div className="flex justify-between text-red-500"><span>Advance Salary</span><span>-PKR {c.advance.toLocaleString()}</span></div>
-                                  <div className="flex justify-between text-red-500"><span>Loan Deduction</span><span>-PKR {c.loan.toLocaleString()}</span></div>
-                                  <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {c.otherDed.toLocaleString()}</span></div>
+                            <Card>
+                              <CardContent className="pt-4">
+                                <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                                  <DollarSign size={14} className="text-[#C8A951]" /> Bonuses & Deductions
+                                </h4>
+                                <div className="space-y-2 text-xs">
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Target Bonus</span><span className="font-medium text-blue-600">PKR {(c.targetBonus).toLocaleString()}</span></div>
+                                  <div className="flex justify-between"><span className="text-muted-foreground">Performance Bonus</span><span className="font-medium text-blue-600">PKR {(c.perfBonus).toLocaleString()}</span></div>
+                                  <div className="border-t border-slate-200 pt-2">
+                                    <div className="flex justify-between text-red-500"><span>Advance Salary</span><span>-PKR {c.advance.toLocaleString()}</span></div>
+                                    <div className="flex justify-between text-red-500"><span>Loan Deduction</span><span>-PKR {c.loan.toLocaleString()}</span></div>
+                                    <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {c.otherDed.toLocaleString()}</span></div>
+                                  </div>
+                                  <div className="flex justify-between border-t border-slate-200 pt-2 font-bold"><span>Total Deductions</span><span className="text-red-500">-PKR {c.totalDeductions.toLocaleString()}</span></div>
+                                  <div className="flex justify-between border-t border-slate-200 pt-2 text-sm font-black">
+                                    <span>Net Pay</span>
+                                    <span className="text-brand-700">PKR {c.netPay.toLocaleString()}</span>
+                                  </div>
                                 </div>
-                                <div className="border-t border-gray-200 pt-2 flex justify-between font-bold"><span>Total Deductions</span><span className="text-red-500">-PKR {c.totalDeductions.toLocaleString()}</span></div>
-                                <div className="border-t border-gray-200 pt-2 flex justify-between text-sm font-black">
-                                  <span>Net Pay</span>
-                                  <span className="text-[#0A2647]">PKR {c.netPay.toLocaleString()}</span>
-                                </div>
-                              </div>
-                            </div>
+                              </CardContent>
+                            </Card>
                           </div>
                         </td>
                       </tr>
@@ -534,12 +531,9 @@ export default function SalaryDetailPage() {
           </table>
         </div>
         {filtered.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <Users size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No employees found</p>
-          </div>
+          <EmptyState icon={Users} title="No employees found" description="No DSO/DSM employees match the current filters" />
         )}
-      </div>
+      </Card>
     </div>
   );
 }

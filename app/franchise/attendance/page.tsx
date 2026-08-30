@@ -1,11 +1,17 @@
 ﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTriangle, FileText, ArrowLeft, Timer, Award, Ban, Eye, Plus, X, MapPin, Users, Settings, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { CalendarCheck, CheckCircle2, XCircle, Clock, Search, Filter, AlertTriangle, FileText, Timer, Award, Ban, Eye, Plus, X, MapPin, Users, Settings, Trash2 } from "lucide-react";
 import { useFranchiseData, AttendanceRecord } from "@/lib/FranchiseDataContext";
-import Link from "next/link";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 import { apiLoadById } from "@/lib/api";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
 
 const defaultAttendanceSettings = { workStart: "09:00", workEnd: "18:00", lateAfter: "10:00", requiredHours: 8, finePerDay: 1000, bonusPerSale: 500 };
 
@@ -131,190 +137,162 @@ export default function FranchiseAttendancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link href="/franchise/dashboard" className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-            <ArrowLeft size={20} />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-black text-gray-900">Attendance Management</h1>
-            <p className="text-gray-500 text-sm mt-1">Monitor DSO & DSM attendance, leave requests, and fines</p>
-          </div>
-        </div>
-        <button onClick={openMarkForm} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Plus size={16} /> Mark Attendance
-        </button>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Attendance" }]}
+        title="Attendance Management"
+        description="Monitor DSO & DSM attendance, leave requests, and fines"
+        actions={<Button onClick={openMarkForm}><Plus size={16} /> Mark Attendance</Button>}
+      />
 
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-        <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200">
-          <CalendarCheck size={16} className="text-gray-400" />
-          <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="bg-transparent text-gray-900 text-sm focus:outline-none" />
+        <div className="flex items-center gap-2 bg-white rounded-lg px-3 border border-slate-200">
+          <CalendarCheck size={16} className="text-muted-foreground" />
+          <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="bg-transparent text-sm text-slate-900 focus:outline-none" />
         </div>
         <div className="flex-1" />
         <div className="flex gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
             <CheckCircle2 size={12} /> {stats.present} Present
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
             <XCircle size={12} /> {stats.absent} Absent
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs font-medium text-yellow-700">
             <Clock size={12} /> {stats.late} Late
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700">
             <FileText size={12} /> {stats.leave} Leave
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><CheckCircle2 size={14} className="text-green-600" /></div>
-          <div><p className="text-lg font-black text-green-600">{stats.present}</p><p className="text-gray-500 text-[10px]">Present</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center"><XCircle size={14} className="text-red-600" /></div>
-          <div><p className="text-lg font-black text-red-600">{stats.absent}</p><p className="text-gray-500 text-[10px]">Absent</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center"><Clock size={14} className="text-yellow-600" /></div>
-          <div><p className="text-lg font-black text-yellow-600">{stats.late}</p><p className="text-gray-500 text-[10px]">Late</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><Ban size={14} className="text-amber-600" /></div>
-          <div><p className="text-lg font-black text-amber-600">PKR {stats.totalFine.toLocaleString()}</p><p className="text-gray-500 text-[10px]">Fine</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center"><Award size={14} className="text-purple-600" /></div>
-          <div><p className="text-lg font-black text-purple-600">PKR {stats.totalBonus.toLocaleString()}</p><p className="text-gray-500 text-[10px]">Bonus</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><Users size={14} className="text-blue-600" /></div>
-          <div><p className="text-lg font-black text-blue-600">{stats.total}</p><p className="text-gray-500 text-[10px]">Total</p></div>
-        </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <StatCard label="Present" value={stats.present} icon={CheckCircle2} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Absent" value={stats.absent} icon={XCircle} iconClass="text-red-600 bg-red-50" />
+        <StatCard label="Late" value={stats.late} icon={Clock} iconClass="text-yellow-600 bg-yellow-50" />
+        <StatCard label="Fine" value={`PKR ${stats.totalFine.toLocaleString()}`} icon={Ban} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="Bonus" value={`PKR ${stats.totalBonus.toLocaleString()}`} icon={Award} iconClass="text-purple-600 bg-purple-50" />
+        <StatCard label="Total" value={stats.total} icon={Users} iconClass="text-blue-600 bg-blue-50" />
       </div>
 
-      <div className="flex gap-2 bg-white rounded-2xl border border-gray-200 p-1.5">
+      <div className="flex gap-2 rounded-xl border border-slate-200 bg-white p-1.5">
         {([["overview", "Overview"], ["dso", "DSO"], ["dsm", "DSM"], ["settings", "Settings"]] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${tab === k ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}>
+          <Button key={k} size="sm" variant={tab === k ? "primary" : "ghost"} onClick={() => setTab(k)} className="flex-1">
             {k === "overview" ? <CalendarCheck size={14} /> : k === "dso" ? <Users size={14} /> : k === "dsm" ? <Users size={14} /> : <Settings size={14} />}
             {l}
             {k !== "settings" && (
-              <span className={`px-2 py-0.5 rounded-lg text-xs font-bold ${tab === k ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>
+              <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tab === k ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>
                 {k === "overview" ? todayRecords.length : k === "dso" ? dsoStats.total : dsmStats.total}
               </span>
             )}
-          </button>
+          </Button>
         ))}
       </div>
 
       {(tab === "overview" || tab === "dso" || tab === "dsm") && (
         <>
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <Search size={16} className="text-gray-400" />
-              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or ID..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 flex-1 focus-within:border-brand-500/30 focus-within:ring-2 focus-within:ring-brand-500/10 transition-all">
+              <Search size={16} className="text-muted-foreground" />
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or ID..." className="w-full bg-transparent py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none" />
             </div>
             <div className="flex gap-2 flex-wrap">
               {["All", "Present", "Absent", "Late", "Leave"].map((s) => (
-                <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${statusFilter === s ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
-                  <span className="flex items-center gap-1.5"><Filter size={12} /> {s}</span>
-                </button>
+                <Button key={s} size="sm" variant={statusFilter === s ? "primary" : "outline"} onClick={() => setStatusFilter(s)}>
+                  <Filter size={12} /> {s}
+                </Button>
               ))}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-200">
-              <span className="text-gray-500 text-xs">From:</span>
-              <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="bg-transparent text-gray-900 text-xs focus:outline-none" />
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3">
+              <span className="text-xs text-muted-foreground">From:</span>
+              <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="bg-transparent py-2 text-xs text-slate-900 focus:outline-none" />
             </div>
-            <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-200">
-              <span className="text-gray-500 text-xs">To:</span>
-              <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="bg-transparent text-gray-900 text-xs focus:outline-none" />
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3">
+              <span className="text-xs text-muted-foreground">To:</span>
+              <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="bg-transparent py-2 text-xs text-slate-900 focus:outline-none" />
             </div>
             {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="px-3 py-2 rounded-xl text-xs font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all flex items-center gap-1">
+              <Button size="sm" variant="outline" className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100" onClick={() => { setDateFrom(""); setDateTo(""); }}>
                 <X size={12} /> Clear
-              </button>
+              </Button>
             )}
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <Card>
             {selectedIds.length > 0 && (
-              <div className="px-4 py-2.5 border-b border-red-100 bg-red-50/60 flex items-center justify-between gap-3">
-                <p className="text-red-700 text-sm font-medium">{selectedIds.length} selected</p>
+              <div className="flex items-center justify-between gap-3 border-b border-red-100 bg-red-50/60 px-4 py-2.5">
+                <p className="text-sm font-medium text-red-700">{selectedIds.length} selected</p>
                 <div className="flex gap-2">
-                  <button onClick={() => setSelectedIds([])} className="px-3 py-1.5 rounded-lg bg-white text-gray-700 text-xs font-medium border border-gray-200 hover:bg-gray-50">Clear</button>
-                  <button onClick={handleBulkDelete} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 inline-flex items-center gap-1">
-                    <Trash2 size={12} /> Delete Selected
-                  </button>
+                  <Button size="sm" variant="outline" onClick={() => setSelectedIds([])}>Clear</Button>
+                  <Button size="sm" variant="destructive" onClick={handleBulkDelete}><Trash2 size={12} /> Delete Selected</Button>
                 </div>
               </div>
             )}
-            <div className="overflow-x-auto">
+            <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-10">
-                      <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                  <tr className="border-b border-slate-100 bg-muted/50">
+                    <th className="w-10 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">
+                      <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 cursor-pointer accent-brand-600" />
                     </th>
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">Sr.No</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Role</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Date</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Check In</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Check Out</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Hours</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Fine</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Bonus</th>
-                    <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase w-20">Actions</th>
+                    <th className="w-14 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Sr.No</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Employee</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Role</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Check In</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Check Out</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Hours</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Fine</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Bonus</th>
+                    <th className="w-20 px-4 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tabRows.map((a, idx) => {
                     const hours = calcWorkingHours(a.checkIn, a.checkOut);
                     return (
-                      <tr key={a.id} className={`border-b border-gray-50 transition-colors ${selectedIds.includes(a.id) ? "bg-[#0A2647]/5" : "hover:bg-gray-50"}`}>
+                      <tr key={a.id} className={`border-b border-slate-100 text-sm transition-colors ${selectedIds.includes(a.id) ? "bg-brand-600/5" : "hover:bg-slate-50"}`}>
                         <td className="px-3 py-3 text-center">
-                          <input type="checkbox" checked={selectedIds.includes(a.id)} onChange={() => toggleSelect(a.id)} className="w-4 h-4 accent-[#0A2647] cursor-pointer" />
+                          <input type="checkbox" checked={selectedIds.includes(a.id)} onChange={() => toggleSelect(a.id)} className="h-4 w-4 cursor-pointer accent-brand-600" />
                         </td>
                         <td className="px-3 py-3 text-center">
-                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600/10 text-xs font-black text-brand-600">{idx + 1}</span>
                         </td>
                         <td className="px-4 py-3">
-                          <p className="text-gray-900 text-sm font-medium">{a.employeeName}</p>
-                          <p className="text-gray-400 text-xs font-mono">{a.employeeId}</p>
+                          <p className="text-sm font-medium text-slate-900">{a.employeeName}</p>
+                          <p className="text-xs font-mono text-muted-foreground">{a.employeeId}</p>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-lg text-xs font-medium ${a.role === "DSM" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{a.role}</span>
+                          <StatusPill label={a.role} tone={a.role === "DSM" ? "accent" : "positive"} />
                         </td>
-                        <td className="px-4 py-3 text-gray-900 text-sm font-medium">{formatDateDDMMYYYY(a.date)}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkIn || "â€”"}</td>
-                        <td className="px-4 py-3 text-gray-700 text-sm font-mono">{a.checkOut || "â€”"}</td>
-                        <td className="px-4 py-3 hidden md:table-cell">
+                        <td className="px-4 py-3 text-sm font-medium text-slate-900">{formatDateDDMMYYYY(a.date)}</td>
+                        <td className="px-4 py-3 font-mono text-sm text-slate-700">{a.checkIn || "\u2014"}</td>
+                        <td className="px-4 py-3 font-mono text-sm text-slate-700">{a.checkOut || "\u2014"}</td>
+                        <td className="hidden px-4 py-3 md:table-cell">
                           {hours > 0 ? (
                             <span className={`text-sm font-bold ${hours >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>
                               {hours.toFixed(1)}h
                             </span>
-                          ) : "â€”"}
+                          ) : "\u2014"}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${a.status === "Present" ? "bg-green-50 text-green-700" : a.status === "Absent" ? "bg-red-50 text-red-700" : a.status === "Late" ? "bg-yellow-50 text-yellow-700" : a.status === "Leave" ? "bg-blue-50 text-blue-700" : "bg-gray-50 text-gray-700"}`}>{a.status}</span>
+                          <StatusPill label={a.status} tone={toneForStatus(a.status)} />
                         </td>
-                        <td className="px-4 py-3 hidden md:table-cell">
-                          {hours > 0 && hours < settings.requiredHours ? <span className="text-red-600 text-xs font-bold">-PKR {settings.finePerDay.toLocaleString()}</span> : "â€”"}
+                        <td className="hidden px-4 py-3 md:table-cell">
+                          {hours > 0 && hours < settings.requiredHours ? <span className="text-xs font-bold text-red-600">-PKR {settings.finePerDay.toLocaleString()}</span> : "\u2014"}
                         </td>
-                        <td className="px-4 py-3 hidden md:table-cell">
-                          {hours >= settings.requiredHours && hours > 0 ? <span className="text-green-600 text-xs font-bold">+PKR {settings.bonusPerSale.toLocaleString()}</span> : "â€”"}
+                        <td className="hidden px-4 py-3 md:table-cell">
+                          {hours >= settings.requiredHours && hours > 0 ? <span className="text-xs font-bold text-green-600">+PKR {settings.bonusPerSale.toLocaleString()}</span> : "\u2014"}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
-                            <button onClick={() => setViewRecord(a)} className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors" title="View">
+                            <button onClick={() => setViewRecord(a)} className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100" title="View">
                               <Eye size={14} />
                             </button>
-                            <button onClick={() => handleDeleteOne(a.id)} className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                            <button onClick={() => handleDeleteOne(a.id)} className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-600 transition-colors hover:bg-red-100" title="Delete">
                               <Trash2 size={14} />
                             </button>
                           </div>
@@ -324,33 +302,35 @@ export default function FranchiseAttendancePage() {
                   })}
                 </tbody>
               </table>
-            </div>
-            {filtered.length === 0 && (
-              <div className="px-6 py-12 text-center">
-                <CalendarCheck size={32} className="text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">No attendance records found</p>
-              </div>
-            )}
-          </div>
+              {filtered.length === 0 && (
+                <div className="px-6 py-12 text-center">
+                  <CalendarCheck size={32} className="mx-auto mb-3 text-slate-300" />
+                  <p className="text-sm text-muted-foreground">No attendance records found</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
 
       {tab === "settings" && (
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600"><Timer size={18} /></div><h3 className="text-gray-900 font-bold">Current Attendance Rules</h3></div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-xl p-4"><p className="text-gray-500 text-xs mb-1">Work Hours</p><p className="text-gray-900 text-lg font-bold">{settings.workStart} - {settings.workEnd}</p></div>
-              <div className="bg-gray-50 rounded-xl p-4"><p className="text-gray-500 text-xs mb-1">Late After</p><p className="text-gray-900 text-lg font-bold">{settings.lateAfter}</p></div>
-              <div className="bg-gray-50 rounded-xl p-4"><p className="text-gray-500 text-xs mb-1">Required Hours</p><p className="text-gray-900 text-lg font-bold">{settings.requiredHours}h</p></div>
-              <div className="bg-gray-50 rounded-xl p-4"><p className="text-gray-500 text-xs mb-1">Fine Per Day (below {settings.requiredHours}h)</p><p className="text-red-600 text-lg font-bold">PKR {settings.finePerDay.toLocaleString()}</p></div>
-              <div className="bg-gray-50 rounded-xl p-4"><p className="text-gray-500 text-xs mb-1">Bonus ({settings.requiredHours}h+ with sales)</p><p className="text-green-600 text-lg font-bold">PKR {settings.bonusPerSale.toLocaleString()}</p></div>
-              <div className="bg-gray-50 rounded-xl p-4"><p className="text-gray-500 text-xs mb-1">Consecutive Absent Warning</p><p className="text-amber-600 text-lg font-bold">3+ days</p></div>
-            </div>
-            <div className="mt-4 bg-amber-50 rounded-xl p-3 border border-amber-200">
-              <p className="text-amber-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> Settings can be changed from Settings page. Rules apply to all DSO/DSM.</p>
-            </div>
-          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600"><Timer size={18} /></div><h3 className="font-bold text-slate-900">Current Attendance Rules</h3></div>
+              <div className="grid grid-cols-1 gap-4 rounded-xl border border-slate-100 bg-slate-50 p-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div><p className="mb-1 text-xs text-muted-foreground">Work Hours</p><p className="text-lg font-bold text-slate-900">{settings.workStart} - {settings.workEnd}</p></div>
+                <div><p className="mb-1 text-xs text-muted-foreground">Late After</p><p className="text-lg font-bold text-slate-900">{settings.lateAfter}</p></div>
+                <div><p className="mb-1 text-xs text-muted-foreground">Required Hours</p><p className="text-lg font-bold text-slate-900">{settings.requiredHours}h</p></div>
+                <div><p className="mb-1 text-xs text-muted-foreground">Fine Per Day (below {settings.requiredHours}h)</p><p className="text-lg font-bold text-red-600">PKR {settings.finePerDay.toLocaleString()}</p></div>
+                <div><p className="mb-1 text-xs text-muted-foreground">Bonus ({settings.requiredHours}h+ with sales)</p><p className="text-lg font-bold text-green-600">PKR {settings.bonusPerSale.toLocaleString()}</p></div>
+                <div><p className="mb-1 text-xs text-muted-foreground">Consecutive Absent Warning</p><p className="text-lg font-bold text-amber-600">3+ days</p></div>
+              </div>
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <p className="flex items-center gap-2 text-xs font-medium text-amber-700"><AlertTriangle size={14} /> Settings can be changed from Settings page. Rules apply to all DSO/DSM.</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -365,16 +345,16 @@ export default function FranchiseAttendancePage() {
               <div className="flex items-center gap-3">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${viewRecord.role === "DSM" ? "bg-blue-600" : "bg-green-600"}`}>{viewRecord.employeeName?.charAt(0)}</div>
                 <div>
-                  <p className="text-gray-900 font-bold">{viewRecord.employeeName}</p>
-                  <p className="text-gray-500 text-xs font-mono">{viewRecord.employeeId} Â· {viewRecord.role}</p>
+                  <p className="font-bold text-slate-900">{viewRecord.employeeName}</p>
+                  <p className="text-xs font-mono text-muted-foreground">{viewRecord.employeeId} &middot; {viewRecord.role}</p>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Date</span><span className="font-medium text-gray-900">{formatDateDDMMYYYY(viewRecord.date)}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Check In</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkIn || "â€”"}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Check Out</span><span className="font-mono font-bold text-gray-900">{viewRecord.checkOut || "â€”"}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Working Hours</span><span className={`font-bold ${calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut) >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>{calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut).toFixed(1)}h / {settings.requiredHours}h</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">Status</span><span className={`px-2 py-1 rounded-lg text-xs font-medium ${viewRecord.status === "Present" ? "bg-green-50 text-green-700" : viewRecord.status === "Late" ? "bg-yellow-50 text-yellow-700" : viewRecord.status === "Leave" ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-700"}`}>{viewRecord.status}</span></div>
+              <div className="space-y-3 rounded-xl bg-slate-50 p-4">
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Date</span><span className="font-medium text-slate-900">{formatDateDDMMYYYY(viewRecord.date)}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Check In</span><span className="font-mono font-bold text-slate-900">{viewRecord.checkIn || "\u2014"}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Check Out</span><span className="font-mono font-bold text-slate-900">{viewRecord.checkOut || "\u2014"}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Working Hours</span><span className={`font-bold ${calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut) >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>{calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut).toFixed(1)}h / {settings.requiredHours}h</span></div>
+                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Status</span><StatusPill label={viewRecord.status} tone={toneForStatus(viewRecord.status)} /></div>
                 {viewRecord.gps ? <div className="flex justify-between text-sm"><span className="text-gray-500">GPS</span><span className="text-gray-700 text-xs flex items-center gap-1"><MapPin size={10} /> {viewRecord.gps}</span></div> : null}
               </div>
             </div>
@@ -392,31 +372,31 @@ export default function FranchiseAttendancePage() {
               <h3 className="text-gray-900 font-bold flex items-center gap-2"><Plus size={18} /> Mark Attendance</h3>
               <button onClick={() => setShowMarkForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Employee *</label>
-                <select value={form.employeeId} onChange={(e) => {
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Employee *</label>
+                <Select value={form.employeeId} onChange={(e) => {
                   const emp = allEmployees.find((em) => em.id === e.target.value);
                   setForm((p) => ({ ...p, employeeId: e.target.value, employeeName: emp?.name || "", role: emp?.role || "DSO" }));
-                }} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                }}>
                   <option value="">Select Employee...</option>
                   <optgroup label="DSOs">{dso.map((d) => <option key={d.id} value={d.id}>{d.id} - {d.name} (DSO)</option>)}</optgroup>
                   <optgroup label="DSMs">{dsms.map((d) => <option key={d.id} value={d.id}>{d.id} - {d.name} (DSM)</option>)}</optgroup>
-                </select>
+                </Select>
               </div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Date</label><input type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
+              <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Date</label><Input type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Check In</label><input type="time" value={form.checkIn} onChange={(e) => setForm((p) => ({ ...p, checkIn: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-                <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Check Out</label><input type="time" value={form.checkOut} onChange={(e) => setForm((p) => ({ ...p, checkOut: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
+                <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Check In</label><Input type="time" value={form.checkIn} onChange={(e) => setForm((p) => ({ ...p, checkIn: e.target.value }))} /></div>
+                <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Check Out</label><Input type="time" value={form.checkOut} onChange={(e) => setForm((p) => ({ ...p, checkOut: e.target.value }))} /></div>
               </div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Status</label><select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["Present", "Absent", "Late", "Half Day", "Leave"].map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
-              <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
-                <p className="text-blue-700 text-xs font-medium">Work: {settings.workStart} - {settings.workEnd} | Late after: {settings.lateAfter} | Fine: PKR {settings.finePerDay.toLocaleString()} | Bonus: PKR {settings.bonusPerSale.toLocaleString()}</p>
+              <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Status</label><Select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}>{["Present", "Absent", "Late", "Half Day", "Leave"].map((s) => <option key={s} value={s}>{s}</option>)}</Select></div>
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+                <p className="text-xs font-medium text-blue-700">Work: {settings.workStart} - {settings.workEnd} | Late after: {settings.lateAfter} | Fine: PKR {settings.finePerDay.toLocaleString()} | Bonus: PKR {settings.bonusPerSale.toLocaleString()}</p>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowMarkForm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSave} disabled={!form.employeeId} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed">Save</button>
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => setShowMarkForm(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSave} disabled={!form.employeeId}>Save</Button>
             </div>
           </div>
         </div>

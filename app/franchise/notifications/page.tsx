@@ -1,9 +1,15 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Bell, Send, Trash2, MessageSquare, Mail, Smartphone, CheckCircle } from "lucide-react";
+import { Bell, Send, Trash2, MessageSquare, Mail, Smartphone, X } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function NotificationsPage() {
   const { auth, notifications, addNotification, deleteNotification } = useFranchiseData();
@@ -25,77 +31,89 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Notifications</h1>
-          <p className="text-gray-500 text-sm mt-1">Send notifications via WhatsApp, Email, or SMS</p>
-        </div>
-        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Send size={16} /> Send Notification
-        </button>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Notifications" }]}
+        title="Notifications"
+        description="Send notifications via WhatsApp, Email, or SMS"
+        actions={<Button onClick={() => setShowForm(true)}><Send size={16} /> Send Notification</Button>}
+      />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {types.map(({ key, icon: Icon, color }) => (
-          <div key={key} className="bg-white rounded-2xl p-5 border border-gray-200 text-center">
-            <div className={`w-10 h-10 rounded-xl bg-${color}-50 flex items-center justify-center text-${color}-600 mx-auto mb-2`}><Icon size={18} /></div>
-            <p className="text-3xl font-black text-gray-900">{notifications.filter((n) => n.type === key).length}</p>
-            <p className="text-gray-500 text-xs mt-1">{key}</p>
-          </div>
+          <StatCard key={key} label={key} value={notifications.filter((n) => n.type === key).length} icon={Icon} iconClass={`text-${color}-600 bg-${color}-50`} />
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between p-5">
+          <CardTitle className="flex items-center gap-2 text-sm font-bold"><Bell size={16} className="text-brand-600" /> All Notifications</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto p-0">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Type</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Message</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Recipient</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Date</th>
-                <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Actions</th>
+              <tr className="border-b border-slate-100 bg-muted/50">
+                <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase">Type</th>
+                <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase">Message</th>
+                <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase hidden md:table-cell">Recipient</th>
+                <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase">Date</th>
+                <th className="px-6 py-4 text-right text-muted-foreground text-xs font-medium uppercase">Actions</th>
               </tr>
             </thead>
             <tbody>
               {[...notifications].reverse().map((n) => (
-                <tr key={n.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4"><span className={`px-2 py-1 rounded-lg text-xs font-medium ${n.type === "WhatsApp" ? "bg-green-50 text-green-700" : n.type === "Email" ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>{n.type}</span></td>
-                  <td className="px-6 py-4 text-gray-900 text-sm max-w-xs truncate">{n.message}</td>
-                  <td className="px-6 py-4 hidden md:table-cell text-gray-600 text-sm">{n.recipient || "All"}</td>
-                  <td className="px-6 py-4 text-gray-400 text-xs">{formatDateDDMMYYYY(n.date || "")} {n.time}</td>
-                  <td className="px-6 py-4 text-right"><button onClick={() => deleteNotification(n.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button></td>
+                <tr key={n.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="px-6 py-4">
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${n.type === "WhatsApp" ? "bg-green-100 text-green-700" : n.type === "Email" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{n.type}</span>
+                  </td>
+                  <td className="max-w-xs truncate px-6 py-4 text-slate-900 text-sm">{n.message}</td>
+                  <td className="hidden px-6 py-4 text-slate-600 text-sm md:table-cell">{n.recipient || "All"}</td>
+                  <td className="px-6 py-4 text-xs text-muted-foreground">{formatDateDDMMYYYY(n.date || "")} {n.time}</td>
+                  <td className="px-6 py-4 text-right"><button onClick={() => deleteNotification(n.id)} className="rounded-lg p-2 text-muted-foreground transition-all hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button></td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-        {notifications.length === 0 && <div className="px-6 py-12 text-center"><Bell size={32} className="text-gray-300 mx-auto mb-3" /><p className="text-gray-400 text-sm">No notifications sent yet</p></div>}
-      </div>
+          {notifications.length === 0 && (
+            <EmptyState icon={Bell} title="No notifications sent yet" description="Send your first notification to get started." actions={<Button variant="outline" size="sm" onClick={() => setShowForm(true)}><Send size={14} /> Send Notification</Button>} />
+          )}
+        </CardContent>
+      </Card>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">Send Notification</h3>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Type</label><div className="flex gap-3">{types.map(({ key, icon: Icon, color }) => <button key={key} onClick={() => setForm((p) => ({ ...p, type: key }))} className={`flex-1 py-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all ${form.type === key ? `border-${color}-500 bg-${color}-50` : "border-gray-200 hover:border-gray-300"}`}><Icon size={18} className={form.type === key ? `text-${color}-600` : "text-gray-400"} /><span className={`text-xs font-medium ${form.type === key ? `text-${color}-700` : "text-gray-500"}`}>{key}</span></button>)}</div></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Recipient (optional)</label><input type="text" value={form.recipient} onChange={(e) => setForm((p) => ({ ...p, recipient: e.target.value }))} placeholder="Phone number or email" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Message</label><textarea value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} rows={4} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 resize-none" /></div>
-            </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSend} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center justify-center gap-2"><Send size={14} /> Send</button>
-            </div>
-          </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowForm(false)}>
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-4">
+              <CardTitle>Send Notification</CardTitle>
+              <button onClick={() => setShowForm(false)} className="p-1 text-muted-foreground hover:text-slate-900"><X size={18} /></button>
+            </CardHeader>
+            <CardContent className="space-y-4 p-6 pt-0">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Type</label>
+                <div className="flex gap-3">
+                  {types.map(({ key, icon: Icon, color }) => (
+                    <button key={key} onClick={() => setForm((p) => ({ ...p, type: key }))} className={`flex-1 flex flex-col items-center gap-1 rounded-xl border-2 py-3 transition-all ${form.type === key ? `bg-${color}-50 border-${color}-500` : "border-slate-200 hover:border-slate-300"}`}>
+                      <Icon size={18} className={form.type === key ? `text-${color}-600` : "text-slate-400"} />
+                      <span className={`text-xs font-medium ${form.type === key ? `text-${color}-700` : "text-slate-500"}`}>{key}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Recipient (optional)</label>
+                <Input value={form.recipient} onChange={(e) => setForm((p) => ({ ...p, recipient: e.target.value }))} placeholder="Phone number or email" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Message</label>
+                <textarea value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} rows={4} className="w-full resize-none rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-slate-900 outline-none focus:border-brand-500" />
+              </div>
+            </CardContent>
+            <CardFooter className="flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSend}><Send size={14} /> Send</Button>
+            </CardFooter>
+          </Card>
         </div>
       )}
     </div>
   );
-}
-
-function X({ size }: { size: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
 }

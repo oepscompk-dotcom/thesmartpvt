@@ -2,6 +2,9 @@
 
 import { FileText, Download, BarChart3, PieChart, TrendingUp, FileDown } from "lucide-react";
 import { useData } from "@/lib/DataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 export default function ReportsPage() {
   const { franchises, payments, employees, subscriptions } = useData();
@@ -55,49 +58,53 @@ export default function ReportsPage() {
   };
 
   const reports = [
-    { title: "Franchise Performance Report", desc: "Detailed performance metrics for all franchises", icon: BarChart3, type: "franchise", count: `${franchises.length} franchises` },
-    { title: "Revenue Report", desc: "Monthly and annual revenue breakdown", icon: TrendingUp, type: "revenue", count: `PKR ${payments.filter((p) => p.status === "Paid").reduce((s, p) => s + Number(p.amount), 0).toLocaleString()} total` },
-    { title: "Subscription Report", desc: "Package distribution and renewal status", icon: PieChart, type: "subscription", count: `${subscriptions.length} packages` },
-    { title: "Employee Summary", desc: "DSM and DSO overview across all franchises", icon: FileText, type: "employee", count: `${employees.length} employees` },
+    { title: "Franchise Performance Report", desc: "Detailed performance metrics for all franchises", icon: BarChart3, iconClass: "text-brand-600 bg-brand-50", type: "franchise", count: `${franchises.length} franchises` },
+    { title: "Revenue Report", desc: "Monthly and annual revenue breakdown", icon: TrendingUp, iconClass: "text-green-600 bg-green-50", type: "revenue", count: `PKR ${payments.filter((p) => p.status === "Paid").reduce((s, p) => s + Number(p.amount), 0).toLocaleString()} total` },
+    { title: "Subscription Report", desc: "Package distribution and renewal status", icon: PieChart, iconClass: "text-purple-600 bg-purple-50", type: "subscription", count: `${subscriptions.length} packages` },
+    { title: "Employee Summary", desc: "DSM and DSO overview across all franchises", icon: FileText, iconClass: "text-blue-600 bg-blue-50", type: "employee", count: `${employees.length} employees` },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Reports Center</h1>
-        <p className="text-gray-500 text-sm mt-1">Generate and export business reports</p>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Reports" }]}
+        title="Reports Center"
+        description="Generate and export business reports"
+      />
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         {reports.map((r) => (
-          <div key={r.title} className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 transition-all group">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#C8A951]/10 flex items-center justify-center text-[#C8A951] group-hover:scale-110 transition-transform">
+          <Card key={r.title} className="transition-all group hover:border-slate-300">
+            <CardContent className="flex items-start gap-4 pt-6">
+              <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg ${r.iconClass} transition-transform group-hover:scale-110`}>
                 <r.icon size={20} />
               </div>
               <div className="flex-1">
-                <h3 className="text-gray-900 font-bold mb-1">{r.title}</h3>
-                <p className="text-gray-500 text-sm mb-1">{r.desc}</p>
-                <p className="text-gray-400 text-xs mb-3">{r.count}</p>
-                <button onClick={() => generateReport(r.type)} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-[#0A2647] hover:text-white hover:border-[#0A2647] transition-all">
-                  <Download size={12} /> Export CSV
-                </button>
+                <h3 className="mb-1 text-base font-semibold text-foreground">{r.title}</h3>
+                <p className="mb-1 text-sm text-muted-foreground">{r.desc}</p>
+                <p className="mb-3 text-xs text-muted-foreground">{r.count}</p>
+                <Button variant="outline" size="sm" onClick={() => generateReport(r.type)}>
+                  <Download className="h-3.5 w-3.5" /> Export CSV
+                </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <h3 className="text-gray-900 font-bold mb-4">Quick Export</h3>
-        <div className="flex flex-wrap gap-3">
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Export</CardTitle>
+          <CardDescription>Download a combined snapshot of all franchise data</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-3">
           {["csv", "txt"].map((fmt) => (
-            <button key={fmt} onClick={() => exportAll(fmt)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-100 transition-all">
-              <FileDown size={14} /> Download as {fmt.toUpperCase()}
-            </button>
+            <Button key={fmt} variant="outline" onClick={() => exportAll(fmt)}>
+              <FileDown className="h-4 w-4" /> Download as {fmt.toUpperCase()}
+            </Button>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

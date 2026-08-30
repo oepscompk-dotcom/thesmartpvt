@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useDSMData } from "@/lib/DSMDataContext";
 import { BarChart3, Calendar, Download, TrendingUp, Smartphone, CheckCircle, Clock, XCircle } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { QuickChip } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function ReportsPage() {
   const { activations, dsos } = useDSMData();
@@ -76,7 +82,7 @@ export default function ReportsPage() {
   const exportCSV = () => {
     const data = activeTab === "daily" ? dailyActivations : activeTab === "monthly" ? monthlyActivations : yearlyActivations;
     const headers = ["ID", "Type", "Customer", "CNIC", "MSISDN", "SIM", "Network", "DSO", "Status", "Date"];
-        const rows = data.map((a) => { const dso = dsos.find((d) => d.id === a.dsoId); return [a.id, a.type, a.customerName, a.customerCNIC, a.simNumber, a.network, dso?.name ?? a.dsoId, a.status, a.createdAt]; });
+    const rows = data.map((a) => { const dso = dsos.find((d) => d.id === a.dsoId); return [a.id, a.type, a.customerName, a.customerCNIC, a.simNumber, a.network, dso?.name ?? a.dsoId, a.status, a.createdAt]; });
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -87,138 +93,146 @@ export default function ReportsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const StatCard = ({ icon: Icon, label, value, color = "#0057FF" }: { icon: React.ElementType; label: string; value: string | number; color?: string }) => (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
-          <Icon size={20} style={{ color }} />
-        </div>
-        <span className="text-sm text-gray-500">{label}</span>
-      </div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-            <p className="text-gray-500 text-sm mt-1">View and export activation reports</p>
-          </div>
-          <button onClick={exportCSV} className="bg-[#0057FF] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#0047CC] flex items-center gap-2">
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumb={[{ label: "DSM" }, { label: "Reports" }]}
+        title="Reports"
+        description="View and export activation reports"
+        actions={
+          <Button onClick={exportCSV}>
             <Download size={18} />
             Export CSV
-          </button>
-        </div>
+          </Button>
+        }
+      />
 
-        <div className="flex gap-2 mb-6 bg-white rounded-xl p-1 border border-gray-100 w-fit">
-          {(["daily", "monthly", "yearly"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab ? "bg-[#0057FF] text-white" : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
+      <div className="flex gap-2">
+        {(["daily", "monthly", "yearly"] as const).map((tab) => (
+          <QuickChip
+            key={tab}
+            label={tab.charAt(0).toUpperCase() + tab.slice(1)}
+            active={activeTab === tab}
+            onClick={() => setActiveTab(tab)}
+          />
+        ))}
+      </div>
 
-        {activeTab === "daily" && (
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <StatCard icon={Smartphone} label="Today's Activations" value={dailyActivations.length} />
-              <StatCard icon={CheckCircle} label="Completion Rate" value={`${completionRate(dailyActivations)}%`} color="#16A34A" />
-              <StatCard icon={Clock} label="Pending" value={dailyActivations.filter((a) => a.status === "pending").length} color="#F59E0B" />
-              <StatCard icon={XCircle} label="Failed" value={dailyActivations.filter((a) => a.status === "failed").length} color="#EF4444" />
-            </div>
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
-              <h3 className="text-lg font-semibold mb-4">Type Breakdown</h3>
-              <div className="space-y-3">
+      {activeTab === "daily" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <StatCard label="Today's Activations" value={dailyActivations.length} icon={Smartphone} iconClass="text-brand-600 bg-brand-50" />
+            <StatCard label="Completion Rate" value={`${completionRate(dailyActivations)}%`} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
+            <StatCard label="Pending" value={dailyActivations.filter((a) => a.status === "pending").length} icon={Clock} iconClass="text-amber-600 bg-amber-50" />
+            <StatCard label="Failed" value={dailyActivations.filter((a) => a.status === "failed").length} icon={XCircle} iconClass="text-red-600 bg-red-50" />
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Type Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
                 {Object.entries(typeBreakdown(dailyActivations)).map(([type, count]) => (
-                  <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700 capitalize">{type}</span>
-                    <span className="text-sm font-bold text-[#0057FF]">{count}</span>
+                  <div key={type} className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
+                    <span className="text-sm font-medium capitalize text-foreground">{type}</span>
+                    <span className="text-sm font-bold text-brand-600">{count}</span>
                   </div>
                 ))}
-                {Object.keys(typeBreakdown(dailyActivations)).length === 0 && <p className="text-sm text-gray-400">No activations today</p>}
+                {Object.keys(typeBreakdown(dailyActivations)).length === 0 && (
+                  <EmptyState icon={Smartphone} title="No activations today" />
+                )}
               </div>
-            </div>
-          </div>
-        )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        {activeTab === "monthly" && (
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <StatCard icon={BarChart3} label="This Month" value={monthlyActivations.length} />
-              <StatCard icon={CheckCircle} label="Completion Rate" value={`${completionRate(monthlyActivations)}%`} color="#16A34A" />
-              <StatCard icon={TrendingUp} label="Top DSO" value={topDSO(monthlyActivations)?.name || "N/A"} />
-            </div>
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
-              <h3 className="text-lg font-semibold mb-4">Monthly Type Breakdown</h3>
-              <div className="space-y-3">
+      {activeTab === "monthly" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatCard label="This Month" value={monthlyActivations.length} icon={BarChart3} iconClass="text-brand-600 bg-brand-50" />
+            <StatCard label="Completion Rate" value={`${completionRate(monthlyActivations)}%`} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
+            <StatCard label="Top DSO" value={topDSO(monthlyActivations)?.name || "N/A"} icon={TrendingUp} iconClass="text-emerald-600 bg-emerald-50" />
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Monthly Type Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
                 {Object.entries(typeBreakdown(monthlyActivations)).map(([type, count]) => (
-                  <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700 capitalize">{type}</span>
-                    <span className="text-sm font-bold text-[#0057FF]">{count}</span>
+                  <div key={type} className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
+                    <span className="text-sm font-medium capitalize text-foreground">{type}</span>
+                    <span className="text-sm font-bold text-brand-600">{count}</span>
                   </div>
                 ))}
-                {Object.keys(typeBreakdown(monthlyActivations)).length === 0 && <p className="text-sm text-gray-400">No activations this month</p>}
+                {Object.keys(typeBreakdown(monthlyActivations)).length === 0 && (
+                  <EmptyState icon={BarChart3} title="No activations this month" />
+                )}
               </div>
-            </div>
-          </div>
-        )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        {activeTab === "yearly" && (
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <StatCard icon={Calendar} label="This Year" value={yearlyActivations.length} />
-              <StatCard icon={CheckCircle} label="Completion Rate" value={`${completionRate(yearlyActivations)}%`} color="#16A34A" />
-              <StatCard icon={TrendingUp} label="Months Active" value={monthlyTrend(yearlyActivations).length} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4">Monthly Trend</h3>
-                <div className="space-y-3">
+      {activeTab === "yearly" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatCard label="This Year" value={yearlyActivations.length} icon={Calendar} iconClass="text-brand-600 bg-brand-50" />
+            <StatCard label="Completion Rate" value={`${completionRate(yearlyActivations)}%`} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
+            <StatCard label="Months Active" value={monthlyTrend(yearlyActivations).length} icon={TrendingUp} iconClass="text-emerald-600 bg-emerald-50" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Monthly Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
                   {monthlyTrend(yearlyActivations).map(({ month, count }) => (
-                    <div key={month} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                      <span className="text-sm font-medium text-gray-700">{month}</span>
+                    <div key={month} className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
+                      <span className="text-sm font-medium text-foreground">{month}</span>
                       <div className="flex items-center gap-3">
-                        <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-[#0057FF] rounded-full"
+                            className="h-full bg-brand-600 rounded-full"
                             style={{ width: `${Math.min((count / Math.max(...monthlyTrend(yearlyActivations).map((t) => t.count), 1)) * 100, 100)}%` }}
                           />
                         </div>
-                        <span className="text-sm font-bold text-[#0057FF]">{count}</span>
+                        <span className="text-sm font-bold text-brand-600">{count}</span>
                       </div>
                     </div>
                   ))}
-                  {monthlyTrend(yearlyActivations).length === 0 && <p className="text-sm text-gray-400">No data for this year</p>}
+                  {monthlyTrend(yearlyActivations).length === 0 && (
+                    <EmptyState icon={Calendar} title="No data for this year" />
+                  )}
                 </div>
-              </div>
-              <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4">Top Performers</h3>
-                <div className="space-y-3">
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Performers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
                   {topPerformers(yearlyActivations).map((p, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <div key={i} className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-[#0057FF]">#{i + 1}</span>
-                        <span className="text-sm font-medium text-gray-700">{p.name}</span>
+                        <span className="text-sm font-bold text-brand-600">#{i + 1}</span>
+                        <span className="text-sm font-medium text-foreground">{p.name}</span>
                       </div>
-                      <span className="text-sm text-gray-500">{p.completed}/{p.total}</span>
+                      <span className="text-sm text-muted-foreground">{p.completed}/{p.total}</span>
                     </div>
                   ))}
-                  {topPerformers(yearlyActivations).length === 0 && <p className="text-sm text-gray-400">No performers yet</p>}
+                  {topPerformers(yearlyActivations).length === 0 && (
+                    <EmptyState icon={TrendingUp} title="No performers yet" />
+                  )}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

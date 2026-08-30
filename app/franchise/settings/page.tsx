@@ -1,10 +1,14 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { Settings as SettingsIcon, Save, Building2, Upload, Clock, Timer, AlertTriangle, Award, Landmark, Wallet, Smartphone, Plus, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Save, Building2, Upload, Timer, AlertTriangle, Landmark, Wallet, Smartphone, Plus, Trash2, Check } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { apiLoadById, apiSave } from "@/lib/api";
 import { uploadFile, deleteRemoteFile } from "@/lib/r2Client";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 const PAKISTAN_BANKS = [
   "Abhi Microfinance Bank", "Al Baraka Bank Pakistan", "Allied Bank Limited (ABL)", "APNA Microfinance Bank",
@@ -82,153 +86,171 @@ export default function FranchiseSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Settings</h1>
-        <p className="text-gray-500 text-sm mt-1">Franchise settings and preferences</p>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Settings" }]}
+        title="Settings"
+        description="Franchise settings and preferences"
+      />
 
       <div className="flex gap-2">
         <button onClick={() => setTab("general")}
-          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === "general" ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
+          className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${tab === "general" ? "bg-brand-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
           <SettingsIcon size={14} /> General
         </button>
         <button onClick={() => setTab("bank")}
-          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === "bank" ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
+          className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${tab === "bank" ? "bg-brand-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
           <Landmark size={14} /> Company Bank / Digital
         </button>
       </div>
 
       {tab === "general" && (
       <>
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <h3 className="text-gray-900 font-bold mb-4">Franchise Logo</h3>
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-            {form.logo ? <img src={form.logo} alt="Logo" className="w-full h-full object-contain" /> : <Upload size={24} className="text-gray-400" />}
-          </div>
-          <div>
-            <label className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 cursor-pointer inline-block mb-1">Change Logo</label>
-            <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-            <p className="text-gray-400 text-xs">SVG, PNG, JPG (max 5MB)</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><Building2 size={18} /></div><h3 className="text-gray-900 font-bold">Franchise Information</h3></div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {[
-            { key: "franchiseName", label: "Franchise Name" },
-            { key: "address", label: "Address" },
-            { key: "phone", label: "Phone" },
-            { key: "email", label: "Email" },
-          ].map(({ key, label }) => (
-            <div key={key}><label className="block text-gray-500 text-xs font-medium mb-1.5">{label}</label><input type="text" value={(form as any)[key] || ""} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600"><Timer size={18} /></div><h3 className="text-gray-900 font-bold">Attendance Settings</h3></div>
-        <p className="text-gray-500 text-xs mb-4">Configure work hours, late timing, fine and bonus amounts for DSO/DSM</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Work Start Time</label><input type="time" value={attSettings.workStart} onChange={(e) => setAttSettings((p) => ({ ...p, workStart: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-          <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Work End Time</label><input type="time" value={attSettings.workEnd} onChange={(e) => setAttSettings((p) => ({ ...p, workEnd: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-          <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Late After (time)</label><input type="time" value={attSettings.lateAfter} onChange={(e) => setAttSettings((p) => ({ ...p, lateAfter: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-          <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Required Hours/Day</label><input type="number" value={attSettings.requiredHours} onChange={(e) => setAttSettings((p) => ({ ...p, requiredHours: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-          <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Fine Per Day (PKR)</label><input type="number" value={attSettings.finePerDay} onChange={(e) => setAttSettings((p) => ({ ...p, finePerDay: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-          <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Bonus Per Sale (PKR)</label><input type="number" value={attSettings.bonusPerSale} onChange={(e) => setAttSettings((p) => ({ ...p, bonusPerSale: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-        </div>
-        <div className="mt-4 bg-amber-50 rounded-xl p-3 border border-amber-200">
-          <p className="text-amber-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> Rules: After 10 AM = Late | Below {attSettings.requiredHours}h = Fine PKR {attSettings.finePerDay.toLocaleString()}/day | {attSettings.requiredHours}h+ with sales = Bonus PKR {attSettings.bonusPerSale.toLocaleString()} | 3 consecutive absents = Warning + fine</p>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <h3 className="text-gray-900 font-bold mb-4">Notification Preferences</h3>
-        <div className="space-y-3">
-          {["Email Notifications", "SMS Notifications", "WhatsApp Notifications"].map((pref) => (
-            <div key={pref} className="flex items-center justify-between py-2">
-              <span className="text-gray-700 text-sm">{pref}</span>
-              <div className="w-10 h-6 bg-[#0A2647] rounded-full relative cursor-pointer"><div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-all" /></div>
+      <Card>
+        <CardHeader className="p-6 pb-4">
+          <CardTitle>Franchise Logo</CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          <div className="flex items-center gap-6">
+            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-100">
+              {form.logo ? <img src={form.logo} alt="Logo" className="h-full w-full object-contain" /> : <Upload size={24} className="text-slate-400" />}
             </div>
-          ))}
-        </div>
-      </div>
+            <div>
+              <label className="mb-1 inline-block cursor-pointer rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">Change Logo</label>
+              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+              <p className="text-xs text-muted-foreground">SVG, PNG, JPG (max 5MB)</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="p-6 pb-4">
+          <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><Building2 size={18} /></div><CardTitle>Franchise Information</CardTitle></div>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              { key: "franchiseName", label: "Franchise Name" },
+              { key: "address", label: "Address" },
+              { key: "phone", label: "Phone" },
+              { key: "email", label: "Email" },
+            ].map(({ key, label }) => (
+              <div key={key}><label className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</label><Input value={(form as any)[key] || ""} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} /></div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="p-6 pb-4">
+          <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600"><Timer size={18} /></div><CardTitle>Attendance Settings</CardTitle></div>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          <p className="mb-4 text-xs text-muted-foreground">Configure work hours, late timing, fine and bonus amounts for DSO/DSM</p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Work Start Time</label><Input type="time" value={attSettings.workStart} onChange={(e) => setAttSettings((p) => ({ ...p, workStart: e.target.value }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Work End Time</label><Input type="time" value={attSettings.workEnd} onChange={(e) => setAttSettings((p) => ({ ...p, workEnd: e.target.value }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Late After (time)</label><Input type="time" value={attSettings.lateAfter} onChange={(e) => setAttSettings((p) => ({ ...p, lateAfter: e.target.value }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Required Hours/Day</label><Input type="number" value={attSettings.requiredHours} onChange={(e) => setAttSettings((p) => ({ ...p, requiredHours: Number(e.target.value) }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Fine Per Day (PKR)</label><Input type="number" value={attSettings.finePerDay} onChange={(e) => setAttSettings((p) => ({ ...p, finePerDay: Number(e.target.value) }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Bonus Per Sale (PKR)</label><Input type="number" value={attSettings.bonusPerSale} onChange={(e) => setAttSettings((p) => ({ ...p, bonusPerSale: Number(e.target.value) }))} /></div>
+          </div>
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <p className="flex items-center gap-2 text-xs font-medium text-amber-700"><AlertTriangle size={14} /> Rules: After 10 AM = Late | Below {attSettings.requiredHours}h = Fine PKR {attSettings.finePerDay.toLocaleString()}/day | {attSettings.requiredHours}h+ with sales = Bonus PKR {attSettings.bonusPerSale.toLocaleString()} | 3 consecutive absents = Warning + fine</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="p-6 pb-4">
+          <CardTitle>Notification Preferences</CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-2">
+          <div className="space-y-3">
+            {["Email Notifications", "SMS Notifications", "WhatsApp Notifications"].map((pref) => (
+              <div key={pref} className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-700">{pref}</span>
+                <div className="relative h-6 w-10 cursor-pointer rounded-full bg-brand-600"><div className="absolute right-1 top-1 h-4 w-4 rounded-full bg-white transition-all" /></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
       </>
       )}
 
       {tab === "bank" && (
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-1">
-            <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><Landmark size={18} /></div><div><h3 className="text-gray-900 font-bold">Company Bank / Digital Account</h3><p className="text-gray-400 text-xs mt-0.5">{bankAccounts.length} account(s) configured</p></div></div>
-            <button onClick={addBankAccount} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all"><Plus size={14} /> Add Account</button>
-          </div>
-          <p className="text-gray-500 text-xs mb-4">Company payment account details shared with DSO/DSM for loan/advance repayments and settlements.</p>
-          <div className="space-y-4">
-            {bankAccounts.map((acc, idx) => (
-              <div key={acc.id} className="border border-gray-200 rounded-2xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-gray-900 text-sm font-bold flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-black">{idx + 1}</span> Account {idx + 1}</span>
-                  {bankAccounts.length > 1 && (
-                    <button onClick={() => removeBankAccount(acc.id)} className="text-red-400 hover:text-red-600 p-1" title="Remove account"><Trash2 size={16} /></button>
-                  )}
+        <Card>
+          <CardHeader className="p-6 pb-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><Landmark size={18} /></div><div><CardTitle>Company Bank / Digital Account</CardTitle><p className="mt-0.5 text-xs text-muted-foreground">{bankAccounts.length} account(s) configured</p></div></div>
+              <Button variant="primary" size="sm" onClick={addBankAccount}><Plus size={14} /> Add Account</Button>
+            </div>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <p className="mb-4 text-xs text-muted-foreground">Company payment account details shared with DSO/DSM for loan/advance repayments and settlements.</p>
+            <div className="space-y-4">
+              {bankAccounts.map((acc, idx) => (
+                <div key={acc.id} className="rounded-xl border border-slate-200 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-sm font-bold text-slate-900"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-50 text-xs font-black text-emerald-600">{idx + 1}</span> Account {idx + 1}</span>
+                    {bankAccounts.length > 1 && (
+                      <button onClick={() => removeBankAccount(acc.id)} className="p-1 text-red-400 hover:text-red-600" title="Remove account"><Trash2 size={16} /></button>
+                    )}
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Bank / Digital Name</label>
+                      <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5">
+                        <Wallet size={16} className="text-muted-foreground" />
+                        <select value={acc.name} onChange={(e) => updateBankAccount(acc.id, "name", e.target.value)}
+                          className="w-full cursor-pointer appearance-none bg-transparent pl-1 text-sm text-slate-900 outline-none">
+                          <option value="">Select Bank / Digital</option>
+                          {PAKISTAN_BANKS.map((b) => (
+                            <option key={b} value={b}>{b}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Account Title</label>
+                      <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5">
+                        <Building2 size={16} className="text-muted-foreground" />
+                        <input type="text" value={acc.accountTitle} onChange={(e) => updateBankAccount(acc.id, "accountTitle", e.target.value)} placeholder="e.g. THE SMART PVT LTD"
+                          className="w-full bg-transparent text-sm text-slate-900 outline-none" />
+                      </div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Account Number / IBAN</label>
+                      <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5">
+                        <Smartphone size={16} className="text-muted-foreground" />
+                        <input type="text" value={acc.accountNumber} onChange={(e) => updateBankAccount(acc.id, "accountNumber", e.target.value)} placeholder="e.g. 1234-5678900-01 or 0300-1234567"
+                          className="w-full bg-transparent text-sm text-slate-900 outline-none" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Bank / Digital Name</label>
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
-                      <Wallet size={16} className="text-gray-400" />
-                      <select value={acc.name} onChange={(e) => updateBankAccount(acc.id, "name", e.target.value)}
-                        className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer pl-1">
-                        <option value="">Select Bank / Digital</option>
-                        {PAKISTAN_BANKS.map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Title</label>
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
-                      <Building2 size={16} className="text-gray-400" />
-                      <input type="text" value={acc.accountTitle} onChange={(e) => updateBankAccount(acc.id, "accountTitle", e.target.value)} placeholder="e.g. THE SMART PVT LTD"
-                        className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
-                    </div>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number / IBAN</label>
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
-                      <Smartphone size={16} className="text-gray-400" />
-                      <input type="text" value={acc.accountNumber} onChange={(e) => updateBankAccount(acc.id, "accountNumber", e.target.value)} placeholder="e.g. 1234-5678900-01 or 0300-1234567"
-                        className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
-                    </div>
-                  </div>
+              ))}
+              {bankAccounts.length === 0 && (
+                <div className="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center">
+                  <Landmark size={28} className="mx-auto mb-2 text-slate-300" />
+                  <p className="text-sm text-muted-foreground">No accounts yet. Click <b>Add Account</b> to configure company bank/digital payment accounts.</p>
                 </div>
-              </div>
-            ))}
-            {bankAccounts.length === 0 && (
-              <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center">
-                <Landmark size={28} className="text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-400 text-sm">No accounts yet. Click <b>Add Account</b> to configure company bank/digital payment accounts.</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-4 bg-emerald-50 rounded-xl p-3 border border-emerald-200">
-            <p className="text-emerald-700 text-xs font-medium flex items-center gap-2"><AlertTriangle size={14} /> These account details will be shown to DSO/DSM staff for loan/advance repayment submissions.</p>
-          </div>
-        </div>
+              )}
+            </div>
+            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+              <p className="flex items-center gap-2 text-xs font-medium text-emerald-700"><AlertTriangle size={14} /> These account details will be shown to DSO/DSM staff for loan/advance repayment submissions.</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="flex justify-end">
-        <button onClick={handleSave} className="px-6 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105 inline-flex items-center gap-2">
-          {saved ? <><CheckSvg size={16} /> Saved!</> : <><Save size={16} /> Save Settings</>}
-        </button>
+        <Button onClick={handleSave} size="lg">
+          {saved ? <><Check size={16} /> Saved!</> : <><Save size={16} /> Save Settings</>}
+        </Button>
       </div>
     </div>
   );
 }
 
-function CheckSvg({ size }: { size: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>;
-}

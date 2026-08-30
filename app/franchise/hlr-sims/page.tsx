@@ -1,9 +1,18 @@
 ﻿"use client";
 
-import { useState, useMemo } from "react";
-import { Plus, Search, Edit, Trash2, X, Save, Smartphone, Package, ArrowRight, CheckSquare, Square, Check, ChevronDown, Calendar } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, Edit, Trash2, X, Save, Smartphone, Package, ChevronDown, Calendar, Check, CheckSquare, Square, Inbox } from "lucide-react";
 import { useFranchiseData, SIM } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, toneForStatus, QuickChip } from "@/components/ui/Badge";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
+import { Select } from "@/components/ui/Select";
 
 function randAlpha(len: number): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -38,6 +47,9 @@ const SEARCH_FIELDS = [
   { value: "issuedTo", label: "Issued To" },
 ];
 
+const STATUSES = ["All", "In Stock", "Issued", "Used", "Returned"];
+const PAGE_SIZE = 10;
+
 export default function HLRSIMsPage() {
   const { auth, sims, devices, addSIM, addSIMs, updateSIM, deleteSIM, deleteSIMs, issueRecords } = useFranchiseData();
   const [search, setSearch] = useState("");
@@ -58,6 +70,7 @@ export default function HLRSIMsPage() {
   const [bulkStartIccid, setBulkStartIccid] = useState("");
   const [searchField, setSearchField] = useState("all");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [page, setPage] = useState(1);
 
   const hlrSIMs = sims.filter((s) => s.type === "hlr");
   const emptyForm: SIM = { id: "", network: "Jazz", simNumber: "", iccid: "", deviceId: "", status: "In Stock", receiveDate: new Date().toISOString().split("T")[0], franchiseId: auth.franchiseId, type: "hlr" };
@@ -90,14 +103,21 @@ export default function HLRSIMsPage() {
     });
   }, [hlrSIMs, search, searchField, statusFilter, issueRecords]);
 
-  const statusColors: Record<string, string> = {
-    "In Stock": "bg-green-50 text-green-700",
-    "Issued": "bg-amber-50 text-amber-700",
-    "Used": "bg-blue-50 text-blue-700",
-    "Returned": "bg-purple-50 text-purple-700",
-    "Active": "bg-emerald-50 text-emerald-700",
-    "Completed": "bg-teal-50 text-teal-700",
-  };
+  useEffect(() => { setPage(1); }, [search, searchField, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pagedList = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const stats = useMemo(() => {
+    const total = hlrSIMs.length;
+    const inStock = hlrSIMs.filter((s) => s.status === "In Stock").length;
+    const issued = hlrSIMs.filter((s) => s.status === "Issued").length;
+    const used = hlrSIMs.filter((s) => s.status === "Used" || s.status === "Active" || s.status === "Completed").length;
+    const returned = hlrSIMs.filter((s) => s.status === "Returned").length;
+    return { total, inStock, issued, used, returned };
+  }, [hlrSIMs]);
+
+  const networkColor: Record<string, string> = { Telenor: "bg-blue-50 text-blue-700", Jazz: "bg-red-50 text-red-700", Ufone: "bg-green-50 text-green-700", Zong: "bg-purple-50 text-purple-700" };
 
   const hlrPrefix: Record<string, string> = { Telenor: "TH", Jazz: "JH", Ufone: "UH", Zong: "ZH" };
 
@@ -172,329 +192,351 @@ export default function HLRSIMsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">HLR SIM Stock</h1>
-          <p className="text-gray-500 text-sm mt-1">Used for Replacement, MNP, and BYN</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowBulk(true)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 shadow-md transition-all hover:scale-105">
-            <Package size={16} /> Add Stock
-          </button>
-          <button onClick={openAdd} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-            <Plus size={16} /> Add HLR SIM
-          </button>
-        </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "HLR SIMs" }]}
+        title="HLR SIM Stock"
+        description="Used for Replacement, MNP, and BYN"
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setShowBulk(true)}>
+              <Package size={16} /> Add Stock
+            </Button>
+            <Button onClick={openAdd}>
+              <Plus size={16} /> Add HLR SIM
+            </Button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+        <StatCard label="Total HLR SIMs" value={stats.total} icon={Smartphone} iconClass="text-brand-600 bg-brand-50" />
+        <StatCard label="In Stock" value={stats.inStock} icon={Package} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Issued" value={stats.issued} icon={ChevronDown} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="Used" value={stats.used} icon={Check} iconClass="text-blue-600 bg-blue-50" />
+        <StatCard label="Returned" value={stats.returned} icon={Package} iconClass="text-purple-600 bg-purple-50" />
       </div>
 
       {selected.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
-          <span className="text-blue-700 text-sm font-medium">{selected.length} selected</span>
-          <button onClick={() => setShowBulkEdit(true)} className="px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600">Bulk Edit</button>
-          <button onClick={() => setShowBulkDelete(true)} className="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600">Delete Selected</button>
-          <button onClick={() => setSelected([])} className="text-blue-400 hover:text-blue-600 text-xs">Clear</button>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-brand-100 bg-brand-50 px-4 py-3">
+          <CheckSquare className="h-4 w-4 text-brand-600" />
+          <span className="text-sm font-medium text-brand-700">{selected.length} selected</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={() => setShowBulkEdit(true)}>Bulk Edit</Button>
+            <Button size="sm" variant="destructive" onClick={() => setShowBulkDelete(true)}>Delete Selected</Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
 
-      {/* Advanced Search Bar */}
-      <div className="bg-white rounded-xl border border-gray-200 p-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-shrink-0">
-            <select value={searchField} onChange={(e) => setSearchField(e.target.value)}
-              className="h-full pl-3 pr-8 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:border-[#0A2647]/50 appearance-none cursor-pointer">
-              {SEARCH_FIELDS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+      <Card>
+        <CardContent className="space-y-3 py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-1 items-center gap-2">
+              <Select value={searchField} onChange={(e) => setSearchField(e.target.value)} className="w-40">
+                {SEARCH_FIELDS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </Select>
+              <div className="flex-1">
+                <SearchInput
+                  placeholder={`Search by ${SEARCH_FIELDS.find((f) => f.value === searchField)?.label || "All Fields"}...`}
+                  value={search}
+                  onChange={(v) => setSearch(v)}
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {STATUSES.map((s) => (
+                <QuickChip key={s} label={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} />
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-            <Search size={16} className="text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder={`Search by ${SEARCH_FIELDS.find((f) => f.value === searchField)?.label || "All Fields"}...`}
-              className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-            {search && <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>}
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {["All", "In Stock", "Issued", "Used", "Returned"].map((s) => (
-              <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${statusFilter === s ? "bg-[#0A2647] text-white shadow-md" : "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"}`}>{s}</button>
-            ))}
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="px-4 py-4 w-10">
-                  <button onClick={toggleSelectAll} className="text-gray-400 hover:text-[#0A2647]">
-                    {selected.length === filtered.length && filtered.length > 0 ? <CheckSquare size={18} className="text-[#0A2647]" /> : <Square size={18} />}
-                  </button>
-                </th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase">HLR ID</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase">Network</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">SIM Number</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">ICCID</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Device</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Retailer ID</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Issued To</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Issue Date</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Active Date</th>
-                <th className="text-left px-4 py-4 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Return Date</th>
-                <th className="text-right px-4 py-4 text-gray-500 text-xs font-medium uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((s) => {
-                const issueInfo = getIssueInfo(s.id);
-                return (
-                  <tr key={s.id} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${selected.includes(s.id) ? "bg-blue-50" : ""}`}>
-                    <td className="px-4 py-3">
-                      <button onClick={() => toggleSelect(s.id)} className="text-gray-400 hover:text-[#0A2647]">
-                        {selected.includes(s.id) ? <CheckSquare size={18} className="text-[#0A2647]" /> : <Square size={18} />}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-gray-900 text-sm font-medium">{s.id}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-lg text-xs font-medium ${s.network === "Jazz" ? "bg-red-50 text-red-700" : s.network === "Telenor" ? "bg-blue-50 text-blue-700" : s.network === "Ufone" ? "bg-green-50 text-green-700" : "bg-purple-50 text-purple-700"}`}>{s.network}</span>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell font-mono text-gray-600 text-sm">{s.simNumber}</td>
-                    <td className="px-4 py-3 hidden lg:table-cell font-mono text-gray-400 text-xs">{s.iccid}</td>
-                    <td className="px-4 py-3 hidden xl:table-cell font-mono text-gray-500 text-xs">{s.deviceId || "\u2014"}</td>
-                    <td className="px-4 py-3 hidden xl:table-cell">
-                      {issueInfo?.retailerId ? (
-                        <span className="font-mono text-xs text-[#0A2647] font-medium bg-[#0A2647]/5 px-2 py-1 rounded-lg">{issueInfo.retailerId}</span>
-                      ) : <span className="text-gray-300">\u2014</span>}
-                    </td>
-                    <td className="px-4 py-3 hidden xl:table-cell text-gray-600 text-xs">{issueInfo?.issuedTo || "\u2014"}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-lg text-xs font-medium ${statusColors[s.status] || "bg-gray-50 text-gray-700"}`}>{s.status}</span>
-                    </td>
-                    <td className="px-4 py-3 hidden 2xl:table-cell">
-                      {issueInfo?.issueDate ? (
-                        <div className="flex items-center gap-1 text-gray-600 text-xs">
-                          <Calendar size={10} className="text-gray-400" /> {formatDateDDMMYYYY(issueInfo.issueDate)}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0 pb-0">
+          <CardTitle>HLR SIM Records</CardTitle>
+          <span className="text-sm text-muted-foreground">{filtered.length} of {hlrSIMs.length}</span>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1100px] text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50">
+                  <th className="w-10 px-4 py-3 text-center">
+                    <button onClick={toggleSelectAll} className="flex items-center justify-center">
+                      {selected.length === filtered.length && filtered.length > 0 ? <CheckSquare size={16} className="text-brand-600" /> : <Square size={16} className="text-slate-300" />}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">HLR ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Network</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground md:table-cell">SIM Number</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground lg:table-cell">ICCID</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground xl:table-cell">Device</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground xl:table-cell">Retailer ID</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground xl:table-cell">Issued To</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground 2xl:table-cell">Issue Date</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground 2xl:table-cell">Active Date</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground 2xl:table-cell">Return Date</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pagedList.map((s) => {
+                  const issueInfo = getIssueInfo(s.id);
+                  return (
+                    <tr key={s.id} className={`border-b border-slate-100 transition-colors hover:bg-slate-50 ${selected.includes(s.id) ? "bg-brand-50" : ""}`}>
+                      <td className="px-4 py-3 text-center">
+                        <button onClick={() => toggleSelect(s.id)} className="flex items-center justify-center">
+                          {selected.includes(s.id) ? <CheckSquare size={16} className="text-brand-600" /> : <Square size={16} className="text-slate-300" />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-sm font-medium text-foreground">{s.id}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex rounded-lg px-2 py-1 text-xs font-medium ${networkColor[s.network] || "bg-slate-50 text-slate-700"}`}>{s.network}</span>
+                      </td>
+                      <td className="hidden px-4 py-3 font-mono text-sm text-foreground md:table-cell">{s.simNumber}</td>
+                      <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground lg:table-cell">{s.iccid}</td>
+                      <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground xl:table-cell">{s.deviceId || "\u2014"}</td>
+                      <td className="hidden px-4 py-3 xl:table-cell">
+                        {issueInfo?.retailerId ? (
+                          <span className="rounded-lg bg-brand-50 px-2 py-1 font-mono text-xs font-medium text-brand-600">{issueInfo.retailerId}</span>
+                        ) : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="hidden px-4 py-3 text-xs text-muted-foreground xl:table-cell">{issueInfo?.issuedTo || "\u2014"}</td>
+                      <td className="px-4 py-3">
+                        <StatusPill label={s.status} tone={toneForStatus(s.status)} />
+                      </td>
+                      <td className="hidden px-4 py-3 2xl:table-cell">
+                        {issueInfo?.issueDate ? (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Calendar size={10} className="text-slate-400" /> {formatDateDDMMYYYY(issueInfo.issueDate)}
+                          </div>
+                        ) : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="hidden px-4 py-3 2xl:table-cell">
+                        {s.status === "Used" || s.status === "Active" ? (
+                          <div className="flex items-center gap-1 text-xs font-medium text-blue-600">
+                            <Calendar size={10} /> {formatDateDDMMYYYY(issueInfo?.issueDate || "")}
+                          </div>
+                        ) : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="hidden px-4 py-3 2xl:table-cell">
+                        {issueInfo?.returnDate ? (
+                          <div className="flex items-center gap-1 text-xs font-medium text-green-600">
+                            <Calendar size={10} /> {formatDateDDMMYYYY(issueInfo.returnDate)}
+                          </div>
+                        ) : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openEdit(s)} className="rounded-lg p-1.5 text-amber-600 transition-colors hover:bg-amber-50" title="Edit"><Edit size={14} /></button>
+                          <button onClick={() => deleteSIM(s.id)} className="rounded-lg p-1.5 text-red-600 transition-colors hover:bg-red-50" title="Delete"><Trash2 size={14} /></button>
                         </div>
-                      ) : <span className="text-gray-300">\u2014</span>}
-                    </td>
-                    <td className="px-4 py-3 hidden 2xl:table-cell">
-                      {s.status === "Used" || s.status === "Active" ? (
-                        <div className="flex items-center gap-1 text-blue-600 text-xs font-medium">
-                          <Calendar size={10} /> {formatDateDDMMYYYY(issueInfo?.issueDate || "")}
-                        </div>
-                      ) : <span className="text-gray-300">\u2014</span>}
-                    </td>
-                    <td className="px-4 py-3 hidden 2xl:table-cell">
-                      {issueInfo?.returnDate ? (
-                        <div className="flex items-center gap-1 text-green-600 text-xs font-medium">
-                          <Calendar size={10} /> {formatDateDDMMYYYY(issueInfo.returnDate)}
-                        </div>
-                      ) : <span className="text-gray-300">\u2014</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEdit(s)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"><Edit size={14} /></button>
-                        <button onClick={() => deleteSIM(s.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {filtered.length === 0 && <div className="px-6 py-12 text-center"><Smartphone size={32} className="text-gray-300 mx-auto mb-3" /><p className="text-gray-400 text-sm">No HLR SIMs found</p></div>}
-      </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <Pagination page={page} totalPages={pageCount} onChange={setPage} />
+          {filtered.length === 0 && (
+            <EmptyState icon={Inbox} title="No HLR SIMs found" description="No HLR SIMs match your filters." />
+          )}
+        </CardContent>
+      </Card>
 
       {showBulk && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowBulk(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowBulk(false)}>
+          <Card className="w-full max-w-lg shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center"><Package size={18} className="text-emerald-600" /></div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50"><Package size={18} className="text-emerald-600" /></div>
                 <div>
-                  <h3 className="text-gray-900 font-bold text-sm">Add Bulk HLR Stock</h3>
-                  <p className="text-gray-400 text-xs mt-0.5">Import multiple HLR SIMs at once</p>
+                  <h3 className="text-sm font-semibold text-foreground">Add Bulk HLR Stock</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Import multiple HLR SIMs at once</p>
                 </div>
               </div>
-              <button onClick={() => setShowBulk(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+              <button onClick={() => setShowBulk(false)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X size={18} /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Network *</label>
-                  <select value={bulkNetwork} onChange={(e) => setBulkNetwork(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Network *</label>
+                  <Select value={bulkNetwork} onChange={(e) => setBulkNetwork(e.target.value)}>
                     {["Telenor", "Jazz", "Ufone", "Zong"].map((n) => <option key={n} value={n}>{n}</option>)}
-                  </select>
+                  </Select>
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Quantity *</label>
-                  <input type="number" min={1} max={500} value={bulkQuantity} onChange={(e) => setBulkQuantity(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
-                  <div className="flex gap-1.5 mt-2">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Quantity *</label>
+                  <input type="number" min={1} max={500} value={bulkQuantity} onChange={(e) => setBulkQuantity(Number(e.target.value))} className="h-8 w-full rounded-lg border border-slate-200 bg-background px-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500" />
+                  <div className="mt-2 flex gap-1.5">
                     {[10, 25, 50, 100].map((n) => (
-                      <button key={n} onClick={() => setBulkQuantity(n)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${bulkQuantity === n ? "bg-[#0A2647] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{n}</button>
+                      <button key={n} onClick={() => setBulkQuantity(n)} className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${bulkQuantity === n ? "bg-brand-600 text-white" : "bg-slate-100 text-muted-foreground hover:bg-slate-200"}`}>{n}</button>
                     ))}
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Bind Device ID</label>
-                  <select value={bulkDeviceId} onChange={(e) => setBulkDeviceId(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Bind Device ID</label>
+                  <Select value={bulkDeviceId} onChange={(e) => setBulkDeviceId(e.target.value)}>
                     <option value="">None</option>
                     {devices.map((d) => <option key={d.id} value={d.id}>{d.id}</option>)}
-                  </select>
+                  </Select>
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Entry Date</label>
-                  <input type="date" value={bulkDate} onChange={(e) => setBulkDate(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Entry Date</label>
+                  <input type="date" value={bulkDate} onChange={(e) => setBulkDate(e.target.value)} className="h-8 w-full rounded-lg border border-slate-200 bg-background px-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500" />
                 </div>
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Starting ICCID (optional)</label>
-                <input type="text" value={bulkStartIccid} onChange={(e) => setBulkStartIccid(e.target.value)} placeholder="e.g. 876543230001" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Starting ICCID (optional)</label>
+                <input type="text" value={bulkStartIccid} onChange={(e) => setBulkStartIccid(e.target.value)} placeholder="e.g. 876543230001" className="h-8 w-full rounded-lg border border-slate-200 bg-background px-2 font-mono text-sm text-foreground outline-none transition-colors focus:border-brand-500" />
                 {bulkStartIccid.trim() && (
-                  <div className="mt-2 bg-blue-50 border border-blue-200 rounded-xl p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-blue-700 text-xs font-medium">Sequential ICCID Preview</p>
-                      <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-700 rounded-lg">{bulkQuantity} SIMs</span>
+                  <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-xs font-medium text-blue-700">Sequential ICCID Preview</p>
+                      <span className="rounded-lg bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">{bulkQuantity} SIMs</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {Array.from({ length: Math.min(bulkQuantity, 6) }).map((_, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-white rounded border border-blue-200 text-[10px] font-mono text-gray-700">{incrementICCID(bulkStartIccid.trim(), i)}</span>
+                        <span key={i} className="rounded border border-blue-200 bg-white px-2 py-0.5 font-mono text-[10px] text-slate-700">{incrementICCID(bulkStartIccid.trim(), i)}</span>
                       ))}
-                      {bulkQuantity > 6 && <span className="px-2 py-0.5 text-[10px] text-blue-600 font-medium">+{bulkQuantity - 6} more</span>}
+                      {bulkQuantity > 6 && <span className="px-2 py-0.5 text-[10px] font-medium text-blue-600">+{bulkQuantity - 6} more</span>}
                     </div>
                   </div>
                 )}
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowBulk(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleBulkImport} className="flex-1 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 inline-flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02]">
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowBulk(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleBulkImport}>
                 <Package size={14} /> Import {bulkQuantity} HLR SIMs
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {showBulkEdit && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowBulkEdit(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">Bulk Edit ({selected.length} HLR SIMs)</h3>
-              <button onClick={() => setShowBulkEdit(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowBulkEdit(false)}>
+          <Card className="w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-base font-semibold text-foreground">Bulk Edit ({selected.length} HLR SIMs)</h3>
+              <button onClick={() => setShowBulkEdit(false)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X size={18} /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Change Device ID</label>
-                <select value={bulkEditDevice} onChange={(e) => setBulkEditDevice(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Change Device ID</label>
+                <Select value={bulkEditDevice} onChange={(e) => setBulkEditDevice(e.target.value)}>
                   <option value="">-- No Change --</option>
                   <option value="">None (Clear)</option>
                   {devices.map((d) => <option key={d.id} value={d.id}>{d.id}</option>)}
-                </select>
+                </Select>
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Change Network</label>
-                <select value={bulkEditNetwork} onChange={(e) => setBulkEditNetwork(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Change Network</label>
+                <Select value={bulkEditNetwork} onChange={(e) => setBulkEditNetwork(e.target.value)}>
                   <option value="">-- No Change --</option>
                   {["Telenor", "Jazz", "Ufone", "Zong"].map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
+                </Select>
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Change Status</label>
-                <select value={bulkEditStatus} onChange={(e) => setBulkEditStatus(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Change Status</label>
+                <Select value={bulkEditStatus} onChange={(e) => setBulkEditStatus(e.target.value)}>
                   <option value="">-- No Change --</option>
                   {["In Stock", "Issued", "Returned"].map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                </Select>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowBulkEdit(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleBulkEdit} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center justify-center gap-2"><Check size={14} /> Apply Changes</button>
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowBulkEdit(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleBulkEdit}><Check size={14} /> Apply Changes</Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {showBulkDelete && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowBulkDelete(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-gray-900 font-bold mb-2">Delete {selected.length} HLR SIMs?</h3>
-            <p className="text-gray-500 text-sm">This action cannot be undone.</p>
-            <div className="flex gap-3 mt-4">
-              <button onClick={() => setShowBulkDelete(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleBulkDelete} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700">Delete</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowBulkDelete(false)}>
+          <Card className="w-full max-w-sm p-6 text-center shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-2 text-base font-semibold text-foreground">Delete {selected.length} HLR SIMs?</h3>
+            <p className="text-sm text-muted-foreground">This action cannot be undone.</p>
+            <div className="mt-4 flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowBulkDelete(false)}>Cancel</Button>
+              <Button variant="destructive" className="flex-1" onClick={handleBulkDelete}>Delete</Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowForm(false)}>
+          <Card className="w-full max-w-lg shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0A2647]/10 flex items-center justify-center"><Smartphone size={18} className="text-[#0A2647]" /></div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50"><Smartphone size={18} className="text-brand-600" /></div>
                 <div>
-                  <h3 className="text-gray-900 font-bold text-sm">{editing ? "Edit HLR SIM" : "Add HLR SIM"}</h3>
-                  <p className="text-gray-400 text-xs mt-0.5">{editing ? `Editing ${editing.id}` : "Fill in HLR SIM details"}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{editing ? "Edit HLR SIM" : "Add HLR SIM"}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{editing ? `Editing ${editing.id}` : "Fill in HLR SIM details"}</p>
                 </div>
               </div>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+              <button onClick={() => setShowForm(false)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X size={18} /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">HLR ID *</label>
-                  <input type="text" value={form.id} onChange={(e) => setField("id", e.target.value)} disabled={!!editing} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50 disabled:opacity-60" />
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">HLR ID *</label>
+                  <input type="text" value={form.id} onChange={(e) => setField("id", e.target.value)} disabled={!!editing} className="h-8 w-full rounded-lg border border-slate-200 bg-background px-2 font-mono text-sm text-foreground outline-none transition-colors focus:border-brand-500 disabled:opacity-60" />
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Network *</label>
-                  <select value={form.network} onChange={(e) => setField("network", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Network *</label>
+                  <Select value={form.network} onChange={(e) => setField("network", e.target.value)}>
                     {["Telenor", "Jazz", "Ufone", "Zong"].map((n) => <option key={n} value={n}>{n}</option>)}
-                  </select>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">SIM Number *</label>
-                  <input type="text" value={form.simNumber} onChange={(e) => setField("simNumber", e.target.value)} placeholder="03XX-XXXXXXX" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">SIM Number *</label>
+                  <input type="text" value={form.simNumber} onChange={(e) => setField("simNumber", e.target.value)} placeholder="03XX-XXXXXXX" className="h-8 w-full rounded-lg border border-slate-200 bg-background px-2 font-mono text-sm text-foreground outline-none transition-colors focus:border-brand-500" />
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">ICCID</label>
-                  <input type="text" value={form.iccid} onChange={(e) => setField("iccid", e.target.value)} placeholder="89..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">ICCID</label>
+                  <input type="text" value={form.iccid} onChange={(e) => setField("iccid", e.target.value)} placeholder="89..." className="h-8 w-full rounded-lg border border-slate-200 bg-background px-2 font-mono text-sm text-foreground outline-none transition-colors focus:border-brand-500" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Device ID</label>
-                  <select value={form.deviceId} onChange={(e) => setField("deviceId", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Device ID</label>
+                  <Select value={form.deviceId} onChange={(e) => setField("deviceId", e.target.value)}>
                     <option value="">None</option>
                     {devices.map((d) => <option key={d.id} value={d.id}>{d.id}</option>)}
-                  </select>
+                  </Select>
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Status *</label>
-                  <select value={form.status} onChange={(e) => setField("status", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Status *</label>
+                  <Select value={form.status} onChange={(e) => setField("status", e.target.value)}>
                     {["In Stock", "Used", "Issued", "Returned"].map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  </Select>
                 </div>
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Receive Date</label>
-                <input type="date" value={form.receiveDate} onChange={(e) => setField("receiveDate", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Receive Date</label>
+                <input type="date" value={form.receiveDate} onChange={(e) => setField("receiveDate", e.target.value)} className="h-8 w-full rounded-lg border border-slate-200 bg-background px-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500" />
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] inline-flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02]">
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSave}>
                 <Save size={14} /> {editing ? "Update HLR SIM" : "Add HLR SIM"}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

@@ -9,9 +9,14 @@ import {
   TrendingUp, TrendingDown, Package, CreditCard, AlertCircle,
   CheckCircle2, Clock, ChevronRight, Activity, BarChart3, PieChart,
   Zap, Shield, Bell, UserCheck, Calendar, Receipt, Building2,
-  Briefcase, Layers, CircleDot, RefreshCw, Wifi, Star, X,
-  Download, Eye, Home, Filter
+  Briefcase, Layers, CircleDot, RefreshCw, Wifi, Star, Home,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function FranchiseDashboardPage() {
   const {
@@ -29,7 +34,6 @@ export default function FranchiseDashboardPage() {
   const safePct = (val: number, total: number) => total > 0 ? Math.round((val / total) * 100) : 0;
   const safeDiv = (val: number, total: number) => total > 0 ? val / total : 0;
 
-  // â”€â”€â”€ All Memoized Metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const metrics = useMemo(() => ({
     activeDSM: dsms.filter((d) => d.status === "Active").length,
     totalDSM: dsms.length,
@@ -110,7 +114,7 @@ export default function FranchiseDashboardPage() {
       items.push({
         icon: r.status === "Issued" ? TrendingUp : TrendingDown,
         color: r.status === "Issued" ? "text-blue-500 bg-blue-50" : "text-green-500 bg-green-50",
-        title: `${r.issuedTo} â€” ${r.status === "Issued" ? "SIMs Issued" : "SIMs Returned"}`,
+        title: `${r.issuedTo} — ${r.status === "Issued" ? "SIMs Issued" : "SIMs Returned"}`,
         detail: `${r.simIds.length} SIM(s) | ${r.retailerId}`,
         time: r.issueDate || r.returnDate || "",
       });
@@ -118,7 +122,7 @@ export default function FranchiseDashboardPage() {
     equipmentIssueRecords.slice(0, 2).forEach((r) => {
       items.push({
         icon: Briefcase, color: "text-indigo-500 bg-indigo-50",
-        title: `${r.personName} â€” Equipment ${r.status === "Returned" ? "Returned" : "Issued"}`,
+        title: `${r.personName} — Equipment ${r.status === "Returned" ? "Returned" : "Issued"}`,
         detail: `${r.equipmentName} | ${r.personRole}`,
         time: r.issueDate || r.returnDate || "",
       });
@@ -166,17 +170,10 @@ export default function FranchiseDashboardPage() {
   if (!hydrated) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-center"><RefreshCw size={32} className="animate-spin text-[#0A2647] mx-auto mb-4" /><p className="text-gray-500">Loading dashboard...</p></div>
+        <div className="text-center"><RefreshCw size={32} className="animate-spin text-brand-600 mx-auto mb-4" /><p className="text-muted-foreground">Loading dashboard...</p></div>
       </div>
     );
   }
-
-  const statCards = [
-    { label: "Active DSM", value: metrics.activeDSM, sub: `of ${metrics.totalDSM} total`, icon: Users, color: "from-blue-500 to-blue-600", light: "bg-blue-50", trend: metrics.totalDSM > 0 ? `+${metrics.activeDSM}` : "0", up: metrics.activeDSM >= metrics.totalDSM * 0.5 },
-    { label: "Active DSO", value: metrics.activeDSO, sub: `of ${metrics.totalDSO} total`, icon: UserCheck, color: "from-emerald-500 to-emerald-600", light: "bg-emerald-50", trend: metrics.totalDSO > 0 ? `+${metrics.activeDSO}` : "0", up: metrics.activeDSO >= metrics.totalDSO * 0.5 },
-    { label: "Devices Issued", value: metrics.issuedDevices, sub: `${metrics.inStockDevices} in stock Â· ${metrics.totalDevices} total`, icon: Smartphone, color: "from-purple-500 to-purple-600", light: "bg-purple-50", trend: metrics.totalDevices > 0 ? `${Math.round((metrics.issuedDevices / metrics.totalDevices) * 100)}%` : "0%", up: true },
-    { label: "Active SIMs", value: metrics.activatedSIMs, sub: `${metrics.issuedSIMs} issued Â· ${metrics.totalSIMs} total`, icon: CreditCard, color: "from-cyan-500 to-cyan-600", light: "bg-cyan-50", trend: metrics.totalSIMs > 0 ? `${safePct(metrics.activatedSIMs, metrics.totalSIMs)}%` : "0%", up: true },
-  ];
 
   const quickActions = [
     { label: "DSM", href: "/franchise/dsm", icon: Users, color: "bg-blue-50 text-blue-600" },
@@ -189,211 +186,166 @@ export default function FranchiseDashboardPage() {
     { label: "Reports", href: "/franchise/reports", icon: BarChart3, color: "bg-rose-50 text-rose-600" },
   ];
 
-  const secondaryStats = [
-    { label: "New SIM Stock", value: metrics.newSIMStock, icon: Package, color: "text-cyan-600", light: "bg-cyan-50", pct: metrics.newSIMTotal > 0 ? safePct(metrics.newSIMStock, metrics.newSIMTotal) : 0 },
-    { label: "HLR SIM Stock", value: metrics.hlrStock, icon: Layers, color: "text-orange-600", light: "bg-orange-50", pct: metrics.hlrSIMTotal > 0 ? safePct(metrics.hlrStock, metrics.hlrSIMTotal) : 0 },
-    { label: "Today Present", value: attendanceToday.present, sub: attendanceToday.total > 0 ? `${safePct(attendanceToday.present, attendanceToday.total)}%` : "â€”", icon: CheckCircle2, color: "text-green-600", light: "bg-green-50", pct: safePct(attendanceToday.present, attendanceToday.total || 1) },
-    { label: "Unread Alerts", value: notifStats.unread, icon: Bell, color: notifStats.unread > 0 ? "text-red-600" : "text-gray-400", light: notifStats.unread > 0 ? "bg-red-50" : "bg-gray-50", pct: 0 },
-  ];
-
   return (
     <div className="space-y-6">
-      {/* â”€â”€â”€ Greeting Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="bg-gradient-to-r from-[#0A2647] via-[#144272] to-[#205295] rounded-2xl p-6 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        <div className="relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Home size={16} className="text-white/60" />
-                <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Franchise Dashboard</span>
-              </div>
-              <h1 className="text-2xl font-black">Welcome back, {settings.ownerName || "Franchise Owner"}!</h1>
-              <p className="text-white/70 text-sm mt-1">
-                {settings.franchiseName || "THE SMART ERP"} | {formatDateDDMMYYYY(today)} | {metrics.activeDSM + metrics.activeDSO} active staff
-              </p>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Dashboard" }]}
+        title={`Welcome back, ${settings.ownerName || "Franchise Owner"}!`}
+        description={`${settings.franchiseName || "THE SMART ERP"} | ${formatDateDDMMYYYY(today)} | ${metrics.activeDSM + metrics.activeDSO} active staff`}
+        actions={
+          <>
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm">
+              <Calendar size={14} className="text-muted-foreground" />
+              <input type="month" value={period} onChange={(e) => setPeriod(e.target.value)}
+                className="bg-transparent border-0 p-0 text-xs outline-none" />
             </div>
-            <div className="flex gap-2">
-              <div className="bg-white/10 rounded-xl px-3 py-2 flex items-center gap-2 text-sm">
-                <Calendar size={14} className="text-white/60" />
-                <input type="month" value={period} onChange={(e) => setPeriod(e.target.value)}
-                  className="bg-transparent border-0 p-0 text-white text-xs focus:outline-none [color-scheme:dark]" />
-              </div>
-              <button onClick={() => router.push("/franchise/notifications")}
-                className="relative p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-all">
-                <Bell size={18} />
-                {notifStats.unread > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center animate-pulse">{notifStats.unread}</span>}
-              </button>
-              <button onClick={() => router.push("/franchise/settings")}
-                className="p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-all"><Shield size={18} /></button>
-            </div>
-          </div>
-        </div>
-      </div>
+            <Button variant="outline" size="sm" onClick={() => router.push("/franchise/notifications")} className="relative">
+              <Bell size={16} />
+              {notifStats.unread > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {notifStats.unread}
+                </span>
+              )}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => router.push("/franchise/settings")}>
+              <Shield size={16} />
+            </Button>
+          </>
+        }
+      />
 
-      {/* â”€â”€â”€ Tab Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
+      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
         {[
           { key: "overview" as const, label: "Overview", icon: Home },
           { key: "performance" as const, label: "Performance", icon: Target },
           { key: "finance" as const, label: "Finance", icon: DollarSign },
         ].map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab.key ? "bg-white text-[#0A2647] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab.key ? "bg-white text-brand-600 shadow-sm" : "text-muted-foreground hover:text-slate-700"}`}>
             <tab.icon size={14} /> {tab.label}
           </button>
         ))}
       </div>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "overview" && (
         <>
-          {/* â”€â”€â”€ Primary Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {statCards.map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg transition-all group">
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`w-11 h-11 rounded-xl ${s.light} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <s.icon size={20} className={s.color.split(" ")[0].replace("from-", "text-")} />
-                  </div>
-                  <span className={`flex items-center gap-0.5 text-xs font-bold ${s.up ? "text-green-600" : "text-red-600"}`}>
-                    {s.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {s.trend}
-                  </span>
-                </div>
-                <p className="text-3xl font-black text-gray-900">{s.value}</p>
-                <p className="text-gray-500 text-xs font-medium mt-0.5">{s.label}</p>
-                <p className="text-gray-400 text-[10px] mt-1">{s.sub}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <StatCard label="Active DSM" value={metrics.activeDSM} sub={`of ${metrics.totalDSM} total`} icon={Users} iconClass="text-blue-600 bg-blue-50" trend={metrics.totalDSM > 0 ? `+${metrics.activeDSM}` : "0"} trendUp={metrics.activeDSM >= metrics.totalDSM * 0.5} />
+            <StatCard label="Active DSO" value={metrics.activeDSO} sub={`of ${metrics.totalDSO} total`} icon={UserCheck} iconClass="text-emerald-600 bg-emerald-50" trend={metrics.totalDSO > 0 ? `+${metrics.activeDSO}` : "0"} trendUp={metrics.activeDSO >= metrics.totalDSO * 0.5} />
+            <StatCard label="Devices Issued" value={metrics.issuedDevices} sub={`${metrics.inStockDevices} in stock · ${metrics.totalDevices} total`} icon={Smartphone} iconClass="text-purple-600 bg-purple-50" trend={metrics.totalDevices > 0 ? `${Math.round((metrics.issuedDevices / metrics.totalDevices) * 100)}%` : "0%"} trendUp />
+            <StatCard label="Active SIMs" value={metrics.activatedSIMs} sub={`${metrics.issuedSIMs} issued · ${metrics.totalSIMs} total`} icon={CreditCard} iconClass="text-cyan-600 bg-cyan-50" trend={metrics.totalSIMs > 0 ? `${safePct(metrics.activatedSIMs, metrics.totalSIMs)}%` : "0%"} trendUp />
+            <StatCard label="New SIM Stock" value={metrics.newSIMStock} icon={Package} iconClass="text-cyan-600 bg-cyan-50" progress={metrics.newSIMTotal > 0 ? safePct(metrics.newSIMStock, metrics.newSIMTotal) : 0} />
+            <StatCard label="HLR SIM Stock" value={metrics.hlrStock} icon={Layers} iconClass="text-orange-600 bg-orange-50" progress={metrics.hlrSIMTotal > 0 ? safePct(metrics.hlrStock, metrics.hlrSIMTotal) : 0} />
+            <StatCard label="Today Present" value={attendanceToday.present} sub={attendanceToday.total > 0 ? `${safePct(attendanceToday.present, attendanceToday.total)}%` : "—"} icon={CheckCircle2} iconClass="text-green-600 bg-green-50" progress={safePct(attendanceToday.present, attendanceToday.total || 1)} progressClass="bg-green-500" />
+            <StatCard label="Unread Alerts" value={notifStats.unread} icon={Bell} iconClass={notifStats.unread > 0 ? "text-red-600 bg-red-50" : "text-gray-400 bg-gray-50"} />
+          </div>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5">
+              <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                <Zap size={16} className="text-amber-500" /> Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="grid grid-cols-4 lg:grid-cols-8 gap-3">
+                {quickActions.map((a) => (
+                  <button key={a.label} onClick={() => router.push(a.href)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.color} hover:scale-105 transition-all`}>
+                    <a.icon size={20} />
+                    <span className="text-[11px] font-bold whitespace-nowrap">{a.label}</span>
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* â”€â”€â”€ Secondary Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {secondaryStats.map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-all">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center`}>
-                    <s.icon size={18} className={s.color} />
-                  </div>
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{s.value}</p>
-                    <p className="text-gray-500 text-[11px]">{s.label} {s.sub && `Â· ${s.sub}`}</p>
-                    {s.pct > 0 && (
-                      <div className="w-16 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                        <div className={`h-full rounded-full ${s.label === "Today Present" ? "bg-green-500" : "bg-blue-500"}`} style={{ width: `${s.pct}%` }} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* â”€â”€â”€ Quick Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2">
-              <Zap size={16} className="text-[#C8A951]" /> Quick Actions
-            </h3>
-            <div className="grid grid-cols-4 lg:grid-cols-8 gap-3">
-              {quickActions.map((a) => (
-                <button key={a.label} onClick={() => router.push(a.href)}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.color} hover:scale-105 transition-all`}>
-                  <a.icon size={20} />
-                  <span className="text-[11px] font-bold whitespace-nowrap">{a.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* â”€â”€â”€ Main Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left Column - 2 cols */}
             <div className="lg:col-span-2 space-y-6">
-              {/* DSO Performance Rankings */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <BarChart3 size={16} className="text-[#0A2647]" /> DSO Performance Rankings
-                    <span className="text-gray-400 font-normal text-xs">({targetsData.dsoTargets.length} DSOs)</span>
-                  </h3>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between p-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                    <BarChart3 size={16} className="text-brand-600" /> DSO Performance Rankings
+                    <span className="text-muted-foreground font-normal text-xs">({targetsData.dsoTargets.length} DSOs)</span>
+                  </CardTitle>
                   <button onClick={() => router.push("/franchise/targets")}
-                    className="text-[#0A2647] text-xs font-medium hover:underline flex items-center gap-1">
+                    className="text-brand-600 text-xs font-medium hover:underline flex items-center gap-1">
                     View All <ChevronRight size={12} />
                   </button>
-                </div>
-                <div className="p-4">
+                </CardHeader>
+                <CardContent className="p-5 pt-0">
                   {topPerformers.length > 0 ? (
                     <div className="space-y-3">
                       {topPerformers.map((t, i) => (
-                        <div key={t.id} className={`flex items-center gap-4 p-3 rounded-xl transition-all ${i === 0 ? "bg-amber-50 border border-amber-200" : "hover:bg-gray-50"}`}>
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${i === 0 ? "bg-amber-400 text-white" : i === 1 ? "bg-gray-300 text-white" : i === 2 ? "bg-orange-400 text-white" : "bg-gray-100 text-gray-500"}`}>
+                        <div key={t.id} className={`flex items-center gap-4 p-3 rounded-xl transition-all ${i === 0 ? "bg-amber-50 border border-amber-200" : "hover:bg-slate-50"}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${i === 0 ? "bg-amber-400 text-white" : i === 1 ? "bg-slate-300 text-white" : i === 2 ? "bg-orange-400 text-white" : "bg-slate-100 text-slate-500"}`}>
                             {i + 1}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <p className="text-gray-900 text-sm font-bold truncate">{t.employeeName}</p>
+                              <p className="text-slate-900 text-sm font-bold truncate">{t.employeeName}</p>
                               {i === 0 && <Star size={12} className="text-amber-400 fill-amber-400" />}
                             </div>
                             <div className="flex items-center gap-3 mt-1">
-                              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                                 <div className={`h-full rounded-full transition-all duration-700 ${t.progress >= 80 ? "bg-gradient-to-r from-green-400 to-green-600" : t.progress >= 50 ? "bg-gradient-to-r from-yellow-400 to-yellow-600" : "bg-gradient-to-r from-red-400 to-red-600"}`}
                                   style={{ width: `${Math.min(100, t.progress)}%` }} />
                               </div>
-                              <span className="text-xs font-bold text-gray-600 w-12 text-right">{t.progress}%</span>
+                              <span className="text-xs font-bold text-slate-600 w-12 text-right">{t.progress}%</span>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-gray-900 text-sm font-bold">{t.achieved}/{t.monthlyTarget}</p>
-                            <p className="text-gray-400 text-[10px]">SIMs</p>
+                            <p className="text-slate-900 text-sm font-bold">{t.achieved}/{t.monthlyTarget}</p>
+                            <p className="text-muted-foreground text-[10px]">SIMs</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-sm text-center py-8">No targets set yet. <button onClick={() => router.push("/franchise/targets")} className="text-[#0A2647] underline">Set targets</button></p>
+                    <EmptyState
+                      icon={Target}
+                      title="No targets set yet"
+                      actions={<Button variant="outline" size="sm" onClick={() => router.push("/franchise/targets")}>Set targets</Button>}
+                    />
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* Recent Activity Timeline */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Activity size={16} className="text-[#0A2647]" /> Recent Activity
-                  </h3>
-                  <span className="text-gray-400 text-xs">{recentActivity.length} events</span>
-                </div>
-                <div className="p-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between p-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                    <Activity size={16} className="text-brand-600" /> Recent Activity
+                  </CardTitle>
+                  <span className="text-muted-foreground text-xs">{recentActivity.length} events</span>
+                </CardHeader>
+                <CardContent className="p-5 pt-0">
                   {recentActivity.length > 0 ? (
                     <div className="space-y-3">
                       {recentActivity.map((item, i) => (
-                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all">
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all">
                           <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color}`}>
                             <item.icon size={16} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-gray-900 text-sm font-medium truncate">{item.title}</p>
-                            <p className="text-gray-400 text-xs">{item.detail}</p>
+                            <p className="text-slate-900 text-sm font-medium truncate">{item.title}</p>
+                            <p className="text-muted-foreground text-xs">{item.detail}</p>
                           </div>
-                          <span className="text-gray-400 text-[10px] whitespace-nowrap">{formatDateDDMMYYYY(item.time)}</span>
+                          <span className="text-muted-foreground text-[10px] whitespace-nowrap">{formatDateDDMMYYYY(item.time)}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-sm text-center py-8">No recent activity</p>
+                    <EmptyState icon={Activity} title="No recent activity" />
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* SIM Network Distribution */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <PieChart size={16} className="text-[#0A2647]" /> SIM Network Distribution
-                  </h3>
-                </div>
-                <div className="p-6">
+              <Card>
+                <CardHeader className="p-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                    <PieChart size={16} className="text-brand-600" /> SIM Network Distribution
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
                   {networkDist.length > 0 ? (
                     <div className="space-y-4">
                       {networkDist.map(([network, count]) => {
@@ -404,34 +356,32 @@ export default function FranchiseDashboardPage() {
                             <div className="flex items-center justify-between mb-1.5">
                               <div className="flex items-center gap-2">
                                 <Wifi size={14} className={network === "Jazz" ? "text-red-500" : network === "Telenor" ? "text-blue-500" : network === "Ufone" ? "text-green-500" : "text-purple-500"} />
-                                <span className="text-gray-700 text-sm font-medium">{network}</span>
+                                <span className="text-slate-700 text-sm font-medium">{network}</span>
                               </div>
-                              <span className="text-gray-500 text-xs">{count} SIMs ({pct}%)</span>
+                              <span className="text-muted-foreground text-xs">{count} SIMs ({pct}%)</span>
                             </div>
-                            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                              <div className={`h-full rounded-full transition-all duration-700 ${networkColors[network] || "bg-gray-400"}`} style={{ width: `${pct}%` }} />
+                            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full transition-all duration-700 ${networkColors[network] || "bg-slate-400"}`} style={{ width: `${pct}%` }} />
                             </div>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-sm text-center py-4">No SIMs in stock</p>
+                    <EmptyState icon={Wifi} title="No SIMs in stock" />
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Right Column - 1 col */}
             <div className="space-y-6">
-              {/* Target Achievement Gauges */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Target size={16} className="text-[#0A2647]" /> Target Achievement
-                  </h3>
-                </div>
-                <div className="p-6">
+              <Card>
+                <CardHeader className="p-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                    <Target size={16} className="text-brand-600" /> Target Achievement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { label: "SIM Target", achieved: targetsData.simAchieved, target: targetsData.simTargetVal, color: "#0A2647" },
@@ -451,31 +401,30 @@ export default function FranchiseDashboardPage() {
                                 strokeDasharray={circumference} strokeDashoffset={offset} className="transition-all duration-1000" />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-sm font-black text-gray-900">{pct}%</span>
+                              <span className="text-sm font-black text-slate-900">{pct}%</span>
                             </div>
                           </div>
-                          <p className="text-gray-700 text-xs font-bold mt-2">{g.label}</p>
-                          <p className="text-gray-400 text-[10px]">{g.achieved}/{g.target}</p>
+                          <p className="text-slate-700 text-xs font-bold mt-2">{g.label}</p>
+                          <p className="text-muted-foreground text-[10px]">{g.achieved}/{g.target}</p>
                         </div>
                       );
                     })}
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* Financial Summary */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <DollarSign size={16} className="text-[#0A2647]" /> Financial Summary
-                    <span className="text-gray-400 font-normal text-xs">({currentMonth})</span>
-                  </h3>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between p-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                    <DollarSign size={16} className="text-brand-600" /> Financial Summary
+                    <span className="text-muted-foreground font-normal text-xs">({currentMonth})</span>
+                  </CardTitle>
                   <button onClick={() => router.push("/franchise/accounts")}
-                    className="text-[#0A2647] text-xs font-medium hover:underline flex items-center gap-1">
+                    className="text-brand-600 text-xs font-medium hover:underline flex items-center gap-1">
                     Details <ChevronRight size={12} />
                   </button>
-                </div>
-                <div className="p-4 space-y-3">
+                </CardHeader>
+                <CardContent className="p-5 pt-0 space-y-3">
                   <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
                     <div className="flex items-center gap-2">
                       <TrendingUp size={16} className="text-green-600" />
@@ -499,8 +448,8 @@ export default function FranchiseDashboardPage() {
                     </div>
                     <span className="text-blue-800 text-sm font-bold">PKR {finance.monthlyPayroll.toLocaleString()}</span>
                   </div>
-                  <div className="border-t border-gray-100 pt-3">
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-xl text-white">
+                  <div className="border-t border-slate-100 pt-3">
+                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-brand-600 to-brand-700 rounded-xl text-white">
                       <div className="flex items-center gap-2">
                         <Wallet size={16} />
                         <span className="text-sm font-medium">Wallet Balance</span>
@@ -514,21 +463,20 @@ export default function FranchiseDashboardPage() {
                       {finance.netProfit >= 0 ? "+" : ""}PKR {finance.netProfit.toLocaleString()}
                     </span>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* Today's Attendance */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <ClipboardCheck size={16} className="text-[#0A2647]" /> Today&apos;s Attendance
-                  </h3>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between p-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                    <ClipboardCheck size={16} className="text-brand-600" /> Today&apos;s Attendance
+                  </CardTitle>
                   <button onClick={() => router.push("/franchise/attendance")}
-                    className="text-[#0A2647] text-xs font-medium hover:underline flex items-center gap-1">
+                    className="text-brand-600 text-xs font-medium hover:underline flex items-center gap-1">
                     View All <ChevronRight size={12} />
                   </button>
-                </div>
-                <div className="p-4">
+                </CardHeader>
+                <CardContent className="p-5 pt-0">
                   <div className="grid grid-cols-4 gap-2 mb-4">
                     {[
                       { label: "Present", value: attendanceToday.present, color: "text-green-600", bg: "bg-green-50" },
@@ -538,11 +486,11 @@ export default function FranchiseDashboardPage() {
                     ].map((s) => (
                       <div key={s.label} className={`${s.bg} rounded-xl p-3 text-center`}>
                         <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
-                        <p className="text-gray-500 text-[10px] font-medium">{s.label}</p>
+                        <p className="text-muted-foreground text-[10px] font-medium">{s.label}</p>
                       </div>
                     ))}
                   </div>
-                  <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                  <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden flex">
                     {attendanceToday.total > 0 && (
                       <>
                         <div className="h-full bg-green-500 transition-all" style={{ width: `${safeDiv(attendanceToday.present, attendanceToday.total) * 100}%` }} />
@@ -553,7 +501,7 @@ export default function FranchiseDashboardPage() {
                     )}
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-gray-400 text-[10px]">
+                    <span className="text-muted-foreground text-[10px]">
                       {attendanceToday.total > 0 ? `${safePct(attendanceToday.present, attendanceToday.total)}% attendance rate` : "No records today"}
                     </span>
                     <div className="flex items-center gap-3">
@@ -562,17 +510,16 @@ export default function FranchiseDashboardPage() {
                       <span className="flex items-center gap-1 text-[10px] text-red-600"><CircleDot size={8} className="fill-red-600" /> Absent</span>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* Inventory Status */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Package size={16} className="text-[#0A2647]" /> Inventory Status
-                  </h3>
-                </div>
-                <div className="p-4 space-y-3">
+              <Card>
+                <CardHeader className="p-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                    <Package size={16} className="text-brand-600" /> Inventory Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 pt-0 space-y-3">
                   {[
                     { label: "New SIMs", inStock: metrics.newSIMStock, issued: metrics.issuedSIMs, total: metrics.newSIMTotal, color: "bg-cyan-500", icon: Package },
                     { label: "HLR SIMs", inStock: metrics.hlrStock, issued: metrics.issuedSIMs, total: metrics.hlrSIMTotal, color: "bg-orange-500", icon: Layers },
@@ -581,86 +528,72 @@ export default function FranchiseDashboardPage() {
                   ].map((item) => {
                     const stockPct = safePct(item.inStock, item.total || 1);
                     return (
-                      <div key={item.label} className="p-3 bg-gray-50 rounded-xl">
+                      <div key={item.label} className="p-3 bg-slate-50 rounded-xl">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <item.icon size={14} className="text-gray-500" />
-                            <span className="text-gray-700 text-sm font-medium">{item.label}</span>
+                            <item.icon size={14} className="text-muted-foreground" />
+                            <span className="text-slate-700 text-sm font-medium">{item.label}</span>
                           </div>
-                          <span className="text-gray-500 text-xs">{item.inStock}/{item.total} in stock</span>
+                          <span className="text-muted-foreground text-xs">{item.inStock}/{item.total} in stock</span>
                         </div>
-                        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${item.color} transition-all`} style={{ width: `${stockPct}%` }} />
                         </div>
                         <div className="flex items-center justify-between mt-1.5">
-                          <span className="text-gray-400 text-[10px]">{stockPct}% available</span>
-                          <span className="text-gray-400 text-[10px]">{item.issued} issued</span>
+                          <span className="text-muted-foreground text-[10px]">{stockPct}% available</span>
+                          <span className="text-muted-foreground text-[10px]">{item.issued} issued</span>
                         </div>
                       </div>
                     );
                   })}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </>
       )}
 
-      {/* â•â•â•â•â•â•â•â•â•â•â• PERFORMANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "performance" && (
         <>
-          {/* Target Overview Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "Overall Progress", value: `${targetsData.overallPct}%`, sub: `${targetsData.totalAchieved}/${targetsData.totalTargetVal}`, icon: Target, color: "text-[#0A2647]", light: "bg-blue-50" },
-              { label: "SIM Achievement", value: `${safePct(targetsData.simAchieved, targetsData.simTargetVal)}%`, sub: `${targetsData.simAchieved}/${targetsData.simTargetVal}`, icon: CreditCard, color: "text-amber-600", light: "bg-amber-50" },
-              { label: "Device Achievement", value: `${safePct(targetsData.deviceAchieved, targetsData.deviceTargetVal)}%`, sub: `${targetsData.deviceAchieved}/${targetsData.deviceTargetVal}`, icon: Smartphone, color: "text-purple-600", light: "bg-purple-50" },
-              { label: "Active Issue Records", value: issueStats.activeIssues, sub: `${issueStats.returnedIssues} returned`, icon: Activity, color: "text-emerald-600", light: "bg-emerald-50" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center mb-3`}>
-                  <s.icon size={20} className={s.color} />
-                </div>
-                <p className="text-2xl font-black text-gray-900">{s.value}</p>
-                <p className="text-gray-500 text-xs">{s.label}</p>
-                {s.sub && <p className="text-gray-400 text-[10px] mt-0.5">{s.sub}</p>}
-              </div>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Overall Progress" value={`${targetsData.overallPct}%`} sub={`${targetsData.totalAchieved}/${targetsData.totalTargetVal}`} icon={Target} iconClass="text-brand-600 bg-brand-50" />
+            <StatCard label="SIM Achievement" value={`${safePct(targetsData.simAchieved, targetsData.simTargetVal)}%`} sub={`${targetsData.simAchieved}/${targetsData.simTargetVal}`} icon={CreditCard} iconClass="text-amber-600 bg-amber-50" />
+            <StatCard label="Device Achievement" value={`${safePct(targetsData.deviceAchieved, targetsData.deviceTargetVal)}%`} sub={`${targetsData.deviceAchieved}/${targetsData.deviceTargetVal}`} icon={Smartphone} iconClass="text-purple-600 bg-purple-50" />
+            <StatCard label="Active Issue Records" value={issueStats.activeIssues} sub={`${issueStats.returnedIssues} returned`} icon={Activity} iconClass="text-emerald-600 bg-emerald-50" />
           </div>
 
-          {/* DSO Performance Table */}
           <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                  <UserCheck size={16} className="text-[#0A2647]" /> DSO Performance
-                </h3>
-              </div>
-              <div className="overflow-x-auto">
+            <Card>
+              <CardHeader className="p-5">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                  <UserCheck size={16} className="text-brand-600" /> DSO Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto p-0">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50">
-                      <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Rank</th>
-                      <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">DSO</th>
-                      <th className="px-4 py-3 text-right text-gray-500 text-xs font-medium uppercase">Target</th>
-                      <th className="px-4 py-3 text-right text-gray-500 text-xs font-medium uppercase">Achieved</th>
-                      <th className="px-4 py-3 text-center text-gray-500 text-xs font-medium uppercase">Progress</th>
+                    <tr className="border-b border-slate-100 bg-muted/50">
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Rank</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">DSO</th>
+                      <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Target</th>
+                      <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Achieved</th>
+                      <th className="px-4 py-3 text-center text-muted-foreground text-xs font-medium uppercase">Progress</th>
                     </tr>
                   </thead>
                   <tbody>
                     {topPerformers.map((t, i) => (
-                      <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50">
+                      <tr key={t.id} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="px-4 py-3">
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${i === 0 ? "bg-amber-400 text-white" : i === 1 ? "bg-gray-300 text-white" : i === 2 ? "bg-orange-400 text-white" : "bg-gray-100 text-gray-500"}`}>
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${i === 0 ? "bg-amber-400 text-white" : i === 1 ? "bg-slate-300 text-white" : i === 2 ? "bg-orange-400 text-white" : "bg-slate-100 text-slate-500"}`}>
                             {i + 1}
                           </div>
                         </td>
-                        <td className="px-4 py-3 font-medium text-gray-900">{t.employeeName}</td>
-                        <td className="px-4 py-3 text-right text-gray-600">{t.monthlyTarget}</td>
-                        <td className="px-4 py-3 text-right text-gray-900 font-bold">{t.achieved}</td>
+                        <td className="px-4 py-3 font-medium text-slate-900">{t.employeeName}</td>
+                        <td className="px-4 py-3 text-right text-slate-600">{t.monthlyTarget}</td>
+                        <td className="px-4 py-3 text-right text-slate-900 font-bold">{t.achieved}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                               <div className={`h-full rounded-full ${t.progress >= 80 ? "bg-green-500" : t.progress >= 50 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${Math.min(100, t.progress)}%` }} />
                             </div>
                             <span className="text-xs font-bold w-10 text-right">{t.progress}%</span>
@@ -669,59 +602,56 @@ export default function FranchiseDashboardPage() {
                       </tr>
                     ))}
                     {topPerformers.length === 0 && (
-                      <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No DSO targets found</td></tr>
+                      <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No DSO targets found</td></tr>
                     )}
                   </tbody>
                 </table>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* DSM Performance Summary */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                  <Users size={16} className="text-[#0A2647]" /> DSM Performance
-                </h3>
-              </div>
-              <div className="p-5">
+            <Card>
+              <CardHeader className="p-5">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                  <Users size={16} className="text-brand-600" /> DSM Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 pt-0">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="bg-blue-50 rounded-xl p-4 text-center">
                     <p className="text-2xl font-black text-blue-600">{metrics.activeDSM}</p>
-                    <p className="text-gray-500 text-xs">Active DSMs</p>
+                    <p className="text-muted-foreground text-xs">Active DSMs</p>
                   </div>
                   <div className="bg-indigo-50 rounded-xl p-4 text-center">
                     <p className="text-2xl font-black text-indigo-600">{metrics.totalDSM}</p>
-                    <p className="text-gray-500 text-xs">Total DSMs</p>
+                    <p className="text-muted-foreground text-xs">Total DSMs</p>
                   </div>
                 </div>
-                {dsmTargets.dsmTargets.length > 0 && (
+                {dsmTargets.dsmTargets.length > 0 ? (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                      <span className="text-gray-700 text-sm font-medium">Target Achievement</span>
-                      <span className="text-gray-900 text-sm font-bold">{dsmTargets.pct}%</span>
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                      <span className="text-slate-700 text-sm font-medium">Target Achievement</span>
+                      <span className="text-slate-900 text-sm font-bold">{dsmTargets.pct}%</span>
                     </div>
-                    <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all ${dsmTargets.pct >= 80 ? "bg-green-500" : dsmTargets.pct >= 50 ? "bg-yellow-500" : "bg-red-500"}`}
                         style={{ width: `${Math.min(100, dsmTargets.pct)}%` }} />
                     </div>
-                    <p className="text-gray-400 text-[11px] text-center">{dsmTargets.achieved}/{dsmTargets.total} achieved</p>
+                    <p className="text-muted-foreground text-[11px] text-center">{dsmTargets.achieved}/{dsmTargets.total} achieved</p>
                   </div>
+                ) : (
+                  <EmptyState icon={Target} title="No DSM targets configured" />
                 )}
-                {dsmTargets.dsmTargets.length === 0 && (
-                  <p className="text-gray-400 text-sm text-center py-6">No DSM targets configured</p>
-                )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Expense Breakdown */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <PieChart size={16} className="text-[#0A2647]" /> Expense Breakdown by Category
-              </h3>
-            </div>
-            <div className="p-5">
+          <Card>
+            <CardHeader className="p-5">
+              <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                <PieChart size={16} className="text-brand-600" /> Expense Breakdown by Category
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
               {expenseByCategory.categories.length > 0 ? (
                 <div className="space-y-3">
                   {expenseByCategory.categories.map(([cat, amt]) => {
@@ -732,11 +662,11 @@ export default function FranchiseDashboardPage() {
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <div className={`w-3 h-3 rounded ${catColors[cat] || "bg-gray-400"}`} />
-                            <span className="text-gray-700 text-sm font-medium">{cat}</span>
+                            <span className="text-slate-700 text-sm font-medium">{cat}</span>
                           </div>
-                          <span className="text-gray-500 text-xs">PKR {amt.toLocaleString()} ({pct}%)</span>
+                          <span className="text-muted-foreground text-xs">PKR {amt.toLocaleString()} ({pct}%)</span>
                         </div>
-                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${catColors[cat] || "bg-gray-400"} transition-all`} style={{ width: `${pct}%` }} />
                         </div>
                       </div>
@@ -744,102 +674,89 @@ export default function FranchiseDashboardPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm text-center py-4">No expense data</p>
+                <EmptyState icon={PieChart} title="No expense data" />
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </>
       )}
 
-      {/* â•â•â•â•â•â•â•â•â•â•â• FINANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "finance" && (
         <>
-          {/* Period Summary */}
-          <div className="bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-2xl p-5 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white/70 text-xs">Financial Summary for</span>
-              <div className="bg-white/10 rounded-lg px-3 py-1 flex items-center gap-2">
-                <Calendar size={12} className="text-white/60" />
-                <input type="month" value={period} onChange={(e) => setPeriod(e.target.value)}
-                  className="bg-transparent border-0 p-0 text-white text-xs focus:outline-none [color-scheme:dark]" />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-3">
-              <div>
-                <p className="text-green-400 text-xs">Income</p>
-                <p className="text-xl font-black">PKR {periodIncome.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-red-400 text-xs">Expenses</p>
-                <p className="text-xl font-black">PKR {periodExpense.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-white/70 text-xs">Net</p>
-                <p className={`text-xl font-black ${periodIncome - periodExpense >= 0 ? "text-green-400" : "text-red-400"}`}>
-                  {periodIncome - periodExpense >= 0 ? "+" : ""}PKR {(periodIncome - periodExpense).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Financial Summary Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "Total Income", value: `PKR ${finance.totalIncome.toLocaleString()}`, icon: TrendingUp, color: "text-green-600", light: "bg-green-50" },
-              { label: "Total Expenses", value: `PKR ${finance.totalExpensesAll.toLocaleString()}`, icon: TrendingDown, color: "text-red-600", light: "bg-red-50" },
-              { label: "Total Payroll", value: `PKR ${finance.totalPayroll.toLocaleString()}`, icon: Receipt, color: "text-blue-600", light: "bg-blue-50" },
-              { label: "Wallet Balance", value: `PKR ${finance.walletBal.toLocaleString()}`, icon: Wallet, color: "text-amber-600", light: "bg-amber-50" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center mb-3`}>
-                  <s.icon size={20} className={s.color} />
+          <Card className="bg-gradient-to-r from-brand-600 to-brand-700 text-white">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/70 text-xs">Financial Summary for</span>
+                <div className="bg-white/10 rounded-lg px-3 py-1 flex items-center gap-2">
+                  <Calendar size={12} className="text-white/60" />
+                  <input type="month" value={period} onChange={(e) => setPeriod(e.target.value)}
+                    className="bg-transparent border-0 p-0 text-white text-xs focus:outline-none [color-scheme:dark]" />
                 </div>
-                <p className="text-xl font-black text-gray-900">{s.value}</p>
-                <p className="text-gray-500 text-xs">{s.label}</p>
               </div>
-            ))}
+              <div className="grid grid-cols-3 gap-4 mt-3">
+                <div>
+                  <p className="text-green-300 text-xs">Income</p>
+                  <p className="text-xl font-black">PKR {periodIncome.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-red-300 text-xs">Expenses</p>
+                  <p className="text-xl font-black">PKR {periodExpense.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-xs">Net</p>
+                  <p className={`text-xl font-black ${periodIncome - periodExpense >= 0 ? "text-green-300" : "text-red-300"}`}>
+                    {periodIncome - periodExpense >= 0 ? "+" : ""}PKR {(periodIncome - periodExpense).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Total Income" value={`PKR ${finance.totalIncome.toLocaleString()}`} icon={TrendingUp} iconClass="text-green-600 bg-green-50" />
+            <StatCard label="Total Expenses" value={`PKR ${finance.totalExpensesAll.toLocaleString()}`} icon={TrendingDown} iconClass="text-red-600 bg-red-50" />
+            <StatCard label="Total Payroll" value={`PKR ${finance.totalPayroll.toLocaleString()}`} icon={Receipt} iconClass="text-blue-600 bg-blue-50" />
+            <StatCard label="Wallet Balance" value={`PKR ${finance.walletBal.toLocaleString()}`} icon={Wallet} iconClass="text-amber-600 bg-amber-50" />
           </div>
 
-          {/* Bank Accounts & Recent Expenses */}
           <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                  <Building2 size={16} className="text-[#0A2647]" /> Bank Accounts
-                </h3>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between p-5">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                  <Building2 size={16} className="text-brand-600" /> Bank Accounts
+                </CardTitle>
                 <button onClick={() => router.push("/franchise/accounts")}
-                  className="text-[#0A2647] text-xs font-medium hover:underline">View All</button>
-              </div>
-              <div className="p-4 space-y-3">
+                  className="text-brand-600 text-xs font-medium hover:underline">View All</button>
+              </CardHeader>
+              <CardContent className="p-5 pt-0 space-y-3">
                 {bankAccounts.length > 0 ? bankAccounts.map((a) => (
-                  <div key={a.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div key={a.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                         <Building2 size={14} className="text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-gray-900 text-sm font-medium">{a.name}</p>
-                        <p className="text-gray-400 text-xs font-mono">{a.accountNumber}</p>
+                        <p className="text-slate-900 text-sm font-medium">{a.name}</p>
+                        <p className="text-muted-foreground text-xs font-mono">{a.accountNumber}</p>
                       </div>
                     </div>
-                    <span className="text-gray-900 text-sm font-bold">PKR {a.balance.toLocaleString()}</span>
+                    <span className="text-slate-900 text-sm font-bold">PKR {a.balance.toLocaleString()}</span>
                   </div>
                 )) : (
-                  <p className="text-gray-400 text-sm text-center py-4">No bank accounts</p>
+                  <EmptyState icon={Building2} title="No bank accounts" />
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Expense Breakdown Pie */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                  <PieChart size={16} className="text-[#0A2647]" /> Expense Breakdown
-                </h3>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between p-5">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                  <PieChart size={16} className="text-brand-600" /> Expense Breakdown
+                </CardTitle>
                 <button onClick={() => router.push("/franchise/expenses")}
-                  className="text-[#0A2647] text-xs font-medium hover:underline">View All</button>
-              </div>
-              <div className="p-4 space-y-2">
+                  className="text-brand-600 text-xs font-medium hover:underline">View All</button>
+              </CardHeader>
+              <CardContent className="p-5 pt-0 space-y-2">
                 {expenseByCategory.categories.length > 0 ? expenseByCategory.categories.slice(0, 6).map(([cat, amt]) => {
                   const pct = safePct(amt, expenseByCategory.total);
                   const catColors: Record<string, string> = { Payroll: "bg-red-500", Salary: "bg-red-400", Rent: "bg-blue-500", Utilities: "bg-yellow-500", "Office Supplies": "bg-purple-500", Marketing: "bg-pink-500", Travel: "bg-cyan-500", Other: "bg-gray-400" };
@@ -847,65 +764,62 @@ export default function FranchiseDashboardPage() {
                     <div key={cat} className="flex items-center justify-between p-2">
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded ${catColors[cat] || "bg-gray-400"}`} />
-                        <span className="text-gray-700 text-xs">{cat}</span>
+                        <span className="text-slate-700 text-xs">{cat}</span>
                       </div>
-                      <span className="text-gray-900 text-xs font-medium">PKR {amt.toLocaleString()} ({pct}%)</span>
+                      <span className="text-slate-900 text-xs font-medium">PKR {amt.toLocaleString()} ({pct}%)</span>
                     </div>
                   );
                 }) : (
-                  <p className="text-gray-400 text-sm text-center py-4">No expenses</p>
+                  <EmptyState icon={PieChart} title="No expenses" />
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Recent Payroll */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <Briefcase size={16} className="text-[#0A2647]" /> Recent Payroll
-              </h3>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between p-5">
+              <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                <Briefcase size={16} className="text-brand-600" /> Recent Payroll
+              </CardTitle>
               <button onClick={() => router.push("/franchise/payroll")}
-                className="text-[#0A2647] text-xs font-medium hover:underline flex items-center gap-1">
+                className="text-brand-600 text-xs font-medium hover:underline flex items-center gap-1">
                 View All <ChevronRight size={12} />
               </button>
-            </div>
-            <div className="overflow-x-auto">
+            </CardHeader>
+            <CardContent className="overflow-x-auto p-0">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Employee</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Role</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Month</th>
-                    <th className="px-4 py-3 text-right text-gray-500 text-xs font-medium uppercase">Basic</th>
-                    <th className="px-4 py-3 text-right text-gray-500 text-xs font-medium uppercase">Commission</th>
-                    <th className="px-4 py-3 text-right text-gray-500 text-xs font-medium uppercase">Net Pay</th>
-                    <th className="px-4 py-3 text-center text-gray-500 text-xs font-medium uppercase">Status</th>
+                  <tr className="border-b border-slate-100 bg-muted/50">
+                    <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Employee</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Role</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Month</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Basic</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Commission</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Net Pay</th>
+                    <th className="px-4 py-3 text-center text-muted-foreground text-xs font-medium uppercase">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {payroll.slice(0, 8).map((p) => (
-                    <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-900">{p.employeeName}</td>
-                      <td className="px-4 py-3 text-gray-600">{p.role}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{p.month}</td>
-                      <td className="px-4 py-3 text-right text-gray-600">PKR {(p.basicSalary || 0).toLocaleString()}</td>
+                    <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-3 font-medium text-slate-900">{p.employeeName}</td>
+                      <td className="px-4 py-3 text-slate-600">{p.role}</td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">{p.month}</td>
+                      <td className="px-4 py-3 text-right text-slate-600">PKR {(p.basicSalary || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-green-600 font-medium">PKR {(p.totalCommission || 0).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-gray-900 font-bold">PKR {(p.netPay || p.net || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-slate-900 font-bold">PKR {(p.netPay || p.net || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${p.paid ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
-                          {p.paid ? "Paid" : "Pending"}
-                        </span>
+                        <StatusPill label={p.paid ? "Paid" : "Pending"} tone={p.paid ? "positive" : "warning"} />
                       </td>
                     </tr>
                   ))}
                   {payroll.length === 0 && (
-                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">No payroll records</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No payroll records</td></tr>
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

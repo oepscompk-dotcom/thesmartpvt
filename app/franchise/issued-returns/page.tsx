@@ -1,9 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Plus, Search, Eye, RotateCcw, X, Package, ArrowRight, Check, CheckCircle2, Filter, CheckSquare, Square, User, Smartphone, Trash2, Clock } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, Eye, RotateCcw, X, Package, ArrowRight, Check, CheckCircle2, CheckSquare, Square, User, Smartphone, Trash2, Clock, Inbox } from "lucide-react";
 import { useFranchiseData, SIMIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, toneForStatus, QuickChip } from "@/components/ui/Badge";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
+
+const PAGE_SIZE = 10;
 
 export default function IssuedReturnsPage() {
   const { sims, dso, dsms, issueRecords, issueSIMs, returnSelectedSIMs, forwardSIMs, deleteIssueRecords, devices } = useFranchiseData();
@@ -14,6 +24,7 @@ export default function IssuedReturnsPage() {
   const [showViewModal, setShowViewModal] = useState<SIMIssueRecord | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [page, setPage] = useState(1);
 
   // Return / Forward action modal states
   const [showActionModal, setShowActionModal] = useState(false);
@@ -254,6 +265,11 @@ export default function IssuedReturnsPage() {
     });
   }, [issueRecords, statusFilter, search]);
 
+  useEffect(() => { setPage(1); }, [search, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE));
+  const pagedRecords = filteredRecords.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const stats = useMemo(() => {
     const issued = issueRecords.filter((r) => r.status === "Issued").length;
     const returned = issueRecords.filter((r) => r.status === "Returned").length;
@@ -262,164 +278,155 @@ export default function IssuedReturnsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Issued & Return Stocks</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage SIM issues and returns for DSOs and DSMs</p>
-        </div>
-        <button onClick={openIssueModal} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Plus size={16} /> Issue SIMs
-        </button>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Issued & Returns" }]}
+        title="Issued & Return Stocks"
+        description="Manage SIM issues and returns for DSOs and DSMs"
+        actions={
+          <Button onClick={openIssueModal}>
+            <Plus size={16} /> Issue SIMs
+          </Button>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Total Records" value={stats.total} icon={Package} />
+        <StatCard label="Currently Issued" value={stats.issued} icon={ArrowRight} iconClass="text-blue-600 bg-blue-50" />
+        <StatCard label="Returned" value={stats.returned} icon={Check} iconClass="text-green-600 bg-green-50" />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#0A2647]/10 flex items-center justify-center"><Package size={20} className="text-[#0A2647]" /></div>
-          <div>
-            <p className="text-2xl font-black text-gray-900">{stats.total}</p>
-            <p className="text-gray-500 text-xs">Total Records</p>
+      <Card>
+        <CardContent className="space-y-3 py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <SearchInput
+              placeholder="Search by name, retailer ID, or issue ID..."
+              value={search}
+              onChange={(v) => setSearch(v)}
+            />
+            <div className="flex flex-wrap items-center gap-1.5">
+              {["All", "Issued", "Returned"].map((s) => (
+                <QuickChip key={s} label={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} />
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center"><ArrowRight size={20} className="text-blue-600" /></div>
-          <div>
-            <p className="text-2xl font-black text-blue-600">{stats.issued}</p>
-            <p className="text-gray-500 text-xs">Currently Issued</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center"><Check size={20} className="text-green-600" /></div>
-          <div>
-            <p className="text-2xl font-black text-green-600">{stats.returned}</p>
-            <p className="text-gray-500 text-xs">Returned</p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-          <Search size={16} className="text-gray-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, retailer ID, or issue ID..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-        </div>
-        <div className="flex gap-2">
-          {["All", "Issued", "Returned"].map((s) => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${statusFilter === s ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
-              <span className="flex items-center gap-1.5"><Filter size={12} /> {s}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Bulk Action Bar */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-3">
-          <CheckSquare size={16} className="text-red-600" />
-          <span className="text-red-700 text-sm font-medium">{selectedIds.length} record(s) selected</span>
-          <div className="flex-1" />
-          <button onClick={() => setSelectedIds([])} className="px-3 py-1.5 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50">Clear</button>
-          <button onClick={() => setShowDeleteConfirm(true)} className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 inline-flex items-center gap-1.5"><Trash2 size={12} /> Delete Selected</button>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+          <CheckSquare className="h-4 w-4 text-red-600" />
+          <span className="text-sm font-medium text-red-700">{selectedIds.length} record{selectedIds.length > 1 ? "s" : ""} selected</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setSelectedIds([])}>
+              <X className="h-4 w-4" /> Clear
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
+              <Trash2 className="h-4 w-4" /> Delete Selected
+            </Button>
+          </div>
         </div>
       )}
 
-      {/* Records Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="w-10 px-4 py-4">
-                  <button onClick={toggleAllRecords} className="flex items-center justify-center">
-                    {filteredRecords.length > 0 && filteredRecords.every((r) => selectedIds.includes(r.id))
-                      ? <CheckSquare size={16} className="text-[#0A2647]" />
-                      : <Square size={16} className="text-gray-300" />
-                    }
-                  </button>
-                </th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Issue ID</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Issued To</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Role</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Retailer ID</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">SIMs | Activated | Balance</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Issue Date</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Return Date</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
-                <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRecords.map((r) => (
-                <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="w-10 px-4 py-4">
-                    <button onClick={() => toggleRecordSelect(r.id)} className="flex items-center justify-center">
-                      {selectedIds.includes(r.id)
-                        ? <CheckSquare size={16} className="text-[#0A2647]" />
-                        : <Square size={16} className="text-gray-300" />
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0 pb-0">
+          <CardTitle>Issue Records</CardTitle>
+          <span className="text-sm text-muted-foreground">{filteredRecords.length} records</span>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1000px] text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50">
+                  <th className="w-10 px-4 py-3 text-center">
+                    <button onClick={toggleAllRecords} className="flex items-center justify-center">
+                      {filteredRecords.length > 0 && filteredRecords.every((r) => selectedIds.includes(r.id))
+                        ? <CheckSquare size={16} className="text-brand-600" />
+                        : <Square size={16} className="text-slate-300" />
                       }
                     </button>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-gray-900 text-sm font-mono font-medium">{r.id}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[#0A2647]/10 flex items-center justify-center">
-                        <User size={14} className="text-[#0A2647]" />
-                      </div>
-                      <p className="text-gray-900 text-sm font-medium">{r.issuedTo}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 hidden md:table-cell">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-medium ${r.issuedToRole === "DSO" ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>{r.issuedToRole}</span>
-                  </td>
-                  <td className="px-6 py-4 hidden lg:table-cell text-gray-600 text-sm font-mono">{r.retailerId}</td>
-                  <td className="px-6 py-4">
-                    {(() => { const b = getSIMBreakdown(r); return (
-                      <div className="flex items-center gap-1.5">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium"><Package size={11} /> {b.total}</span>
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium"><Check size={11} /> {b.activated}</span>
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 text-xs font-medium"><Clock size={11} /> {b.balance}</span>
-                      </div>
-                    ); })()}
-                  </td>
-                  <td className="px-6 py-4 hidden xl:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(r.issueDate)}</td>
-                  <td className="px-6 py-4 hidden xl:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(r.returnDate)}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-medium ${r.status === "Issued" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{r.status}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => setShowViewModal(r)} className="p-2 text-gray-400 hover:text-[#0A2647] hover:bg-[#0A2647]/5 rounded-lg transition-all" title="View Details"><Eye size={14} /></button>
-                      {r.status === "Issued" && (
-                        <button onClick={() => openActionModal(r, "return")} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Return / Forward SIMs"><RotateCcw size={14} /></button>
-                      )}
-                    </div>
-                  </td>
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Issue ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Issued To</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground md:table-cell">Role</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground lg:table-cell">Retailer ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">SIMs | Activated | Balance</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground xl:table-cell">Issue Date</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground xl:table-cell">Return Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {filteredRecords.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <Package size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No records found</p>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pagedRecords.map((r) => {
+                  const b = getSIMBreakdown(r);
+                  return (
+                    <tr key={r.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
+                      <td className="w-10 px-4 py-4 text-center">
+                        <button onClick={() => toggleRecordSelect(r.id)} className="flex items-center justify-center">
+                          {selectedIds.includes(r.id)
+                            ? <CheckSquare size={16} className="text-brand-600" />
+                            : <Square size={16} className="text-slate-300" />
+                          }
+                        </button>
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="font-mono text-sm font-medium text-foreground">{r.id}</p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50">
+                            <User size={14} className="text-brand-600" />
+                          </div>
+                          <p className="text-sm font-medium text-foreground">{r.issuedTo}</p>
+                        </div>
+                      </td>
+                      <td className="hidden px-4 py-4 md:table-cell">
+                        <span className={`inline-flex rounded-lg px-2 py-1 text-xs font-medium ${r.issuedToRole === "DSO" ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>{r.issuedToRole}</span>
+                      </td>
+                      <td className="hidden px-4 py-4 font-mono text-sm text-muted-foreground lg:table-cell">{r.retailerId}</td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"><Package size={11} /> {b.total}</span>
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"><Check size={11} /> {b.activated}</span>
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700"><Clock size={11} /> {b.balance}</span>
+                        </div>
+                      </td>
+                      <td className="hidden px-4 py-4 text-xs text-muted-foreground xl:table-cell">{formatDateDDMMYYYY(r.issueDate)}</td>
+                      <td className="hidden px-4 py-4 text-xs text-muted-foreground xl:table-cell">{formatDateDDMMYYYY(r.returnDate)}</td>
+                      <td className="px-4 py-4">
+                        <StatusPill label={r.status} tone={toneForStatus(r.status)} />
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setShowViewModal(r)} className="rounded-lg p-1.5 text-blue-600 transition-colors hover:bg-blue-50" title="View Details"><Eye size={14} /></button>
+                          {r.status === "Issued" && (
+                            <button onClick={() => openActionModal(r, "return")} className="rounded-lg p-1.5 text-green-600 transition-colors hover:bg-green-50" title="Return / Forward SIMs"><RotateCcw size={14} /></button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+          <Pagination page={page} totalPages={pageCount} onChange={setPage} />
+          {filteredRecords.length === 0 && (
+            <EmptyState icon={Inbox} title="No records found" description="No issue records match your filters." />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Issue SIMs Modal */}
       {showIssueModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowIssueModal(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowIssueModal(false)}>
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
               <div>
-                <h3 className="text-gray-900 font-bold">Issue SIMs</h3>
-                <p className="text-gray-400 text-xs mt-0.5">Step {step} of 4</p>
+                <h3 className="text-base font-semibold text-foreground">Issue SIMs</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">Step {step} of 4</p>
               </div>
-              <button onClick={() => setShowIssueModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+              <button onClick={() => setShowIssueModal(false)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X size={18} /></button>
             </div>
 
             {/* Step Progress */}
@@ -427,14 +434,14 @@ export default function IssuedReturnsPage() {
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4].map((s) => (
                   <div key={s} className="flex items-center flex-1">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${step >= s ? "bg-[#0A2647] text-white" : "bg-gray-100 text-gray-400"}`}>
+                    <div className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${step >= s ? "bg-brand-600 text-white" : "bg-slate-100 text-muted-foreground"}`}>
                       {step > s ? <Check size={12} /> : s}
                     </div>
-                    {s < 4 && <div className={`flex-1 h-0.5 mx-1 ${step > s ? "bg-[#0A2647]" : "bg-gray-100"}`} />}
+                    {s < 4 && <div className={`mx-1 h-0.5 flex-1 ${step > s ? "bg-brand-600" : "bg-slate-100"}`} />}
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between mt-1.5 text-[10px] text-gray-400">
+              <div className="mt-1.5 flex justify-between text-[10px] text-muted-foreground">
                 <span>Select Person</span>
                 <span>Select SIMs</span>
                 <span>Retailer ID</span>
@@ -447,18 +454,18 @@ export default function IssuedReturnsPage() {
               {step === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-2">Select Type</label>
+                    <label className="mb-2 block text-xs font-medium text-muted-foreground">Select Type</label>
                     <div className="grid grid-cols-2 gap-3">
                       {(["DSO", "DSM"] as const).map((t) => (
                         <button key={t} onClick={() => { setIssueType(t); setSelectedPersonId(""); }}
-                          className={`p-4 rounded-xl border-2 text-left transition-all ${issueType === t ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                          className={`rounded-xl border-2 p-4 text-left transition-all ${issueType === t ? "border-brand-600 bg-brand-50" : "border-slate-200 hover:border-slate-300"}`}>
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${issueType === t ? "bg-[#0A2647] text-white" : "bg-gray-100 text-gray-500"}`}>
+                            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${issueType === t ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-500"}`}>
                               {t === "DSO" ? <Smartphone size={16} /> : <User size={16} />}
                             </div>
                             <div>
-                              <p className="text-gray-900 text-sm font-bold">{t}</p>
-                              <p className="text-gray-400 text-xs">{t === "DSO" ? "Direct Sales Officer" : "Direct Sales Manager"}</p>
+                              <p className="text-sm font-bold text-foreground">{t}</p>
+                              <p className="text-xs text-muted-foreground">{t === "DSO" ? "Direct Sales Officer" : "Direct Sales Manager"}</p>
                             </div>
                           </div>
                         </button>
@@ -466,23 +473,23 @@ export default function IssuedReturnsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-2">Select Person</label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <label className="mb-2 block text-xs font-medium text-muted-foreground">Select Person</label>
+                    <div className="max-h-48 space-y-2 overflow-y-auto">
                       {people.filter((p) => p.status === "Active").map((p) => (
                         <button key={p.id} onClick={() => handlePersonSelect(p.id)}
-                          className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${selectedPersonId === p.id ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
-                          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold">
+                          className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${selectedPersonId === p.id ? "border-brand-600 bg-brand-50" : "border-slate-200 hover:border-slate-300"}`}>
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-500">
                             {p.name.split(" ").map((n) => n[0]).join("")}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-gray-900 text-sm font-medium truncate">{p.name}</p>
-                            <p className="text-gray-400 text-xs font-mono">{p.id}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
+                            <p className="font-mono text-xs text-muted-foreground">{p.id}</p>
                           </div>
-                          {selectedPersonId === p.id && <Check size={16} className="text-[#0A2647] flex-shrink-0" />}
+                          {selectedPersonId === p.id && <Check size={16} className="flex-shrink-0 text-brand-600" />}
                         </button>
                       ))}
                       {people.filter((p) => p.status === "Active").length === 0 && (
-                        <p className="text-gray-400 text-sm text-center py-4">No active {issueType} found</p>
+                        <p className="py-4 text-center text-sm text-muted-foreground">No active {issueType} found</p>
                       )}
                     </div>
                   </div>
@@ -493,12 +500,12 @@ export default function IssuedReturnsPage() {
               {step === 2 && (
                 <div className="space-y-4">
                   {/* SIM Type Tabs */}
-                  <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+                  <div className="flex gap-2 rounded-xl bg-slate-100 p-1">
                     {(["new", "hlr"] as const).map((t) => {
                       const count = availableSIMs.filter((s) => s.type === t).length;
                       return (
                         <button key={t} onClick={() => { setSimTab(t); setSelectedSimIds([]); }}
-                          className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all ${simTab === t ? "bg-white text-[#0A2647] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                          className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${simTab === t ? "bg-white text-brand-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                           {t === "new" ? "New SIMs" : "HLR SIMs"} ({count})
                         </button>
                       );
@@ -508,58 +515,56 @@ export default function IssuedReturnsPage() {
                   {/* Bulk Count Selector + Select All */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-gray-400 text-xs">Show:</span>
+                      <span className="text-xs text-muted-foreground">Show:</span>
                       {[10, 25, 50, 100].map((n) => (
                         <button key={n} onClick={() => { setBulkCount(n); setSelectedSimIds([]); }}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${bulkCount === n ? "bg-[#0A2647] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
+                          className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${bulkCount === n ? "bg-brand-600 text-white" : "bg-slate-100 text-muted-foreground hover:bg-slate-200"}`}>
                           {n}
                         </button>
                       ))}
                     </div>
                     <button onClick={selectAllVisible}
-                      className="text-xs font-medium text-[#0A2647] hover:underline">
+                      className="text-xs font-medium text-brand-600 hover:underline">
                       {visibleSIMs.every((s) => selectedSimIds.includes(s.id)) ? "Deselect All" : "Select All"}
                     </button>
                   </div>
 
                   {/* SIM Search */}
-                  <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-                    <Search size={16} className="text-gray-400" />
-                    <input type="text" value={simSearch} onChange={(e) => setSimSearch(e.target.value)}
-                      placeholder="Search by ICCID, SIM number, network or ID..."
-                      className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-                    {simSearch && <button onClick={() => setSimSearch("")} className="text-gray-400 hover:text-gray-600 flex-shrink-0"><X size={14} /></button>}
-                  </div>
+                  <SearchInput
+                    placeholder="Search by ICCID, SIM number, network or ID..."
+                    value={simSearch}
+                    onChange={(v) => setSimSearch(v)}
+                  />
 
                   {/* SIM List */}
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
                     {visibleSIMs.map((s) => (
                       <button key={s.id} onClick={() => toggleSim(s.id)}
-                        className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${selectedSimIds.includes(s.id) ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                        className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${selectedSimIds.includes(s.id) ? "border-brand-600 bg-brand-50" : "border-slate-200 hover:border-slate-300"}`}>
                         <div className="flex-shrink-0">
-                          {selectedSimIds.includes(s.id) ? <CheckSquare size={18} className="text-[#0A2647]" /> : <Square size={18} className="text-gray-300" />}
+                          {selectedSimIds.includes(s.id) ? <CheckSquare size={18} className="text-brand-600" /> : <Square size={18} className="text-slate-300" />}
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="text-gray-900 text-sm font-mono font-medium truncate">{s.iccid || "\u2014"}</p>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${s.network === "Jazz" ? "bg-red-50 text-red-600" : s.network === "Telenor" ? "bg-blue-50 text-blue-600" : s.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{s.network}</span>
+                            <p className="truncate font-mono text-sm font-medium text-foreground">{s.iccid || "\u2014"}</p>
+                            <span className={`flex-shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${s.network === "Jazz" ? "bg-red-50 text-red-600" : s.network === "Telenor" ? "bg-blue-50 text-blue-600" : s.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{s.network}</span>
                           </div>
-                          <p className="text-gray-400 text-xs font-mono mt-0.5 truncate">{s.simNumber} <span className="text-gray-300">|</span> {s.id}</p>
+                          <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">{s.simNumber} <span className="text-slate-300">|</span> {s.id}</p>
                         </div>
                       </button>
                     ))}
                     {visibleSIMs.length === 0 && (
-                      <div className="text-center py-8">
-                        <Package size={24} className="text-gray-300 mx-auto mb-2" />
-                        <p className="text-gray-400 text-sm">{simSearch ? "No SIMs match your search" : `No ${simTab === "new" ? "New" : "HLR"} SIMs in stock`}</p>
+                      <div className="py-8 text-center">
+                        <Package size={24} className="mx-auto mb-2 text-slate-300" />
+                        <p className="text-sm text-muted-foreground">{simSearch ? "No SIMs match your search" : `No ${simTab === "new" ? "New" : "HLR"} SIMs in stock`}</p>
                       </div>
                     )}
                   </div>
                   {simSearch && (
-                    <p className="text-gray-400 text-xs">{simSearchResults.length} SIM(s) match &quot;{simSearch}&quot;</p>
+                    <p className="text-xs text-muted-foreground">{simSearchResults.length} SIM(s) match &quot;{simSearch}&quot;</p>
                   )}
                   {selectedSimIds.length > 0 && (
-                    <p className="text-[#0A2647] text-xs font-medium">{selectedSimIds.length} SIM(s) selected</p>
+                    <p className="text-xs font-medium text-brand-600">{selectedSimIds.length} SIM(s) selected</p>
                   )}
                 </div>
               )}
@@ -568,18 +573,18 @@ export default function IssuedReturnsPage() {
               {step === 3 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-2">Retailer ID (Auto-generated)</label>
-                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <p className="text-gray-900 text-lg font-mono font-bold">{retailerId}</p>
-                      <p className="text-gray-400 text-xs mt-1">Based on {selectedPerson?.name}&apos;s mobile number</p>
+                    <label className="mb-2 block text-xs font-medium text-muted-foreground">Retailer ID (Auto-generated)</label>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="font-mono text-lg font-bold text-foreground">{retailerId}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Based on {selectedPerson?.name}&apos;s mobile number</p>
                     </div>
                   </div>
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
                     <div className="flex items-start gap-2">
-                      <Smartphone size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                      <Smartphone size={16} className="mt-0.5 flex-shrink-0 text-blue-600" />
                       <div>
-                        <p className="text-blue-800 text-sm font-medium">Issue Summary</p>
-                        <p className="text-blue-600 text-xs mt-1">
+                        <p className="text-sm font-medium text-blue-800">Issue Summary</p>
+                        <p className="mt-1 text-xs text-blue-600">
                           {selectedSimIds.length} SIM(s) will be issued to <strong>{selectedPerson?.name}</strong> ({issueType})
                           {issueRecords.filter((r) => r.issuedById === selectedPersonId && r.status === "Issued").length > 0 && (
                             <span> — This is issue #{issueRecords.filter((r) => r.issuedById === selectedPersonId && r.status === "Issued").length + 1} for this person</span>
@@ -595,16 +600,16 @@ export default function IssuedReturnsPage() {
               {step === 4 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-2">Notes (Optional)</label>
-                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Add any notes about this issue..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 resize-none" />
+                    <label className="mb-2 block text-xs font-medium text-muted-foreground">Notes (Optional)</label>
+                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Add any notes about this issue..." className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-foreground focus:border-brand-600 focus:outline-none" />
                   </div>
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
-                    <p className="text-gray-900 text-sm font-bold">Confirmation</p>
+                  <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-bold text-foreground">Confirmation</p>
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div><span className="text-gray-400">Issued To:</span> <span className="text-gray-700 font-medium ml-1">{selectedPerson?.name}</span></div>
-                      <div><span className="text-gray-400">Role:</span> <span className="text-gray-700 font-medium ml-1">{issueType}</span></div>
-                      <div><span className="text-gray-400">Retailer ID:</span> <span className="text-gray-700 font-mono font-medium ml-1">{retailerId}</span></div>
-                      <div><span className="text-gray-400">SIMs:</span> <span className="text-gray-700 font-medium ml-1">{selectedSimIds.length}</span></div>
+                      <div><span className="text-muted-foreground">Issued To:</span> <span className="ml-1 font-medium text-foreground">{selectedPerson?.name}</span></div>
+                      <div><span className="text-muted-foreground">Role:</span> <span className="ml-1 font-medium text-foreground">{issueType}</span></div>
+                      <div><span className="text-muted-foreground">Retailer ID:</span> <span className="ml-1 font-mono font-medium text-foreground">{retailerId}</span></div>
+                      <div><span className="text-muted-foreground">SIMs:</span> <span className="ml-1 font-medium text-foreground">{selectedSimIds.length}</span></div>
                     </div>
                   </div>
                 </div>
@@ -612,99 +617,74 @@ export default function IssuedReturnsPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
               {step > 1 && (
-                <button onClick={() => setStep((s) => s - 1)} className="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Back</button>
+                <Button variant="secondary" onClick={() => setStep((s) => s - 1)}>Back</Button>
               )}
               <div className="flex-1" />
               {step === 1 && (
-                <button onClick={() => selectedPersonId && setStep(2)} disabled={!selectedPersonId}
-                  className="px-6 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                <Button onClick={() => selectedPersonId && setStep(2)} disabled={!selectedPersonId}>
                   Next <ArrowRight size={14} />
-                </button>
+                </Button>
               )}
               {step === 2 && (
-                <button onClick={handleProceedToRetailer} disabled={selectedSimIds.length === 0}
-                  className="px-6 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                <Button onClick={handleProceedToRetailer} disabled={selectedSimIds.length === 0}>
                   Next <ArrowRight size={14} />
-                </button>
+                </Button>
               )}
               {step === 3 && (
-                <button onClick={handleProceedToNotes}
-                  className="px-6 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center gap-2">
+                <Button onClick={handleProceedToNotes}>
                   Next <ArrowRight size={14} />
-                </button>
+                </Button>
               )}
               {step === 4 && (
-                <button onClick={handleIssueSubmit}
-                  className="px-6 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center gap-2">
+                <Button onClick={handleIssueSubmit}>
                   <Check size={14} /> Confirm Issue
-                </button>
+                </Button>
               )}
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {/* View Details Modal */}
       {showViewModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowViewModal(null)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">Issue Details</h3>
-              <button onClick={() => setShowViewModal(null)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowViewModal(null)}>
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-base font-semibold text-foreground">Issue Details</h3>
+              <button onClick={() => setShowViewModal(null)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X size={18} /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Issue ID</p>
-                  <p className="text-gray-900 text-sm font-mono font-medium">{showViewModal.id}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Status</p>
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${showViewModal.status === "Issued" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{showViewModal.status}</span>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Issued To</p>
-                  <p className="text-gray-900 text-sm font-medium">{showViewModal.issuedTo}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Role</p>
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${showViewModal.issuedToRole === "DSO" ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>{showViewModal.issuedToRole}</span>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Retailer ID</p>
-                  <p className="text-gray-900 text-sm font-mono font-medium">{showViewModal.retailerId}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Issue Date</p>
-                  <p className="text-gray-900 text-sm">{formatDateDDMMYYYY(showViewModal.issueDate)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Return Date</p>
-                  <p className="text-gray-900 text-sm">{formatDateDDMMYYYY(showViewModal.returnDate)}</p>
-                </div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Issue ID</p><p className="font-mono text-sm font-medium text-foreground">{showViewModal.id}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Status</p><StatusPill label={showViewModal.status} tone={toneForStatus(showViewModal.status)} /></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Issued To</p><p className="text-sm font-medium text-foreground">{showViewModal.issuedTo}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Role</p><span className={`inline-flex rounded-lg px-2 py-1 text-xs font-medium ${showViewModal.issuedToRole === "DSO" ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>{showViewModal.issuedToRole}</span></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Retailer ID</p><p className="font-mono text-sm font-medium text-foreground">{showViewModal.retailerId}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Issue Date</p><p className="text-sm text-foreground">{formatDateDDMMYYYY(showViewModal.issueDate)}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Return Date</p><p className="text-sm text-foreground">{formatDateDDMMYYYY(showViewModal.returnDate)}</p></div>
               </div>
               {showViewModal.notes && (
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">Notes</p>
-                  <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded-xl">{showViewModal.notes}</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Notes</p>
+                  <p className="rounded-xl bg-slate-50 p-3 text-sm text-foreground">{showViewModal.notes}</p>
                 </div>
               )}
               <div>
-                <p className="text-gray-400 text-xs mb-2">Issued SIMs ({showViewModal.simIds.length})</p>
-                <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                <p className="mb-2 text-xs text-muted-foreground">Issued SIMs ({showViewModal.simIds.length})</p>
+                <div className="max-h-40 space-y-1.5 overflow-y-auto">
                   {showViewModal.simIds.map((simId) => {
                     const sim = sims.find((s) => s.id === simId);
                     return (
-                      <div key={simId} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
-                        <Package size={14} className="text-gray-400 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-gray-900 text-xs font-mono font-medium truncate">{sim?.iccid || simId}</p>
-                          <p className="text-gray-400 text-[10px] font-mono truncate">{sim?.simNumber || ""} <span className="text-gray-300">|</span> {simId}</p>
+                      <div key={simId} className="flex items-center gap-3 rounded-xl bg-slate-50 p-2.5">
+                        <Package size={14} className="flex-shrink-0 text-muted-foreground" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-mono text-xs font-medium text-foreground">{sim?.iccid || simId}</p>
+                          <p className="truncate font-mono text-[10px] text-muted-foreground">{sim?.simNumber || ""} <span className="text-slate-300">|</span> {simId}</p>
                         </div>
                         {sim && (
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
+                          <span className={`flex-shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
                         )}
                       </div>
                     );
@@ -712,73 +692,73 @@ export default function IssuedReturnsPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {/* Return / Forward Action Modal */}
       {showActionModal && actionRecord && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowActionModal(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowActionModal(false)}>
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${actionMode === "forward" ? "bg-blue-50" : "bg-green-50"}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${actionMode === "forward" ? "bg-blue-50" : "bg-green-50"}`}>
                   {actionMode === "forward" ? <ArrowRight size={18} className="text-blue-600" /> : <RotateCcw size={18} className="text-green-600" />}
                 </div>
                 <div>
-                  <h3 className="text-gray-900 font-bold">{actionMode === "forward" ? "Forward SIMs" : "Return SIMs"}</h3>
-                  <p className="text-gray-400 text-xs mt-0.5">Issued to {actionRecord.issuedTo} ({actionRecord.issuedToRole}) &middot; {actionRecord.id}</p>
+                  <h3 className="text-base font-semibold text-foreground">{actionMode === "forward" ? "Forward SIMs" : "Return SIMs"}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Issued to {actionRecord.issuedTo} ({actionRecord.issuedToRole}) &middot; {actionRecord.id}</p>
                 </div>
               </div>
-              <button onClick={() => setShowActionModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+              <button onClick={() => setShowActionModal(false)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X size={18} /></button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               {actionMode === "forward" ? (
                 <>
                   <div>
-                    <label className="block text-gray-500 text-xs font-medium mb-2">Forward To</label>
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                    <label className="mb-2 block text-xs font-medium text-muted-foreground">Forward To</label>
+                    <div className="mb-3 grid grid-cols-2 gap-3">
                       {(["DSO", "DSM"] as const).map((t) => (
                         <button key={t} onClick={() => { setForwardType(t); setForwardPersonId(""); }}
-                          className={`p-3 rounded-xl border-2 text-left transition-all ${forwardType === t ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                          className={`rounded-xl border-2 p-3 text-left transition-all ${forwardType === t ? "border-brand-600 bg-brand-50" : "border-slate-200 hover:border-slate-300"}`}>
                           <div className="flex items-center gap-2">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${forwardType === t ? "bg-[#0A2647] text-white" : "bg-gray-100 text-gray-500"}`}>
+                            <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${forwardType === t ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-500"}`}>
                               {t === "DSO" ? <Smartphone size={14} /> : <User size={14} />}
                             </div>
                             <div>
-                              <p className="text-gray-900 text-xs font-bold">{t}</p>
-                              <p className="text-gray-400 text-[10px]">{t === "DSO" ? "Sales Officer" : "Sales Manager"}</p>
+                              <p className="text-xs font-bold text-foreground">{t}</p>
+                              <p className="text-[10px] text-muted-foreground">{t === "DSO" ? "Sales Officer" : "Sales Manager"}</p>
                             </div>
                           </div>
                         </button>
                       ))}
                     </div>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <div className="max-h-48 space-y-2 overflow-y-auto">
                       {(forwardType === "DSO" ? dso : dsms).filter((p) => p.status === "Active").map((p) => (
                         <button key={p.id} onClick={() => setForwardPersonId(p.id)}
-                          className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${forwardPersonId === p.id ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
-                          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold flex-shrink-0">
+                          className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${forwardPersonId === p.id ? "border-brand-600 bg-brand-50" : "border-slate-200 hover:border-slate-300"}`}>
+                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-500">
                             {p.name.split(" ").map((n) => n[0]).join("")}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-gray-900 text-sm font-medium truncate">{p.name}</p>
-                            <p className="text-gray-400 text-xs font-mono">{p.id}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
+                            <p className="font-mono text-xs text-muted-foreground">{p.id}</p>
                           </div>
-                          {forwardPersonId === p.id && <Check size={16} className="text-[#0A2647] flex-shrink-0" />}
+                          {forwardPersonId === p.id && <Check size={16} className="flex-shrink-0 text-brand-600" />}
                         </button>
                       ))}
                       {(forwardType === "DSO" ? dso : dsms).filter((p) => p.status === "Active").length === 0 && (
-                        <p className="text-gray-400 text-sm text-center py-4">No active {forwardType} found</p>
+                        <p className="py-4 text-center text-sm text-muted-foreground">No active {forwardType} found</p>
                       )}
                     </div>
                   </div>
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
                     <div className="flex items-start gap-2">
-                      <Smartphone size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                      <Smartphone size={16} className="mt-0.5 flex-shrink-0 text-blue-600" />
                       <div>
-                        <p className="text-blue-800 text-sm font-medium">Forwarding {actionSimIds.length} SIM(s)</p>
-                        <p className="text-blue-600 text-xs mt-1">The selected SIMs will be transferred to the person above with a new retailer ID. A new issue record will be created.</p>
+                        <p className="text-sm font-medium text-blue-800">Forwarding {actionSimIds.length} SIM(s)</p>
+                        <p className="mt-1 text-xs text-blue-600">The selected SIMs will be transferred to the person above with a new retailer ID. A new issue record will be created.</p>
                       </div>
                     </div>
                   </div>
@@ -786,35 +766,35 @@ export default function IssuedReturnsPage() {
               ) : (
                 <>
                   <div className="flex items-center justify-between">
-                    <p className="text-gray-500 text-xs font-medium">Select SIMs to return</p>
-                    <button onClick={toggleAllActionSims} className="text-xs font-medium text-[#0A2647] hover:underline">
+                    <p className="text-xs font-medium text-muted-foreground">Select SIMs to return</p>
+                    <button onClick={toggleAllActionSims} className="text-xs font-medium text-brand-600 hover:underline">
                       {actionSimIds.length === actionBalanceIds.length && actionBalanceIds.length > 0 ? "Deselect All" : "Select All"}
                     </button>
                   </div>
                   {actionBalanceIds.length === 0 ? (
-                    <div className="text-center py-8 bg-gray-50 rounded-xl">
-                      <CheckCircle2 size={24} className="text-green-500 mx-auto mb-2" />
-                      <p className="text-gray-600 text-sm font-medium">All SIMs in this issue are already activated</p>
-                      <p className="text-gray-400 text-xs mt-1">Activated SIMs are delivered to clients and cannot be returned.</p>
+                    <div className="rounded-xl bg-slate-50 py-8 text-center">
+                      <CheckCircle2 size={24} className="mx-auto mb-2 text-green-500" />
+                      <p className="text-sm font-medium text-foreground">All SIMs in this issue are already activated</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Activated SIMs are delivered to clients and cannot be returned.</p>
                     </div>
                   ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
                     {actionBalanceIds.map((simId) => {
                       const sim = sims.find((s) => s.id === simId);
                       return (
                         <button key={simId} onClick={() => toggleActionSim(simId)}
-                          className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${actionSimIds.includes(simId) ? "border-[#0A2647] bg-[#0A2647]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                          className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${actionSimIds.includes(simId) ? "border-brand-600 bg-brand-50" : "border-slate-200 hover:border-slate-300"}`}>
                           <div className="flex-shrink-0">
-                            {actionSimIds.includes(simId) ? <CheckSquare size={18} className="text-[#0A2647]" /> : <Square size={18} className="text-gray-300" />}
+                            {actionSimIds.includes(simId) ? <CheckSquare size={18} className="text-brand-600" /> : <Square size={18} className="text-slate-300" />}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="text-gray-900 text-sm font-mono font-medium truncate">{sim?.iccid || simId}</p>
+                              <p className="truncate font-mono text-sm font-medium text-foreground">{sim?.iccid || simId}</p>
                               {sim?.network && (
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
+                                <span className={`flex-shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
                               )}
                             </div>
-                            <p className="text-gray-400 text-xs font-mono mt-0.5 truncate">{sim?.simNumber || ""}</p>
+                            <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">{sim?.simNumber || ""}</p>
                           </div>
                         </button>
                       );
@@ -822,54 +802,51 @@ export default function IssuedReturnsPage() {
                   </div>
                   )}
                   {actionBalanceIds.length > 0 && (
-                    <p className="text-gray-400 text-xs">{actionSimIds.length} of {actionBalanceIds.length} SIM(s) selected</p>
+                    <p className="text-xs text-muted-foreground">{actionSimIds.length} of {actionBalanceIds.length} SIM(s) selected</p>
                   )}
                 </>
               )}
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
               {actionMode === "return" ? (
                 <>
-                  <button onClick={() => setShowActionModal(false)} className="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
+                  <Button variant="secondary" onClick={() => setShowActionModal(false)}>Cancel</Button>
                   <div className="flex-1" />
-                  <button onClick={() => { setActionMode("forward"); setForwardPersonId(""); }} disabled={actionSimIds.length === 0}
-                    className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                  <Button variant="secondary" onClick={() => { setActionMode("forward"); setForwardPersonId(""); }} disabled={actionSimIds.length === 0}>
                     <ArrowRight size={14} /> Forward Selected ({actionSimIds.length})
-                  </button>
-                  <button onClick={handleReturnConfirm} disabled={actionSimIds.length === 0}
-                    className="px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                  </Button>
+                  <Button variant="destructive" onClick={handleReturnConfirm} disabled={actionSimIds.length === 0}>
                     <RotateCcw size={14} /> {actionSimIds.length === actionBalanceIds.length && actionBalanceIds.length > 0 ? "Return All" : "Return Selected"} ({actionSimIds.length})
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <button onClick={() => setActionMode("return")} className="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Back</button>
+                  <Button variant="secondary" onClick={() => setActionMode("return")}>Back</Button>
                   <div className="flex-1" />
-                  <button onClick={handleForwardConfirm} disabled={!forwardPersonId || actionSimIds.length === 0}
-                    className="px-4 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                  <Button onClick={handleForwardConfirm} disabled={!forwardPersonId || actionSimIds.length === 0}>
                     <Check size={14} /> Confirm Forward ({actionSimIds.length})
-                  </button>
+                  </Button>
                 </>
               )}
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-4"><Trash2 size={20} className="text-red-600" /></div>
-            <h3 className="text-gray-900 font-bold mb-2">Delete {selectedIds.length} Record(s)?</h3>
-            <p className="text-gray-500 text-sm mb-6">This will permanently delete these issue records. SIMs will be set back to stock.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)}>
+          <Card className="w-full max-w-sm p-6 text-center shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-50"><Trash2 size={20} className="text-red-600" /></div>
+            <h3 className="mb-2 text-base font-semibold text-foreground">Delete {selectedIds.length} Record(s)?</h3>
+            <p className="mb-6 text-sm text-muted-foreground">This will permanently delete these issue records. SIMs will be set back to stock.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleDeleteSelected} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 inline-flex items-center justify-center gap-2"><Trash2 size={14} /> Delete</button>
+              <Button variant="secondary" className="flex-1" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+              <Button variant="destructive" className="flex-1" onClick={handleDeleteSelected}><Trash2 size={14} /> Delete</Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

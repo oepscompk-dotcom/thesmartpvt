@@ -1,7 +1,15 @@
 ﻿"use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, Filter, Smartphone, CheckCircle, Clock, Package, Upload, Download, X, FileSpreadsheet, AlertCircle, FileDown, Eye, Pencil, Trash2, Calendar, CheckSquare } from "lucide-react";
+import { Smartphone, CheckCircle, Clock, Package, Upload, Download, X, FileSpreadsheet, AlertCircle, FileDown, Eye, Pencil, Trash2, Calendar, CheckSquare, ArrowLeftRight, Tag, RefreshCcw } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, toneForStatus, QuickChip } from "@/components/ui/Badge";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { apiLoad, apiLoadById, apiSave, apiUpdate, apiDelete } from "@/lib/api";
 
@@ -336,6 +344,12 @@ export default function ActiveSIMsPage() {
     });
   }, [activeSIMs, search, statusFilter, typeFilter, dateFrom, dateTo, allActivations, importVerifications]);
 
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [search, statusFilter, typeFilter, dateFrom, dateTo]);
+  const PAGE_SIZE = 10;
+  const pageCount = Math.max(1, Math.ceil(filteredList.length / PAGE_SIZE));
+  const pagedList = useMemo(() => filteredList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filteredList, page]);
+
   const stats = useMemo(() => {
     let issued = 0, completed = 0, verified = 0, pending = 0, pendingV = 0;
     activeSIMs.forEach((s) => {
@@ -475,156 +489,136 @@ export default function ActiveSIMsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Active SIMs</h1>
-          <p className="text-gray-500 text-sm mt-1">All issued, active and verified SIMs ({activeSIMs.length} total)</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => {
-            const exportData = filteredList.map((sim, idx) => {
-              const { status, bvs, fca, ifca } = getDisplayStatus(sim);
-              const activation = getActivationForSIM(sim.simNumber);
-              const dsoId = sim.issuedToId || activation?.dsoId || "â€”";
-              const dsoName = sim.issuedToName || getPersonName(dsoId);
-              const retailerId = activation?.retailerId || getPersonRetailerId(dsoId);
-              return { srNo: idx + 1, retailerId, simNumber: sim.simNumber, iccid: sim.iccid || "â€”", network: sim.network,
-                deviceId: sim.deviceId || "â€”", dsoId, dsoName, date: formatDate(activation?.createdAt || sim.receiveDate),
-                status, simType: getSIMType(sim), bvs, fca, ifca };
-            });
-            exportToCSV(exportData, `active-sims-${new Date().toISOString().split("T")[0]}.csv`);
-          }} className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 font-medium text-sm rounded-xl border border-gray-200 hover:bg-gray-50 transition-all">
-            <FileDown size={16} /> Export
-          </button>
-          <button onClick={() => setShowImportModal(true)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-            <Upload size={16} /> Import
-          </button>
-        </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Active SIMs" }]}
+        title="Active SIMs"
+        description={`All issued, active and verified SIMs (${activeSIMs.length} total)`}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const exportData = filteredList.map((sim, idx) => {
+                  const { status, bvs, fca, ifca } = getDisplayStatus(sim);
+                  const activation = getActivationForSIM(sim.simNumber);
+                  const dsoId = sim.issuedToId || activation?.dsoId || "â€”";
+                  const dsoName = sim.issuedToName || getPersonName(dsoId);
+                  const retailerId = activation?.retailerId || getPersonRetailerId(dsoId);
+                  return { srNo: idx + 1, retailerId, simNumber: sim.simNumber, iccid: sim.iccid || "â€”", network: sim.network,
+                    deviceId: sim.deviceId || "â€”", dsoId, dsoName, date: formatDate(activation?.createdAt || sim.receiveDate),
+                    status, simType: getSIMType(sim), bvs, fca, ifca };
+                });
+                exportToCSV(exportData, `active-sims-${new Date().toISOString().split("T")[0]}.csv`);
+              }}
+            >
+              <FileDown size={16} /> Export
+            </Button>
+            <Button onClick={() => setShowImportModal(true)}>
+              <Upload size={16} /> Import
+            </Button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+        <StatCard label="Total" value={stats.total} icon={Package} />
+        <StatCard label="Issued" value={stats.issued} icon={Clock} iconClass="text-blue-600 bg-blue-50" />
+        <StatCard label="Pending" value={stats.pending} icon={AlertCircle} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="Pending-V" value={stats.pendingV} icon={Clock} iconClass="text-orange-600 bg-orange-50" />
+        <StatCard label="Completed" value={stats.completed} icon={CheckCircle} iconClass="text-emerald-600 bg-emerald-50" />
+        <StatCard label="Verified" value={stats.verified} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="New" value={typeStats.newCount} icon={Smartphone} iconClass="text-cyan-600 bg-cyan-50" />
+        <StatCard label="MNP" value={typeStats.mnp} icon={ArrowLeftRight} iconClass="text-purple-600 bg-purple-50" />
+        <StatCard label="BYN" value={typeStats.byn} icon={Tag} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="REPL" value={typeStats.repl} icon={RefreshCcw} iconClass="text-rose-600 bg-rose-50" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-3">
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#0A2647]/10 flex items-center justify-center"><Package size={14} className="text-[#0A2647]" /></div>
-          <div><p className="text-lg font-black text-gray-900">{stats.total}</p><p className="text-gray-500 text-[10px]">Total</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><Clock size={14} className="text-blue-600" /></div>
-          <div><p className="text-lg font-black text-blue-600">{stats.issued}</p><p className="text-gray-500 text-[10px]">Issued</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><AlertCircle size={14} className="text-amber-600" /></div>
-          <div><p className="text-lg font-black text-amber-600">{stats.pending}</p><p className="text-gray-500 text-[10px]">Pending</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center"><Clock size={14} className="text-orange-600" /></div>
-          <div><p className="text-lg font-black text-orange-600">{stats.pendingV}</p><p className="text-gray-500 text-[10px]">Pending-V</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center"><CheckCircle size={14} className="text-emerald-600" /></div>
-          <div><p className="text-lg font-black text-emerald-600">{stats.completed}</p><p className="text-gray-500 text-[10px]">Completed</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><CheckCircle size={14} className="text-green-600" /></div>
-          <div><p className="text-lg font-black text-green-600">{stats.verified}</p><p className="text-gray-500 text-[10px]">Verified</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center"><Smartphone size={14} className="text-cyan-600" /></div>
-          <div><p className="text-lg font-black text-cyan-600">{typeStats.newCount}</p><p className="text-gray-500 text-[10px]">New</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center"><span className="text-purple-600 font-black text-xs">M</span></div>
-          <div><p className="text-lg font-black text-purple-600">{typeStats.mnp}</p><p className="text-gray-500 text-[10px]">MNP</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><span className="text-amber-600 font-black text-xs">B</span></div>
-          <div><p className="text-lg font-black text-amber-600">{typeStats.byn}</p><p className="text-gray-500 text-[10px]">BYN</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center"><span className="text-rose-600 font-black text-xs">R</span></div>
-          <div><p className="text-lg font-black text-rose-600">{typeStats.repl}</p><p className="text-gray-500 text-[10px]">REPL</p></div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-            <Search size={16} className="text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by Sr.No, SIM, ICCID, Device, DSO/DSM, Retailer..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {["All", "Issued", "Pending", "Pending-V", "Completed", "Verified"].map((s) => (
-              <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${statusFilter === s ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
-                <span className="flex items-center gap-1.5"><Filter size={12} /> {s}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex gap-2 flex-wrap">
-            {["All", "New", "MNP", "BYN", "REPL"].map((t) => (
-              <button key={t} onClick={() => setTypeFilter(t)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${typeFilter === t ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
-                {t}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2 flex-wrap sm:ml-auto">
-            <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-200">
-              <Calendar size={14} className="text-gray-400" />
-              <span className="text-gray-500 text-xs">From:</span>
-              <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="bg-transparent text-gray-900 text-xs focus:outline-none" />
+      <Card>
+        <CardContent className="space-y-3 py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <SearchInput
+              placeholder="Search by Sr.No, SIM, ICCID, Device, DSO/DSM, Retailer..."
+              value={search}
+              onChange={(v) => setSearch(v)}
+            />
+            <div className="flex flex-wrap items-center gap-1.5">
+              {["All", "Issued", "Pending", "Pending-V", "Completed", "Verified"].map((s) => (
+                <QuickChip key={s} label={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} />
+              ))}
             </div>
-            <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-200">
-              <span className="text-gray-500 text-xs">To:</span>
-              <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="bg-transparent text-gray-900 text-xs focus:outline-none" />
-            </div>
-            {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="px-3 py-2 rounded-xl text-xs font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all flex items-center gap-1">
-                <X size={12} /> Clear
-              </button>
-            )}
           </div>
-        </div>
-      </div>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {["All", "New", "MNP", "BYN", "REPL"].map((t) => (
+                <QuickChip key={t} label={t} active={typeFilter === t} onClick={() => setTypeFilter(t)} />
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">From:</span>
+                <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="bg-transparent text-xs text-foreground focus:outline-none" />
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+                <span className="text-xs font-medium text-muted-foreground">To:</span>
+                <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="bg-transparent text-xs text-foreground focus:outline-none" />
+              </div>
+              {(dateFrom || dateTo) && (
+                <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50" onClick={() => { setDateFrom(""); setDateTo(""); }}>
+                  <X className="h-3.5 w-3.5" /> Clear
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {selectedIds.length > 0 && (
-        <div className="flex items-center gap-3 bg-[#0A2647]/5 rounded-2xl px-5 py-3 border border-[#0A2647]/10">
-          <CheckSquare size={16} className="text-[#0A2647]" />
-          <span className="text-sm font-medium text-[#0A2647]">{selectedIds.length} SIM{selectedIds.length > 1 ? "s" : ""} selected</span>
-          <div className="flex gap-2 ml-auto">
-            <button onClick={() => { setBulkEditActive(true); const first = filteredList.find((s) => selectedIds.includes(s.id)); if (first) { const display = getDisplayStatus(first); setEditSIM(first); setEditForm({ network: first.network, status: first.status, notes: "", bvs: display.bvs, fca: display.fca, ifca: display.ifca, deviceId: first.deviceId || "", iccid: first.iccid || "", simType: first.type || "" }); } }} className="px-4 py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition-all flex items-center gap-1.5">
-              <Pencil size={14} /> Edit Selected
-            </button>
-            <button onClick={() => setDeleteConfirm({ _bulk: true, count: selectedIds.length })} className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition-all flex items-center gap-1.5">
-              <Trash2 size={14} /> Delete Selected
-            </button>
-            <button onClick={() => setSelectedIds([])} className="px-3 py-2 text-gray-500 text-xs font-medium hover:text-gray-700 transition-all"><X size={14} /></button>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-brand-100 bg-brand-50 px-4 py-3">
+          <CheckSquare className="h-4 w-4 text-brand-600" />
+          <span className="text-sm font-medium text-brand-700">{selectedIds.length} SIM{selectedIds.length > 1 ? "s" : ""} selected</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={() => { setBulkEditActive(true); const first = filteredList.find((s) => selectedIds.includes(s.id)); if (first) { const display = getDisplayStatus(first); setEditSIM(first); setEditForm({ network: first.network, status: first.status, notes: "", bvs: display.bvs, fca: display.fca, ifca: display.ifca, deviceId: first.deviceId || "", iccid: first.iccid || "", simType: first.type || "" }); } }}>
+              <Pencil className="h-4 w-4" /> Edit Selected
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ _bulk: true, count: selectedIds.length })}>
+              <Trash2 className="h-4 w-4" /> Delete Selected
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       )}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="w-10 px-2 py-3 text-center"><input type="checkbox" checked={filteredList.length > 0 && selectedIds.length === filteredList.length} onChange={(e) => { if (e.target.checked) setSelectedIds(filteredList.map((s) => s.id)); else setSelectedIds([]); }} className="accent-[#0A2647] w-4 h-4 cursor-pointer" /></th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-10">Sr.No</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Retailer ID</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">SIM Number</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">ICCID</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Network</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Device ID</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">DSO/DSM ID</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">DSO/DSM Name</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Date</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">BVS</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">FCA</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">IFCA</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredList.map((sim, idx) => {
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0 pb-0">
+          <CardTitle>Active SIM Records</CardTitle>
+          <span className="text-sm text-muted-foreground">{filteredList.length} of {activeSIMs.length}</span>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50">
+                  <th className="w-10 px-2 py-3 text-center"><input type="checkbox" checked={filteredList.length > 0 && selectedIds.length === filteredList.length} onChange={(e) => { if (e.target.checked) setSelectedIds(filteredList.map((s) => s.id)); else setSelectedIds([]); }} className="h-4 w-4 cursor-pointer accent-brand-600" /></th>
+                  <th className="w-10 px-3 py-3 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">Sr.No</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Retailer ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">SIM Number</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground lg:table-cell">ICCID</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground md:table-cell">Network</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground xl:table-cell">Device ID</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground lg:table-cell">DSO/DSM ID</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground md:table-cell">DSO/DSM Name</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground lg:table-cell">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</th>
+                  <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">BVS</th>
+                  <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">FCA</th>
+                  <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">IFCA</th>
+                  <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pagedList.map((sim, idx) => {
                 const activation = getActivationForSIM(sim.simNumber);
                 const { status: simStatus, bvs, fca, ifca } = getDisplayStatus(sim);
                 const dsoId = sim.issuedToId || activation?.dsoId || "â€”";
@@ -633,48 +627,49 @@ export default function ActiveSIMsPage() {
                 const dateStr = formatDate(activation?.createdAt || sim.receiveDate);
                 const deviceId = sim.deviceId || "â€”";
                 const simType = getSIMType(sim);
+                const srNo = (page - 1) * PAGE_SIZE + idx + 1;
 
                 return (
-                  <tr key={sim.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <tr key={sim.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                     <td className="px-2 py-3 text-center">
-                      <input type="checkbox" checked={selectedIds.includes(sim.id)} onChange={() => setSelectedIds((prev) => prev.includes(sim.id) ? prev.filter((id) => id !== sim.id) : [...prev, sim.id])} className="accent-[#0A2647] w-4 h-4 cursor-pointer" />
+                      <input type="checkbox" checked={selectedIds.includes(sim.id)} onChange={() => setSelectedIds((prev) => prev.includes(sim.id) ? prev.filter((id) => id !== sim.id) : [...prev, sim.id])} className="h-4 w-4 cursor-pointer accent-brand-600" />
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-xs font-bold text-brand-700">{srNo}</span>
                     </td>
-                    <td className="px-4 py-3 text-gray-700 text-xs font-mono">{retailerId}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{retailerId}</td>
                     <td className="px-4 py-3">
-                      <p className="text-gray-900 text-sm font-mono font-medium">{sim.simNumber}</p>
-                      <p className="text-gray-400 text-[10px] font-mono">{sim.id}</p>
+                      <p className="font-mono text-sm font-medium text-foreground">{sim.simNumber}</p>
+                      <p className="font-mono text-xs text-muted-foreground">{sim.id}</p>
                     </td>
-                    <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs font-mono">{sim.iccid || "â€”"}</td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
+                    <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground lg:table-cell">{sim.iccid || "â€”"}</td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <span className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold ${sim.network === "Jazz" ? "bg-red-50 text-red-600" : sim.network === "Telenor" ? "bg-blue-50 text-blue-600" : sim.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{sim.network}</span>
                     </td>
-                    <td className="px-4 py-3 hidden xl:table-cell text-gray-500 text-xs font-mono">{deviceId}</td>
-                    <td className="px-4 py-3 hidden lg:table-cell text-gray-700 text-xs font-mono">{dsoId}</td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <p className="text-gray-700 text-sm">{dsoName}</p>
+                    <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground xl:table-cell">{deviceId}</td>
+                    <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground lg:table-cell">{dsoId}</td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <p className="text-sm text-foreground">{dsoName}</p>
                     </td>
-                    <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">{dateStr}</td>
+                    <td className="hidden px-4 py-3 text-xs text-muted-foreground lg:table-cell">{dateStr}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${simStatus.startsWith("Verified") ? "bg-green-50 text-green-700" : simStatus.startsWith("Completed") ? "bg-emerald-50 text-emerald-700" : simStatus.startsWith("Pending-V") ? "bg-orange-50 text-orange-700" : simStatus === "Issued" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"}`}>{simStatus}</span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${simType === "New" ? "bg-cyan-50 text-cyan-600" : simType === "MNP" ? "bg-purple-50 text-purple-600" : simType === "BYN" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"}`}>{simType}</span>
+                        <StatusPill label={simStatus} tone={toneForStatus(simStatus)} />
+                        <span className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold ${simType === "New" ? "bg-cyan-50 text-cyan-600" : simType === "MNP" ? "bg-purple-50 text-purple-600" : simType === "BYN" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"}`}>{simType}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${bvs === "0" || bvs === "1" ? "bg-green-100 text-green-700" : bvs === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400"}`}>{bvs}</span>
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${bvs === "0" || bvs === "1" ? "bg-green-100 text-green-700" : bvs === "X" ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-400"}`}>{bvs}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${fca === "0" || fca === "1" ? "bg-green-100 text-green-700" : fca === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400"}`}>{fca}</span>
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${fca === "0" || fca === "1" ? "bg-green-100 text-green-700" : fca === "X" ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-400"}`}>{fca}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${ifca === "0" || ifca === "1" ? "bg-green-100 text-green-700" : ifca === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400"}`}>{ifca}</span>
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${ifca === "0" || ifca === "1" ? "bg-green-100 text-green-700" : ifca === "X" ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-400"}`}>{ifca}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => setViewSIM({ sim, activation, simStatus, bvs, fca, ifca, dsoId, dsoName, retailerId, deviceId, dateStr, simType, srNo: idx + 1 })} className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-all" title="View"><Eye size={14} /></button>
+                        <button onClick={() => setViewSIM({ sim, activation, simStatus, bvs, fca, ifca, dsoId, dsoName, retailerId, deviceId, dateStr, simType, srNo })} className="rounded-lg p-1.5 text-blue-600 transition-colors hover:bg-blue-50" title="View"><Eye className="h-4 w-4" /></button>
                         <button onClick={() => { 
                           const display = getDisplayStatus(sim);
                           setEditSIM(sim); 
@@ -689,8 +684,8 @@ export default function ActiveSIMsPage() {
                             iccid: sim.iccid || "",
                             simType: sim.type || "",
                           }); 
-                        }} className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-all" title="Edit"><Pencil size={14} /></button>
-                        <button onClick={() => setDeleteConfirm(sim)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-all" title="Delete"><Trash2 size={14} /></button>
+                        }} className="rounded-lg p-1.5 text-amber-600 transition-colors hover:bg-amber-50" title="Edit"><Pencil className="h-4 w-4" /></button>
+                        <button onClick={() => setDeleteConfirm(sim)} className="rounded-lg p-1.5 text-red-600 transition-colors hover:bg-red-50" title="Delete"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </td>
                   </tr>
@@ -699,67 +694,68 @@ export default function ActiveSIMsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination page={page} totalPages={pageCount} onChange={setPage} />
         {filteredList.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <Smartphone size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No SIMs found matching your filters</p>
-          </div>
+          <EmptyState icon={Smartphone} title="No SIMs found" description="No SIMs found matching your filters." />
         )}
-      </div>
+        </CardContent>
+      </Card>
 
       {viewSIM && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewSIM(null)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Eye size={18} /> SIM Details â€” #{viewSIM.srNo}</h3>
-              <button onClick={() => setViewSIM(null)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setViewSIM(null)}>
+          <Card className="w-full max-w-lg shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="flex items-center gap-2 text-base font-semibold text-foreground"><Eye className="h-4 w-4" /> SIM Details â€” #{viewSIM.srNo}</h3>
+              <button onClick={() => setViewSIM(null)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">SIM Number</p><p className="text-gray-900 font-mono font-bold text-sm">{viewSIM.sim.simNumber}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">SIM Type</p><span className={`px-2 py-1 rounded-lg text-xs font-bold ${viewSIM.simType === "New" ? "bg-cyan-100 text-cyan-700" : viewSIM.simType === "MNP" ? "bg-purple-100 text-purple-700" : viewSIM.simType === "BYN" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>{viewSIM.simType}</span></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Retailer ID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.retailerId}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">ICCID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.sim.iccid || "â€”"}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Network</p><p className="text-gray-900 text-sm font-bold">{viewSIM.sim.network}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Device ID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.deviceId}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">DSO/DSM ID</p><p className="text-gray-900 font-mono text-sm">{viewSIM.dsoId}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">DSO/DSM Name</p><p className="text-gray-900 text-sm font-medium">{viewSIM.dsoName}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Date</p><p className="text-gray-900 text-sm">{viewSIM.dateStr}</p></div>
-                <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">Status</p><span className={`px-2 py-1 rounded-lg text-xs font-bold ${viewSIM.simStatus.startsWith("Verified") ? "bg-green-100 text-green-700" : viewSIM.simStatus.startsWith("Completed") ? "bg-emerald-100 text-emerald-700" : viewSIM.simStatus.startsWith("Pending-V") ? "bg-orange-100 text-orange-700" : viewSIM.simStatus === "Issued" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>{viewSIM.simStatus}</span></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">SIM Number</p><p className="font-mono text-sm font-semibold text-foreground">{viewSIM.sim.simNumber}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">SIM Type</p><span className={`inline-flex rounded-md px-2 py-0.5 text-xs font-bold ${viewSIM.simType === "New" ? "bg-cyan-100 text-cyan-700" : viewSIM.simType === "MNP" ? "bg-purple-100 text-purple-700" : viewSIM.simType === "BYN" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>{viewSIM.simType}</span></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Retailer ID</p><p className="font-mono text-sm text-foreground">{viewSIM.retailerId}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">ICCID</p><p className="font-mono text-sm text-foreground">{viewSIM.sim.iccid || "â€”"}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Network</p><p className="text-sm font-semibold text-foreground">{viewSIM.sim.network}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Device ID</p><p className="font-mono text-sm text-foreground">{viewSIM.deviceId}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">DSO/DSM ID</p><p className="font-mono text-sm text-foreground">{viewSIM.dsoId}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">DSO/DSM Name</p><p className="text-sm font-medium text-foreground">{viewSIM.dsoName}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Date</p><p className="text-sm text-foreground">{viewSIM.dateStr}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">Status</p><StatusPill label={viewSIM.simStatus} tone={toneForStatus(viewSIM.simStatus)} /></div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-gray-400 text-xs mb-2 font-medium">Verification</p>
+              <div className="rounded-lg bg-slate-50 p-4">
+                <p className="mb-2 text-xs font-medium text-muted-foreground">Verification</p>
                 <div className="flex gap-3">
-                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.bvs === "0" || viewSIM.bvs === "1" ? "bg-green-100" : viewSIM.bvs === "X" ? "bg-gray-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.bvs === "0" || viewSIM.bvs === "1" ? "text-green-700" : viewSIM.bvs === "X" ? "text-gray-400" : "text-red-400"}`}>{viewSIM.bvs}</p><p className="text-xs font-medium text-gray-500">BVS</p></div>
-                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.fca === "0" || viewSIM.fca === "1" ? "bg-green-100" : viewSIM.fca === "X" ? "bg-gray-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.fca === "0" || viewSIM.fca === "1" ? "text-green-700" : viewSIM.fca === "X" ? "text-gray-400" : "text-red-400"}`}>{viewSIM.fca}</p><p className="text-xs font-medium text-gray-500">FCA</p></div>
-                  <div className={`flex-1 text-center p-3 rounded-xl ${viewSIM.ifca === "0" || viewSIM.ifca === "1" ? "bg-green-100" : viewSIM.ifca === "X" ? "bg-gray-100" : "bg-red-50"}`}><p className={`text-2xl font-black ${viewSIM.ifca === "0" || viewSIM.ifca === "1" ? "text-green-700" : viewSIM.ifca === "X" ? "text-gray-400" : "text-red-400"}`}>{viewSIM.ifca}</p><p className="text-xs font-medium text-gray-500">IFCA</p></div>
+                  <div className={`flex-1 rounded-lg p-3 text-center ${viewSIM.bvs === "0" || viewSIM.bvs === "1" ? "bg-green-100" : viewSIM.bvs === "X" ? "bg-slate-100" : "bg-red-50"}`}><p className={`text-2xl font-bold ${viewSIM.bvs === "0" || viewSIM.bvs === "1" ? "text-green-700" : viewSIM.bvs === "X" ? "text-slate-400" : "text-red-400"}`}>{viewSIM.bvs}</p><p className="text-xs font-medium text-muted-foreground">BVS</p></div>
+                  <div className={`flex-1 rounded-lg p-3 text-center ${viewSIM.fca === "0" || viewSIM.fca === "1" ? "bg-green-100" : viewSIM.fca === "X" ? "bg-slate-100" : "bg-red-50"}`}><p className={`text-2xl font-bold ${viewSIM.fca === "0" || viewSIM.fca === "1" ? "text-green-700" : viewSIM.fca === "X" ? "text-slate-400" : "text-red-400"}`}>{viewSIM.fca}</p><p className="text-xs font-medium text-muted-foreground">FCA</p></div>
+                  <div className={`flex-1 rounded-lg p-3 text-center ${viewSIM.ifca === "0" || viewSIM.ifca === "1" ? "bg-green-100" : viewSIM.ifca === "X" ? "bg-slate-100" : "bg-red-50"}`}><p className={`text-2xl font-bold ${viewSIM.ifca === "0" || viewSIM.ifca === "1" ? "text-green-700" : viewSIM.ifca === "X" ? "text-slate-400" : "text-red-400"}`}>{viewSIM.ifca}</p><p className="text-xs font-medium text-muted-foreground">IFCA</p></div>
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100"><button onClick={() => setViewSIM(null)} className="w-full py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Close</button></div>
-          </div>
+            <div className="border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="w-full" onClick={() => setViewSIM(null)}>Close</Button>
+            </div>
+          </Card>
         </div>
       )}
 
       {editSIM && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setEditSIM(null); setBulkEditActive(false); }}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Pencil size={18} /> {bulkEditActive ? `Edit ${selectedIds.length} SIMs` : "Edit SIM"}</h3>
-              <button onClick={() => { setEditSIM(null); setBulkEditActive(false); }} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => { setEditSIM(null); setBulkEditActive(false); }}>
+          <Card className="w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="flex items-center gap-2 text-base font-semibold text-foreground"><Pencil className="h-4 w-4" /> {bulkEditActive ? `Edit ${selectedIds.length} SIMs` : "Edit SIM"}</h3>
+              <button onClick={() => { setEditSIM(null); setBulkEditActive(false); }} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="bg-gray-50 rounded-xl p-3"><p className="text-gray-400 text-xs mb-1">SIM Number</p><p className="text-gray-900 font-mono font-bold text-sm">{bulkEditActive ? `Multiple SIMs (${selectedIds.length} selected)` : editSIM.simNumber}</p></div>
+            <div className="space-y-4 p-6">
+              <div className="rounded-lg bg-slate-50 p-3"><p className="mb-1 text-xs text-muted-foreground">SIM Number</p><p className="font-mono text-sm font-semibold text-foreground">{bulkEditActive ? `Multiple SIMs (${selectedIds.length} selected)` : editSIM.simNumber}</p></div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Network</label>
-                  <select value={editForm.network} onChange={(e) => setEditForm((p) => ({ ...p, network: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Network</label>
+                  <select value={editForm.network} onChange={(e) => setEditForm((p) => ({ ...p, network: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30">
                     <option value="Telenor">Telenor</option><option value="Jazz">Jazz</option><option value="Ufone">Ufone</option><option value="Zong">Zong</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Status</label>
-                  <select value={editForm.status} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Status</label>
+                  <select value={editForm.status} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30">
                     {bulkEditActive && <option value="">â€” No change â€”</option>}
                     <option value="Issued">Issued</option>
                     <option value="Active">Active</option>
@@ -781,44 +777,44 @@ export default function ActiveSIMsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">SIM Category</label>
-                <select value={editForm.simType || ""} onChange={(e) => setEditForm((p) => ({ ...p, simType: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">SIM Category</label>
+                <select value={editForm.simType || ""} onChange={(e) => setEditForm((p) => ({ ...p, simType: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30">
                   {bulkEditActive && <option value="">â€” No change â€”</option>}
                   <option value="new">New</option><option value="mnp">MNP</option><option value="byn">BYN</option><option value="replacement">REPL</option><option value="hlr">HLR</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Device ID</label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Device ID</label>
                   <input type="text" value={editForm.deviceId} onChange={(e) => setEditForm((p) => ({ ...p, deviceId: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">ICCID</label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">ICCID</label>
                   <input type="text" value={editForm.iccid} onChange={(e) => setEditForm((p) => ({ ...p, iccid: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
                 </div>
               </div>
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-gray-500 text-xs font-medium mb-3">Verification Status</p>
+              <div className="border-t border-slate-100 pt-4">
+                <p className="mb-3 text-xs font-medium text-muted-foreground">Verification Status</p>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-gray-500 text-[10px] font-medium mb-1">BVS</label>
-                    <select value={editForm.bvs} onChange={(e) => setEditForm((p) => ({ ...p, bvs: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                    <label className="mb-1 block text-[10px] font-medium text-muted-foreground">BVS</label>
+                    <select value={editForm.bvs} onChange={(e) => setEditForm((p) => ({ ...p, bvs: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30">
                       {bulkEditActive && <option value="">â€” No change â€”</option>}
                       <option value="0">0 â€” Pending</option>
                       <option value="1">1 â€” Completed</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-gray-500 text-[10px] font-medium mb-1">FCA</label>
-                    <select value={editForm.fca} onChange={(e) => setEditForm((p) => ({ ...p, fca: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                    <label className="mb-1 block text-[10px] font-medium text-muted-foreground">FCA</label>
+                    <select value={editForm.fca} onChange={(e) => setEditForm((p) => ({ ...p, fca: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30">
                       {bulkEditActive && <option value="">â€” No change â€”</option>}
                       <option value="0">0 â€” Pending</option>
                       <option value="1">1 â€” Completed</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-gray-500 text-[10px] font-medium mb-1">IFCA</label>
-                    <select value={editForm.ifca} onChange={(e) => setEditForm((p) => ({ ...p, ifca: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">
+                    <label className="mb-1 block text-[10px] font-medium text-muted-foreground">IFCA</label>
+                    <select value={editForm.ifca} onChange={(e) => setEditForm((p) => ({ ...p, ifca: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30">
                       {bulkEditActive && <option value="">â€” No change â€”</option>}
                       <option value="0">0 â€” Pending</option>
                       <option value="1">1 â€” Completed</option>
@@ -827,13 +823,13 @@ export default function ActiveSIMsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Notes</label>
-                <textarea value={editForm.notes} onChange={(e) => setEditForm((p) => ({ ...p, notes: e.target.value }))} placeholder="Optional notes..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 h-20 resize-none" />
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Notes</label>
+                <textarea value={editForm.notes} onChange={(e) => setEditForm((p) => ({ ...p, notes: e.target.value }))} placeholder="Optional notes..." className="h-20 w-full resize-none rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => { setEditSIM(null); setBulkEditActive(false); }} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={async () => {
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => { setEditSIM(null); setBulkEditActive(false); }}>Cancel</Button>
+              <Button className="flex-1" onClick={async () => {
                 try {
                   if (auth?.franchiseId) {
                     const targets = bulkEditActive
@@ -890,28 +886,28 @@ export default function ActiveSIMsPage() {
                   }
                 } catch {}
                 setEditSIM(null); setBulkEditActive(false); setSelectedIds([]); window.location.reload();
-              }} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] flex items-center justify-center gap-2"><Pencil size={14} /> {bulkEditActive ? `Update ${selectedIds.length} SIMs` : "Save"}</button>
+              }}><Pencil className="h-4 w-4" /> {bulkEditActive ? `Update ${selectedIds.length} SIMs` : "Save"}</Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setDeleteConfirm(null)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)}>
+          <Card className="w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4"><Trash2 size={24} className="text-red-600" /></div>
-              <h3 className="text-gray-900 font-bold text-lg mb-2">{deleteConfirm._bulk ? `Delete ${deleteConfirm.count} SIM Records?` : "Delete SIM Record?"}</h3>
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100"><Trash2 className="h-6 w-6 text-red-600" /></div>
+              <h3 className="mb-2 text-lg font-semibold text-foreground">{deleteConfirm._bulk ? `Delete ${deleteConfirm.count} SIM Records?` : "Delete SIM Record?"}</h3>
               {deleteConfirm._bulk ? (
-                <p className="text-gray-500 text-sm">{deleteConfirm.count} selected SIM{deleteConfirm.count > 1 ? "s" : ""} will be permanently deleted.</p>
+                <p className="text-sm text-muted-foreground">{deleteConfirm.count} selected SIM{deleteConfirm.count > 1 ? "s" : ""} will be permanently deleted.</p>
               ) : (
-                <p className="text-gray-500 text-sm mb-1">SIM: <span className="font-mono font-bold">{deleteConfirm.simNumber}</span></p>
+                <p className="mb-1 text-sm text-muted-foreground">SIM: <span className="font-mono font-bold text-foreground">{deleteConfirm.simNumber}</span></p>
               )}
-              <p className="text-gray-400 text-xs">This action cannot be undone.</p>
+              <p className="text-xs text-muted-foreground/80">This action cannot be undone.</p>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={async () => {
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
+              <Button variant="destructive" className="flex-1" onClick={async () => {
                 try {
                   if (deleteConfirm._bulk) {
                     for (const id of selectedIds) {
@@ -922,70 +918,70 @@ export default function ActiveSIMsPage() {
                   }
                 } catch {}
                 setDeleteConfirm(null); setSelectedIds([]); window.location.reload();
-              }} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 flex items-center justify-center gap-2"><Trash2 size={14} /> {deleteConfirm._bulk ? `Delete ${deleteConfirm.count}` : "Delete"}</button>
+              }}><Trash2 className="h-4 w-4" /> {deleteConfirm._bulk ? `Delete ${deleteConfirm.count}` : "Delete"}</Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }}>
+          <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0A2647]/10 flex items-center justify-center"><FileSpreadsheet size={20} className="text-[#0A2647]" /></div>
-                <div><h3 className="text-gray-900 font-bold">Import Verification File</h3><p className="text-gray-500 text-xs">Match by ICCID, SIM Number, Device ID, or Retailer ID</p></div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50"><FileSpreadsheet className="h-5 w-5 text-brand-600" /></div>
+                <div><h3 className="text-base font-semibold text-foreground">Import Verification File</h3><p className="text-xs text-muted-foreground">Match by ICCID, SIM Number, Device ID, or Retailer ID</p></div>
               </div>
-              <button onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+              <button onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
-            <div className="p-6 space-y-5">
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                <p className="text-blue-800 text-sm font-medium mb-2">Format: ICCID, SIM Number, Device ID, Retailer ID, BVS, FCA, IFCA</p>
-                <ul className="text-blue-700 text-xs space-y-1 list-disc list-inside">
+            <div className="space-y-5 p-6">
+              <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                <p className="mb-2 text-sm font-medium text-blue-800">Format: ICCID, SIM Number, Device ID, Retailer ID, BVS, FCA, IFCA</p>
+                <ul className="list-inside list-disc space-y-1 text-xs text-blue-700">
                   <li>Match by <strong>ICCID</strong> OR <strong>SIM Number</strong> OR <strong>Device ID</strong> OR <strong>Retailer ID</strong></li>
                   <li>ICCID column will also be <strong>updated</strong> on matched SIM records</li>
-                  <li>Use <code className="bg-blue-100 px-1 rounded">0</code> = Done, <code className="bg-blue-100 px-1 rounded">1</code> = Verified, leave empty to keep existing</li>
+                  <li>Use <code className="rounded bg-blue-100 px-1">0</code> = Done, <code className="rounded bg-blue-100 px-1">1</code> = Verified, leave empty to keep existing</li>
                   <li>All 0 â†’ <strong>Completed</strong>, All 1 â†’ <strong>Verified</strong>, Has X â†’ <strong>Pending</strong></li>
                 </ul>
-                <button onClick={downloadSampleFile} className="mt-3 inline-flex items-center gap-1.5 text-blue-700 text-xs font-bold hover:underline"><Download size={12} /> Download Sample CSV</button>
+                <button onClick={downloadSampleFile} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:underline"><Download className="h-3 w-3" /> Download Sample CSV</button>
               </div>
               <div>
-                <label className="block text-gray-700 text-sm font-medium mb-2">Upload File</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#0A2647]/50 hover:bg-gray-50 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                  <Upload size={32} className="text-gray-400 mx-auto mb-2" />
-                  {importFile ? <div><p className="text-gray-900 text-sm font-medium">{importFile.name}</p><p className="text-gray-500 text-xs">{importRows.length} rows</p></div> : <div><p className="text-gray-600 text-sm">Click to upload CSV</p></div>}
+                <label className="mb-2 block text-sm font-medium text-foreground">Upload File</label>
+                <div className="cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-6 text-center transition-colors hover:border-brand-500/50 hover:bg-slate-50" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                  {importFile ? <div><p className="text-sm font-medium text-foreground">{importFile.name}</p><p className="text-xs text-muted-foreground">{importRows.length} rows</p></div> : <div><p className="text-sm text-muted-foreground">Click to upload CSV</p></div>}
                 </div>
                 <input ref={fileInputRef} type="file" accept=".csv,.txt" onChange={handleFileUpload} className="hidden" />
               </div>
-              {importError && <div className="bg-red-50 rounded-xl p-3 border border-red-200 flex items-center gap-2"><AlertCircle size={16} className="text-red-500" /><p className="text-red-700 text-sm">{importError}</p></div>}
-              {importSuccess && <div className="bg-green-50 rounded-xl p-3 border border-green-200 flex items-center gap-2"><CheckCircle size={16} className="text-green-500" /><p className="text-green-700 text-sm">{importSuccess}</p></div>}
+              {importError && <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3"><AlertCircle className="h-4 w-4 text-red-500" /><p className="text-sm text-red-700">{importError}</p></div>}
+              {importSuccess && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3"><CheckCircle className="h-4 w-4 text-green-500" /><p className="text-sm text-green-700">{importSuccess}</p></div>}
               {importRows.length > 0 && (
                 <div>
-                  <p className="text-gray-700 text-sm font-medium mb-2">Preview ({importRows.filter((r) => r.matched).length} matched)</p>
-                  <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto">
+                  <p className="mb-2 text-sm font-medium text-foreground">Preview ({importRows.filter((r) => r.matched).length} matched)</p>
+                  <div className="max-h-[300px] overflow-hidden overflow-y-auto rounded-xl border border-slate-200">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 sticky top-0"><tr>
-                        <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">ICCID</th>
-                        <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">SIM Number</th>
-                        <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Device ID</th>
-                        <th className="text-left px-3 py-2 text-gray-500 text-xs font-medium">Retailer ID</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">BVS</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">FCA</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">IFCA</th>
-                        <th className="text-center px-3 py-2 text-gray-500 text-xs font-medium">Status</th>
+                      <thead className="sticky top-0 bg-slate-50"><tr>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">ICCID</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">SIM Number</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Device ID</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Retailer ID</th>
+                        <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">BVS</th>
+                        <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">FCA</th>
+                        <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">IFCA</th>
+                        <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">Status</th>
                       </tr></thead>
-                      <tbody>
+                      <tbody className="divide-y divide-slate-100">
                         {importRows.map((row, i) => (
-                          <tr key={i} className={`border-t border-gray-100 ${row.matched ? "bg-green-50/50" : "bg-red-50/50"}`}>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.iccid || "â€”"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.simNumber || "â€”"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.deviceId || "â€”"}</td>
-                            <td className="px-3 py-2 text-gray-700 text-xs font-mono">{row.retailerId || "â€”"}</td>
-                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.bvs === "1" ? "text-green-600" : "text-gray-400"}`}>{row.bvs}</span></td>
-                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.fca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.fca}</span></td>
-                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.ifca === "1" ? "text-green-600" : "text-gray-400"}`}>{row.ifca}</span></td>
+                          <tr key={i} className={`border-t border-slate-100 ${row.matched ? "bg-green-50/50" : "bg-red-50/50"}`}>
+                            <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.iccid || "â€”"}</td>
+                            <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.simNumber || "â€”"}</td>
+                            <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.deviceId || "â€”"}</td>
+                            <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.retailerId || "â€”"}</td>
+                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.bvs === "1" ? "text-green-600" : "text-muted-foreground"}`}>{row.bvs}</span></td>
+                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.fca === "1" ? "text-green-600" : "text-muted-foreground"}`}>{row.fca}</span></td>
+                            <td className="px-3 py-2 text-center"><span className={`text-xs font-bold ${row.ifca === "1" ? "text-green-600" : "text-muted-foreground"}`}>{row.ifca}</span></td>
                             <td className="px-3 py-2 text-center">
-                              {row.matched ? <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold">Matched ({row.matchType})</span> : <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">Not Found</span>}
+                              {row.matched ? <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">Matched ({row.matchType})</span> : <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">Not Found</span>}
                             </td>
                           </tr>
                         ))}
@@ -995,11 +991,11 @@ export default function ActiveSIMsPage() {
                 </div>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 sticky bottom-0 bg-white">
-              <button onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleImport} disabled={importRows.length === 0 || importRows.filter((r) => r.matched).length === 0} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"><Upload size={14} /> Import {importRows.filter((r) => r.matched).length} Records</button>
+            <div className="sticky bottom-0 flex gap-3 border-t border-slate-100 bg-white px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => { setShowImportModal(false); setImportRows([]); setImportFile(null); setImportError(""); setImportSuccess(""); }}>Cancel</Button>
+              <Button className="flex-1" onClick={handleImport} disabled={importRows.length === 0 || importRows.filter((r) => r.matched).length === 0}><Upload className="h-4 w-4" /> Import {importRows.filter((r) => r.matched).length} Records</Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

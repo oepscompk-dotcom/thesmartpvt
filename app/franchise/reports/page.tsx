@@ -4,6 +4,11 @@ import { useState, useMemo, useEffect } from "react";
 import { FileText, Download, BarChart3, Users, Smartphone, DollarSign, Calendar, Clock, Target, Wallet, TrendingUp, TrendingDown, Eye, Printer, Search, Filter, X, ChevronDown, ChevronUp, CreditCard, Briefcase, ClipboardList, PieChart, Activity } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
 
 type TabId = "overview" | "hr" | "sales" | "inventory" | "finance";
 type ReportView = "table" | "preview";
@@ -339,45 +344,45 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Reports Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-1">Comprehensive reports, analytics & exports</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm">
-            <Calendar size={14} className="text-gray-400" />
-            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="border-0 p-0 w-28 focus:outline-none text-gray-700" />
-            <span className="text-gray-300">â€”</span>
-            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="border-0 p-0 w-28 focus:outline-none text-gray-700" />
-          </div>
-          <div className="relative no-print">
-            <button onClick={() => setExportOpen(!exportOpen)} className="flex items-center gap-2 px-4 py-2 bg-[#0A2647] text-white rounded-xl text-sm font-medium hover:bg-[#0A2647]/90 transition-all">
-              <Download size={14} /> Export
-            </button>
-            {exportOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
-                <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-xl border border-gray-200 z-20 overflow-hidden">
-                  <button onClick={() => { exportCSV(); setExportOpen(false); }} className="w-full px-4 py-2.5 text-gray-700 text-sm font-medium hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100"><FileText size={14} className="text-green-600" /> CSV</button>
-                  <button onClick={() => { exportXLS(); setExportOpen(false); }} className="w-full px-4 py-2.5 text-gray-700 text-sm font-medium hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100"><Download size={14} className="text-green-600" /> XLS (Excel)</button>
-                  <button onClick={() => { exportPDF(); setExportOpen(false); }} className="w-full px-4 py-2.5 text-gray-700 text-sm font-medium hover:bg-gray-50 flex items-center gap-2"><Printer size={14} className="text-red-600" /> PDF</button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Reports" }]}
+        title="Reports Dashboard"
+        description="Comprehensive reports, analytics & exports"
+        actions={
+          <>
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm">
+              <Calendar size={14} className="text-muted-foreground" />
+              <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-28 border-0 p-0 text-slate-700 focus:outline-none" />
+              <span className="text-slate-300">&mdash;</span>
+              <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-28 border-0 p-0 text-slate-700 focus:outline-none" />
+            </div>
+            <div className="relative no-print">
+              <Button onClick={() => setExportOpen(!exportOpen)}>
+                <Download size={14} /> Export
+              </Button>
+              {exportOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
+                  <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
+                    <button onClick={() => { exportCSV(); setExportOpen(false); }} className="flex w-full items-center gap-2 border-b border-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"><FileText size={14} className="text-green-600" /> CSV</button>
+                    <button onClick={() => { exportXLS(); setExportOpen(false); }} className="flex w-full items-center gap-2 border-b border-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"><Download size={14} className="text-green-600" /> XLS (Excel)</button>
+                    <button onClick={() => { exportPDF(); setExportOpen(false); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"><Printer size={14} className="text-red-600" /> PDF</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        }
+      />
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-white rounded-2xl p-1.5 border border-gray-200 overflow-x-auto">
+      <div className="flex gap-1 overflow-x-auto rounded-lg border border-slate-200 bg-white p-1.5">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${activeTab === t.id ? "bg-[#0A2647] text-white shadow-lg" : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"}`}>
+            className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium transition-all ${activeTab === t.id ? "bg-brand-600 text-white shadow-md" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}>
             <t.icon size={16} />
             {t.label}
-            {t.count !== undefined && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === t.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>{t.count}</span>}
+            {t.count !== undefined && <span className={`rounded-full px-2 py-0.5 text-xs ${activeTab === t.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>{t.count}</span>}
           </button>
         ))}
       </div>
@@ -441,10 +446,10 @@ export default function ReportsPage() {
           {/* Summary Section */}
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Staff Overview */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Users size={16} className="text-[#0A2647]" /> Staff Overview</h3>
-                <button onClick={() => { setActiveTab("hr"); setSelectedReport("staff"); }} className="text-xs text-[#0A2647] font-medium hover:underline">View Details â†’</button>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Users size={16} className="text-brand-600" /> Staff Overview</h3>
+                <button onClick={() => { setActiveTab("hr"); setSelectedReport("staff"); }} className="text-xs text-brand-600 font-medium hover:underline">View Details â†’</button>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -479,10 +484,10 @@ export default function ReportsPage() {
             </div>
 
             {/* Recent Attendance */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Clock size={16} className="text-[#0A2647]" /> Today&apos;s Attendance</h3>
-                <button onClick={() => { setActiveTab("hr"); setSelectedReport("attendance"); }} className="text-xs text-[#0A2647] font-medium hover:underline">View All â†’</button>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Clock size={16} className="text-brand-600" /> Today&apos;s Attendance</h3>
+                <button onClick={() => { setActiveTab("hr"); setSelectedReport("attendance"); }} className="text-xs text-brand-600 font-medium hover:underline">View All â†’</button>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-4 gap-3 mb-4">
@@ -524,9 +529,9 @@ export default function ReportsPage() {
           </div>
 
           {/* Quick Access */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><BarChart3 size={16} className="text-[#0A2647]" /> Quick Reports Access</h3>
+          <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100">
+              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><BarChart3 size={16} className="text-brand-600" /> Quick Reports Access</h3>
             </div>
             <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
@@ -564,7 +569,7 @@ export default function ReportsPage() {
               { id: "payroll", label: "Payroll", icon: DollarSign },
             ].map((st) => (
               <button key={st.id} onClick={() => setSelectedReport(st.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedReport === st.id ? "bg-[#0A2647] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"}`}>
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${selectedReport === st.id ? "bg-brand-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`}>
                 <st.icon size={15} /> {st.label}
               </button>
             ))}
@@ -588,22 +593,22 @@ export default function ReportsPage() {
               <option value="Inactive">Inactive</option>
             </select>
             <button onClick={() => handleCSV(selectedReport === "payroll" ? filteredPayroll : selectedReport === "attendance" ? filteredAttendance : filteredStaff, `${selectedReport}-report`)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0A2647] text-white rounded-xl text-sm font-medium hover:bg-[#0A2647]/90 transition-all">
+              className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 transition-all">
               <Download size={14} /> Export CSV
             </button>
           </div>
 
           {/* Staff Directory */}
           {selectedReport === "staff" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-gray-900 font-bold text-sm">Staff Directory</h3>
                 <span className="text-xs text-gray-400">{filteredStaff.length} records</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                       <th className="text-left px-4 py-3 font-medium">Employee</th>
                       <th className="text-left px-4 py-3 font-medium">ID</th>
                       <th className="text-left px-4 py-3 font-medium">Role</th>
@@ -614,9 +619,9 @@ export default function ReportsPage() {
                       <th className="text-center px-4 py-3 font-medium">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-slate-100">
                     {filteredStaff.map((s) => (
-                      <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr key={s.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full ${s.role === "DSO" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"} flex items-center justify-center text-xs font-bold`}>
@@ -637,7 +642,7 @@ export default function ReportsPage() {
                         <td className="px-4 py-3 text-gray-500">{formatDateDDMMYYYY(s.joinDate)}</td>
                         <td className="px-4 py-3 text-gray-900 font-medium">PKR {s.salary.toLocaleString()}</td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{s.status}</span>
+                          <StatusPill label={s.status} tone={toneForStatus(s.status)} />
                         </td>
                       </tr>
                     ))}
@@ -703,15 +708,15 @@ export default function ReportsPage() {
                   <p className="text-blue-600/70 text-xs">Leave</p>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="text-gray-900 font-bold text-sm">Attendance Records</h3>
                   <span className="text-xs text-gray-400">{filteredAttendance.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                      <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                         <th className="text-left px-4 py-3 font-medium">Employee</th>
                         <th className="text-left px-4 py-3 font-medium">Role</th>
                         <th className="text-left px-4 py-3 font-medium">Date</th>
@@ -720,9 +725,9 @@ export default function ReportsPage() {
                         <th className="text-center px-4 py-3 font-medium">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-100">
                       {filteredAttendance.slice(0, 100).map((a) => (
-                        <tr key={a.id} className="hover:bg-gray-50/50">
+                        <tr key={a.id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 font-medium text-gray-900">{a.employeeName}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${a.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{a.role}</span>
@@ -798,15 +803,15 @@ export default function ReportsPage() {
                   <p className="text-red-600/70 text-xs">Unpaid</p>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="text-gray-900 font-bold text-sm">Payroll Records</h3>
                   <span className="text-xs text-gray-400">{filteredPayroll.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                      <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                         <th className="text-left px-4 py-3 font-medium">Employee</th>
                         <th className="text-left px-4 py-3 font-medium">Role</th>
                         <th className="text-left px-4 py-3 font-medium">Month</th>
@@ -818,10 +823,10 @@ export default function ReportsPage() {
                         <th className="text-center px-4 py-3 font-medium">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-100">
                       {filteredPayroll.map((p) => (
                         <>
-                          <tr key={p.id} className="hover:bg-gray-50/50 cursor-pointer" onClick={() => setExpandedRow(expandedRow === p.id ? null : p.id)}>
+                          <tr key={p.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => setExpandedRow(expandedRow === p.id ? null : p.id)}>
                             <td className="px-4 py-3 font-medium text-gray-900">{p.employeeName || "â€”"}</td>
                             <td className="px-4 py-3">
                               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{p.role}</span>
@@ -933,15 +938,15 @@ export default function ReportsPage() {
               { id: "targets", label: "Targets", icon: Target },
             ].map((st) => (
               <button key={st.id} onClick={() => setSelectedReport(st.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedReport === st.id ? "bg-[#0A2647] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"}`}>
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${selectedReport === st.id ? "bg-brand-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`}>
                 <st.icon size={15} /> {st.label}
               </button>
             ))}
           </div>
 
           {selectedReport === "activations" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
                 <h3 className="text-gray-900 font-bold text-sm">Activation Summary</h3>
                 <p className="text-gray-400 text-xs mt-1">Activations from DSO portal (across all months)</p>
               </div>
@@ -967,7 +972,7 @@ export default function ReportsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                      <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                         <th className="text-left px-4 py-3 font-medium">DSO Name</th>
                         <th className="text-left px-4 py-3 font-medium">ID</th>
                         <th className="text-center px-4 py-3 font-medium">Status</th>
@@ -975,13 +980,13 @@ export default function ReportsPage() {
                         <th className="text-right px-4 py-3 font-medium">Total Salary</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-100">
                       {dso.filter((d) => !search || d.name.toLowerCase().includes(search.toLowerCase())).map((d) => (
-                        <tr key={d.id} className="hover:bg-gray-50/50">
+                        <tr key={d.id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 font-medium text-gray-900">{d.name}</td>
                           <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.id}</td>
                           <td className="px-4 py-3 text-center">
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${d.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{d.status}</span>
+                            <StatusPill label={d.status} tone={toneForStatus(d.status)} />
                           </td>
                           <td className="px-4 py-3 text-right text-green-600 font-medium">PKR {(d.commission || 0).toLocaleString()}</td>
                           <td className="px-4 py-3 text-right text-gray-900 font-medium">PKR {(d.salary || 0).toLocaleString()}</td>
@@ -995,8 +1000,8 @@ export default function ReportsPage() {
           )}
 
           {selectedReport === "performance" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
                 <h3 className="text-gray-900 font-bold text-sm">DSO Performance Ranking</h3>
                 <p className="text-gray-400 text-xs mt-1">Ranked by salary & commission data</p>
               </div>
@@ -1018,7 +1023,7 @@ export default function ReportsPage() {
                           <p className="text-sm font-bold text-gray-900">PKR {(d.salary + d.commission).toLocaleString()}</p>
                           <p className="text-xs text-gray-400">Total Compensation</p>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${d.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{d.status}</span>
+                        <StatusPill label={d.status} tone={toneForStatus(d.status)} />
                       </div>
                     </div>
                   ))}
@@ -1028,15 +1033,15 @@ export default function ReportsPage() {
           )}
 
           {selectedReport === "targets" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
                 <h3 className="text-gray-900 font-bold text-sm">Targets Overview</h3>
                 <p className="text-gray-400 text-xs mt-1">{targets.length} target records</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                       <th className="text-left px-4 py-3 font-medium">Employee</th>
                       <th className="text-left px-4 py-3 font-medium">Role</th>
                       <th className="text-left px-4 py-3 font-medium">Period</th>
@@ -1046,11 +1051,11 @@ export default function ReportsPage() {
                       <th className="text-center px-4 py-3 font-medium">Progress</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-slate-100">
                     {targets.map((t) => {
                       const pct = t.monthlyTarget > 0 ? Math.round((t.achieved / t.monthlyTarget) * 100) : 0;
                       return (
-                        <tr key={t.id} className="hover:bg-gray-50/50">
+                        <tr key={t.id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 font-medium text-gray-900">{t.employeeName}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${t.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{t.role}</span>
@@ -1091,7 +1096,7 @@ export default function ReportsPage() {
               { id: "equipment", label: "Equipment", icon: Briefcase },
             ].map((st) => (
               <button key={st.id} onClick={() => setSelectedReport(st.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedReport === st.id ? "bg-[#0A2647] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"}`}>
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${selectedReport === st.id ? "bg-brand-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`}>
                 <st.icon size={15} /> {st.label}
               </button>
             ))}
@@ -1110,7 +1115,7 @@ export default function ReportsPage() {
               <option value="Activated">Activated</option>
             </select>
             <button onClick={() => handleCSV(selectedReport === "sims" ? filteredSIMs : selectedReport === "devices" ? devices : equipment, `${selectedReport}-report`)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0A2647] text-white rounded-xl text-sm font-medium hover:bg-[#0A2647]/90">
+              className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700">
               <Download size={14} /> CSV
             </button>
           </div>
@@ -1135,15 +1140,15 @@ export default function ReportsPage() {
                   <p className="text-blue-600/70 text-xs">Activated</p>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="text-gray-900 font-bold text-sm">SIM Inventory Report</h3>
                   <span className="text-xs text-gray-400">{filteredSIMs.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                      <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                         <th className="text-left px-4 py-3 font-medium">SIM Number</th>
                         <th className="text-left px-4 py-3 font-medium">Network</th>
                         <th className="text-left px-4 py-3 font-medium">ICCID</th>
@@ -1153,9 +1158,9 @@ export default function ReportsPage() {
                         <th className="text-left px-4 py-3 font-medium">Issued To</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-100">
                       {filteredSIMs.map((s) => (
-                        <tr key={s.id} className="hover:bg-gray-50/50">
+                        <tr key={s.id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 font-mono text-xs font-medium text-gray-900">{s.simNumber}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -1193,12 +1198,12 @@ export default function ReportsPage() {
           )}
 
           {selectedReport === "devices" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
                 <h3 className="text-gray-900 font-bold text-sm">Device Inventory</h3>
                 <p className="text-gray-400 text-xs mt-1">{devices.length} total devices</p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-5 border-b border-gray-100">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-5 border-b border-slate-100">
                 <div className="bg-gray-50 rounded-xl p-3 text-center">
                   <p className="text-lg font-black text-gray-900">{devices.filter((d) => d.status === "In Stock").length}</p>
                   <p className="text-gray-500 text-xs">In Stock</p>
@@ -1219,7 +1224,7 @@ export default function ReportsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                       <th className="text-left px-4 py-3 font-medium">BVS #</th>
                       <th className="text-left px-4 py-3 font-medium">Brand/Model</th>
                       <th className="text-left px-4 py-3 font-medium">IMEI</th>
@@ -1228,9 +1233,9 @@ export default function ReportsPage() {
                       <th className="text-left px-4 py-3 font-medium">Assigned To</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-slate-100">
                     {devices.map((d) => (
-                      <tr key={d.id} className="hover:bg-gray-50/50">
+                      <tr key={d.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3 font-mono text-xs font-medium text-gray-900">{d.bvsNumber}</td>
                         <td className="px-4 py-3 text-gray-700">{d.brand} {d.model}</td>
                         <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.imei}</td>
@@ -1253,12 +1258,12 @@ export default function ReportsPage() {
           )}
 
           {selectedReport === "equipment" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
                 <h3 className="text-gray-900 font-bold text-sm">Equipment & Assets Report</h3>
                 <p className="text-gray-400 text-xs mt-1">{equipment.length} items Â· {equipmentIssueRecords.length} issue records</p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-5 border-b border-gray-100">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-5 border-b border-slate-100">
                 <div className="bg-gray-50 rounded-xl p-3 text-center">
                   <p className="text-lg font-black text-gray-900">{equipment.length}</p>
                   <p className="text-gray-500 text-xs">Total Items</p>
@@ -1275,7 +1280,7 @@ export default function ReportsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                       <th className="text-left px-4 py-3 font-medium">Item Name</th>
                       <th className="text-right px-4 py-3 font-medium">Price</th>
                       <th className="text-left px-4 py-3 font-medium">Condition</th>
@@ -1283,9 +1288,9 @@ export default function ReportsPage() {
                       <th className="text-left px-4 py-3 font-medium">Assigned To</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-slate-100">
                     {equipment.map((e) => (
-                      <tr key={e.id} className="hover:bg-gray-50/50">
+                      <tr key={e.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3 font-medium text-gray-900">{e.name}</td>
                         <td className="px-4 py-3 text-right text-gray-900">PKR {(e.price || 0).toLocaleString()}</td>
                         <td className="px-4 py-3 text-gray-500 text-xs">
@@ -1316,7 +1321,7 @@ export default function ReportsPage() {
               { id: "bank", label: "Bank Accounts", icon: CreditCard },
             ].map((st) => (
               <button key={st.id} onClick={() => setSelectedReport(st.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedReport === st.id ? "bg-[#0A2647] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"}`}>
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${selectedReport === st.id ? "bg-brand-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`}>
                 <st.icon size={15} /> {st.label}
               </button>
             ))}
@@ -1342,15 +1347,15 @@ export default function ReportsPage() {
                   <p className="text-amber-600/70 text-xs">Highest Category</p>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="text-gray-900 font-bold text-sm">Expense Records</h3>
                   <span className="text-xs text-gray-400">{filteredExpenses.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                      <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                         <th className="text-left px-4 py-3 font-medium">Date</th>
                         <th className="text-left px-4 py-3 font-medium">Description</th>
                         <th className="text-left px-4 py-3 font-medium">Category</th>
@@ -1358,9 +1363,9 @@ export default function ReportsPage() {
                         <th className="text-right px-4 py-3 font-medium">Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-100">
                       {filteredExpenses.map((e) => (
-                        <tr key={e.id} className="hover:bg-gray-50/50">
+                        <tr key={e.id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(e.date)}</td>
                           <td className="px-4 py-3 text-gray-900 font-medium">{e.description || e.note || "â€”"}</td>
                           <td className="px-4 py-3">
@@ -1408,24 +1413,24 @@ export default function ReportsPage() {
               </div>
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Ledger Entries */}
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="text-gray-900 font-bold text-sm">Account Ledger</h3>
                     <span className="text-xs text-gray-400">{accounts.length} entries</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                        <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                           <th className="text-left px-4 py-3 font-medium">Date</th>
                           <th className="text-left px-4 py-3 font-medium">Category</th>
                           <th className="text-right px-4 py-3 font-medium">Amount</th>
                           <th className="text-center px-4 py-3 font-medium">Type</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50">
+                      <tbody className="divide-y divide-slate-100">
                         {accounts.filter((a) => a.date >= dateFrom && a.date <= dateTo).map((a) => (
-                          <tr key={a.id} className="hover:bg-gray-50/50">
+                          <tr key={a.id} className="hover:bg-slate-50">
                             <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(a.date)}</td>
                             <td className="px-4 py-3 text-gray-900 font-medium">{a.category}</td>
                             <td className={`px-4 py-3 text-right font-semibold ${a.type === "income" ? "text-green-600" : "text-red-600"}`}>
@@ -1444,24 +1449,24 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 {/* Wallet Transactions */}
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="text-gray-900 font-bold text-sm">Wallet Activity</h3>
                     <span className="text-xs text-gray-400">{wallet.length} transactions</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                        <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                           <th className="text-left px-4 py-3 font-medium">Date</th>
                           <th className="text-left px-4 py-3 font-medium">Note</th>
                           <th className="text-right px-4 py-3 font-medium">Amount</th>
                           <th className="text-center px-4 py-3 font-medium">Type</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50">
+                      <tbody className="divide-y divide-slate-100">
                         {wallet.filter((w) => w.date >= dateFrom && w.date <= dateTo).map((w) => (
-                          <tr key={w.id} className="hover:bg-gray-50/50">
+                          <tr key={w.id} className="hover:bg-slate-50">
                             <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(w.date)}</td>
                             <td className="px-4 py-3 text-gray-900 font-medium text-sm">{w.note || w.remarks || "â€”"}</td>
                             <td className={`px-4 py-3 text-right font-semibold ${w.type === "Deposit" || w.type === "Credit" ? "text-green-600" : "text-red-600"}`}>
@@ -1484,15 +1489,15 @@ export default function ReportsPage() {
           )}
 
           {selectedReport === "accounts" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
                 <h3 className="text-gray-900 font-bold text-sm">Full Account Ledger</h3>
                 <p className="text-gray-400 text-xs mt-1">All income & expense entries</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr className="border-b bg-slate-50 text-muted-foreground text-xs uppercase">
                       <th className="text-left px-4 py-3 font-medium">Date</th>
                       <th className="text-left px-4 py-3 font-medium">Description</th>
                       <th className="text-left px-4 py-3 font-medium">Category</th>
@@ -1500,9 +1505,9 @@ export default function ReportsPage() {
                       <th className="text-right px-4 py-3 font-medium">Credit</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-slate-100">
                     {accounts.filter((a) => a.date >= dateFrom && a.date <= dateTo).map((a) => (
-                      <tr key={a.id} className="hover:bg-gray-50/50">
+                      <tr key={a.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(a.date)}</td>
                         <td className="px-4 py-3 text-gray-900 font-medium">{a.description}</td>
                         <td className="px-4 py-3">
@@ -1522,8 +1527,8 @@ export default function ReportsPage() {
           )}
 
           {selectedReport === "bank" && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
                 <h3 className="text-gray-900 font-bold text-sm">Bank Accounts</h3>
                 <p className="text-gray-400 text-xs mt-1">{bankAccounts.length} accounts</p>
               </div>

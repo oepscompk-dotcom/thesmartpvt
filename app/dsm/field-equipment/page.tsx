@@ -1,10 +1,16 @@
 ﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Search, Wrench, Clock, CheckCircle, Filter } from "lucide-react";
+import { Wrench, Clock, CheckCircle } from "lucide-react";
 import { useDSMData } from "@/lib/DSMDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 import { apiLoad } from "@/lib/api";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { StatusPill, QuickChip } from "@/components/ui/Badge";
+import { Card, CardContent } from "@/components/ui/Card";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 async function loadEquipmentIssueRecords(franchiseId?: string) {
   if (typeof window === "undefined") return [];
@@ -46,67 +52,54 @@ export default function DSMFieldEquipmentPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Field Equipment</h1>
-        <p className="text-gray-500 text-sm mt-1">Equipment issued to you</p>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "DSM" }, { label: "Field Equipment" }]}
+        title="Field Equipment"
+        description="Equipment issued to you"
+      />
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#0057FF]/10 flex items-center justify-center"><Wrench size={14} className="text-[#0057FF]" /></div>
-          <div><p className="text-lg font-black text-gray-900">{stats.total}</p><p className="text-gray-500 text-[10px]">Total</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><Clock size={14} className="text-blue-600" /></div>
-          <div><p className="text-lg font-black text-blue-600">{stats.active}</p><p className="text-gray-500 text-[10px]">Active</p></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><CheckCircle size={14} className="text-green-600" /></div>
-          <div><p className="text-lg font-black text-green-600">{stats.returned}</p><p className="text-gray-500 text-[10px]">Returned</p></div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard label="Total" value={stats.total} icon={Wrench} iconClass="text-brand-600 bg-brand-50" />
+        <StatCard label="Active" value={stats.active} icon={Clock} iconClass="text-blue-600 bg-blue-50" />
+        <StatCard label="Returned" value={stats.returned} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0057FF]/30 focus-within:ring-2 focus-within:ring-[#0057FF]/10 transition-all">
-          <Search size={16} className="text-gray-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search equipment..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-        </div>
+        <SearchInput placeholder="Search equipment..." value={search} onSearch={setSearch} className="max-w-sm" />
         <div className="flex gap-2 flex-wrap">
           {["All", "Issued", "Returned"].map((s) => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${statusFilter === s ? "bg-[#0057FF] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
-              <span className="flex items-center gap-1.5"><Filter size={12} /> {s}</span>
-            </button>
+            <QuickChip key={s} label={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} />
           ))}
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">Sr.No</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Equipment</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Equipment ID</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Issue Date</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Return Date</th>
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="text-center px-3 py-3 text-muted-foreground text-xs font-medium uppercase w-14">Sr.No</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">Equipment</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase hidden md:table-cell">Equipment ID</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">Issue Date</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase hidden md:table-cell">Return Date</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">Status</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((r: any, idx: number) => (
-                <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                   <td className="px-3 py-3 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0057FF]/10 text-[#0057FF] text-xs font-black">{idx + 1}</span>
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 text-brand-600 text-xs font-black">{idx + 1}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-gray-900 text-sm font-medium">{r.equipmentName}</p>
+                    <p className="text-sm font-medium text-foreground">{r.equipmentName}</p>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs font-mono">{r.equipmentId}</td>
-                   <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(r.issueDate)}</td>
-                   <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(r.returnDate)}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs font-mono">{r.equipmentId}</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">{formatDateDDMMYYYY(r.issueDate)}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs">{formatDateDDMMYYYY(r.returnDate)}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${r.status === "Issued" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{r.status}</span>
+                    <StatusPill label={r.status} tone={r.status === "Issued" ? "neutral" : "positive"} />
                   </td>
                 </tr>
               ))}
@@ -114,12 +107,9 @@ export default function DSMFieldEquipmentPage() {
           </table>
         </div>
         {filtered.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <Wrench size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No equipment issued to you</p>
-          </div>
+          <EmptyState icon={Wrench} title="No equipment issued to you" />
         )}
-      </div>
+      </Card>
     </div>
   );
 }

@@ -4,6 +4,11 @@ import { useState } from "react";
 import { FileText, Download, BarChart3, CheckCircle2, Clock, Calendar } from "lucide-react";
 import { useDSOData } from "@/lib/DSODataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
 
 export default function DSOReportsPage() {
   const { activations, attendance, wallet, targets } = useDSOData();
@@ -72,102 +77,91 @@ export default function DSOReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Reports</h1>
-        <p className="text-gray-500 text-sm mt-1">View performance reports and export data</p>
+      <PageHeader
+        breadcrumb={[{ label: "DSO Dashboard", href: "/dso" }, { label: "Reports" }]}
+        title="Reports"
+        description="View performance reports and export data"
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Completed" value={completedActivations.length} icon={CheckCircle2} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Pending" value={pendingBVS + pendingFCA + pendingIFCA} icon={Clock} iconClass="text-yellow-600 bg-yellow-50" />
+        <StatCard label="Success Rate" value={`${successRate}%`} icon={BarChart3} iconClass="text-brand-600 bg-brand-50" />
+        <StatCard label="Target Progress" value={`${totalAchieved}/${totalTarget}`} icon={FileText} iconClass="text-amber-600 bg-amber-50" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-4 border border-gray-200 text-center">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 mx-auto mb-2"><CheckCircle2 size={18} /></div>
-          <p className="text-2xl font-black text-gray-900">{completedActivations.length}</p>
-          <p className="text-gray-500 text-xs mt-1">Completed</p>
-        </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-200 text-center">
-          <div className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 mx-auto mb-2"><Clock size={18} /></div>
-          <p className="text-2xl font-black text-gray-900">{pendingBVS + pendingFCA + pendingIFCA}</p>
-          <p className="text-gray-500 text-xs mt-1">Pending</p>
-        </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-200 text-center">
-          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600 mx-auto mb-2"><BarChart3 size={18} /></div>
-          <p className="text-2xl font-black text-gray-900">{successRate}%</p>
-          <p className="text-gray-500 text-xs mt-1">Success Rate</p>
-        </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-200 text-center">
-          <div className="w-10 h-10 rounded-xl bg-[#C8A951]/20 flex items-center justify-center text-[#C8A951] mx-auto mb-2"><FileText size={18} /></div>
-          <p className="text-2xl font-black text-gray-900">{totalAchieved}/{totalTarget}</p>
-          <p className="text-gray-500 text-xs mt-1">Target Progress</p>
-        </div>
-      </div>
-
-      <div className="flex gap-3">
+      <div className="flex gap-1 w-fit p-1 bg-slate-100 rounded-lg">
         {reportTypes.map((r) => (
-          <button key={r.key} onClick={() => setActiveReport(r.key)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeReport === r.key ? "bg-[#0A2647] text-white shadow-md" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
-            {r.label}
+          <button key={r.key} onClick={() => setActiveReport(r.key)} className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${activeReport === r.key ? "bg-white text-brand-700 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            <r.icon size={14} /> {r.label}
           </button>
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-gray-900 font-bold">{reportTypes.find((r) => r.key === activeReport)?.label}</h3>
-          <button onClick={() => handleExportCSV(currentData, activeReport)} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-all">
+      <Card>
+        <CardHeader className="flex-row items-center justify-between sm:items-center">
+          <h3 className="text-base font-semibold text-foreground">{reportTypes.find((r) => r.key === activeReport)?.label}</h3>
+          <Button variant="secondary" size="sm" onClick={() => handleExportCSV(currentData, activeReport)}>
             <Download size={14} /> Export CSV
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Metric</th>
-                <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentData.map((d, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-gray-900 text-sm font-medium">{d.label}</td>
-                  <td className="px-6 py-4 text-right font-bold text-sm text-gray-900">{d.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {activations.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="text-gray-900 font-bold">All Activations</h3>
-            <button onClick={exportActivationsCSV} className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272]">
-              <Download size={14} /> Export All
-            </button>
-          </div>
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">ID</th>
-                  <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Type</th>
-                  <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Customer</th>
-                  <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
-                  <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Date</th>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="text-left px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Metric</th>
+                  <th className="text-right px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Value</th>
                 </tr>
               </thead>
-              <tbody>
-                {activations.slice(0, 10).map((a) => (
-                  <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-gray-900 text-sm font-medium">{a.id}</td>
-                    <td className="px-6 py-4"><span className="px-2 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700">{a.type}</span></td>
-                    <td className="px-6 py-4 text-gray-600 text-sm">{a.customerName}</td>
-                    <td className="px-6 py-4"><span className={`px-2 py-1 rounded-lg text-xs font-medium ${a.status === "Completed" ? "bg-green-50 text-green-700" : a.status.includes("BVS") ? "bg-yellow-50 text-yellow-700" : "bg-orange-50 text-orange-700"}`}>{a.status}</span></td>
-                    <td className="px-6 py-4 hidden md:table-cell text-gray-400 text-xs">{formatDateDDMMYYYY(a.createdAt)}</td>
+              <tbody className="divide-y divide-slate-100">
+                {currentData.map((d, i) => (
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-foreground">{d.label}</td>
+                    <td className="px-6 py-4 text-right font-bold text-sm text-foreground">{d.value}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </CardContent>
+      </Card>
+
+      {activations.length > 0 && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between sm:items-center">
+            <h3 className="text-base font-semibold text-foreground">All Activations</h3>
+            <Button size="sm" onClick={exportActivationsCSV}>
+              <Download size={14} /> Export All
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50">
+                    <th className="text-left px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">ID</th>
+                    <th className="text-left px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Type</th>
+                    <th className="text-left px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Customer</th>
+                    <th className="text-left px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</th>
+                    <th className="text-left px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden md:table-cell">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {activations.slice(0, 10).map((a) => (
+                    <tr key={a.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-sm font-medium text-foreground">{a.id}</td>
+                      <td className="px-6 py-4"><StatusPill label={a.type} tone="brand" /></td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{a.customerName}</td>
+                      <td className="px-6 py-4"><StatusPill label={a.status} tone={toneForStatus(a.status)} /></td>
+                      <td className="px-6 py-4 hidden md:table-cell text-xs text-muted-foreground font-mono">{formatDateDDMMYYYY(a.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

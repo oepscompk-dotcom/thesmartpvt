@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Send, MessageSquare, Mail, Smartphone, Trash2 } from "lucide-react";
+import { Send, MessageSquare, Mail, Smartphone, Trash2, Bell } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { Pagination } from "@/components/ui/Pagination";
+import { EmptyState } from "@/components/ui/EmptyState";
+
+const PAGE_SIZE = 10;
 
 export default function NotificationsPage() {
   const { notifications, sendNotification, markNotificationRead, deleteNotification, clearAllNotifications } = useData();
@@ -12,6 +21,8 @@ export default function NotificationsPage() {
   const [message, setMessage] = useState("");
   const [title, setTitle] = useState("");
   const [sent, setSent] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   const handleSend = () => {
     if (!title || !message) return;
@@ -22,91 +33,123 @@ export default function NotificationsPage() {
     setTimeout(() => setSent(false), 3000);
   };
 
+  const filtered = notifications
+    .map((n, i) => ({ n, i }))
+    .filter(({ n }) => {
+      const q = search.toLowerCase();
+      if (!q) return true;
+      return n.title.toLowerCase().includes(q) || n.message.toLowerCase().includes(q);
+    });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const submitSearch = (v: string) => {
+    setSearch(v);
+    setPage(1);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Notification Center</h1>
-          <p className="text-gray-500 text-sm mt-1">Send notifications and view activity alerts</p>
-        </div>
-        {notifications.length > 0 && (
-          <button onClick={clearAllNotifications} className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-700 text-sm font-medium rounded-xl hover:bg-red-100 transition-all">
-            <Trash2 size={14} /> Clear All
-          </button>
-        )}
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Notifications" }]}
+        title="Notification Center"
+        description="Send notifications and view activity alerts"
+        actions={
+          notifications.length > 0 ? (
+            <Button variant="destructive" onClick={clearAllNotifications}>
+              <Trash2 className="h-4 w-4" /> Clear All
+            </Button>
+          ) : undefined
+        }
+      />
 
       {sent && (
-        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm font-medium">Notification sent successfully!</div>
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">Notification sent successfully!</div>
       )}
 
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <h3 className="text-gray-900 font-bold mb-4">Send Notification</h3>
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Send Notification</CardTitle>
+        </CardHeader>
+        <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5 uppercase tracking-wider">Title</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Notification title..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#0A2647]/50 focus:ring-2 focus:ring-[#0A2647]/10 transition-all" />
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Title</label>
+            <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Notification title..." />
           </div>
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5 uppercase tracking-wider">Recipients</label>
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Recipients</label>
             <div className="flex flex-wrap gap-2">
               {["All Franchises", "Selected Franchise", "All DSM", "All DSO"].map((r) => (
-                <button key={r} onClick={() => setRecipient(r)} className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${recipient === r ? "bg-[#0A2647] text-white shadow-md" : "bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100"}`}>{r}</button>
+                <Button
+                  key={r}
+                  size="md"
+                  variant={recipient === r ? "primary" : "outline"}
+                  onClick={() => setRecipient(r)}
+                >
+                  {r}
+                </Button>
               ))}
             </div>
           </div>
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5 uppercase tracking-wider">Channel</label>
-            <div className="flex gap-3">
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Channel</label>
+            <div className="flex flex-wrap gap-3">
               {[
                 { icon: MessageSquare, label: "WhatsApp" },
                 { icon: Mail, label: "Email" },
                 { icon: Smartphone, label: "SMS" },
               ].map((c) => (
-                <button key={c.label} onClick={() => setChannel(c.label)} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${channel === c.label ? "bg-[#0A2647] text-white shadow-md" : "bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100"}`}>
-                  <c.icon size={14} /> {c.label}
-                </button>
+                <Button
+                  key={c.label}
+                  size="md"
+                  variant={channel === c.label ? "primary" : "outline"}
+                  onClick={() => setChannel(c.label)}
+                >
+                  <c.icon className="h-4 w-4" /> {c.label}
+                </Button>
               ))}
             </div>
           </div>
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5 uppercase tracking-wider">Message</label>
-            <textarea rows={3} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type your notification message..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#0A2647]/50 focus:ring-2 focus:ring-[#0A2647]/10 transition-all resize-none" />
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Message</label>
+            <textarea rows={3} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type your notification message..." className="w-full resize-none rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
           </div>
-          <button onClick={handleSend} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-            <Send size={16} /> Send to {recipient} via {channel}
-          </button>
+          <Button onClick={handleSend}>
+            <Send className="h-4 w-4" /> Send to {recipient} via {channel}
+          </Button>
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-gray-900 font-bold">Recent Notifications ({notifications.length})</h3>
-        </div>
-        <div className="divide-y divide-gray-50">
-          {notifications.length === 0 && (
-            <div className="px-6 py-12 text-center">
-              <p className="text-gray-400 text-sm">No notifications</p>
-            </div>
+      <Card className="overflow-hidden">
+        <CardHeader className="flex-row flex-wrap items-center justify-between gap-3">
+          <CardTitle>Recent Notifications ({notifications.length})</CardTitle>
+          <SearchInput placeholder="Search notifications..." value={search} onSearch={submitSearch} className="min-w-[200px] flex-1" />
+        </CardHeader>
+        <div className="divide-y divide-slate-100">
+          {paginated.length === 0 && (
+            <EmptyState icon={Bell} title="No notifications" description={search ? "No notifications match your search." : "Sent notifications will appear here."} />
           )}
-          {notifications.map((n, i) => (
-            <div key={i} className={`px-6 py-4 flex items-start gap-4 hover:bg-gray-50 transition-colors ${!n.read ? "bg-blue-50/30" : ""}`}>
-              <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${n.type === "success" ? "bg-green-500" : n.type === "warning" ? "bg-yellow-500" : n.type === "error" ? "bg-red-500" : "bg-blue-500"}`} />
+          {paginated.map(({ n, i }) => (
+            <div key={`${i}-${n.title}`} className={`flex items-start gap-4 px-6 py-4 transition-colors hover:bg-slate-50 ${!n.read ? "bg-brand-50/30" : ""}`}>
+              <span className={`mt-2 flex-shrink-0 rounded-full ${n.type === "success" ? "bg-green-500" : n.type === "warning" ? "bg-amber-500" : n.type === "error" ? "bg-red-500" : "bg-brand-500"}`}>
+                <span className="block h-2 w-2 rounded-full" />
+              </span>
               <div className="flex-1" onClick={() => markNotificationRead(i)}>
                 <div className="flex items-center gap-2">
-                  <p className="text-gray-900 text-sm font-medium">{n.title}</p>
-                  {!n.read && <span className="w-1.5 h-1.5 bg-[#C8A951] rounded-full" />}
+                  <p className="text-sm font-medium text-foreground">{n.title}</p>
+                  {!n.read && <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />}
                 </div>
-                <p className="text-gray-500 text-sm">{n.message}</p>
+                <p className="text-sm text-muted-foreground">{n.message}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground/80">{formatDateDDMMYYYY(n.time)}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400 text-xs whitespace-nowrap">{formatDateDDMMYYYY(n.time)}</span>
-                <button onClick={() => deleteNotification(i)} className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={12} /></button>
-              </div>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600" onClick={() => deleteNotification(i)} title="Delete"><Trash2 className="h-3.5 w-3.5" /></Button>
             </div>
           ))}
         </div>
-      </div>
+        {paginated.length > 0 && <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />}
+      </Card>
     </div>
   );
 }

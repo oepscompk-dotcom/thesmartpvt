@@ -1,14 +1,16 @@
 ﻿"use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
-  BookOpen, ArrowLeft, Plus, ArrowRightLeft, Repeat, Hash,
+  BookOpen, Plus, ArrowRightLeft, Repeat, Hash,
   Smartphone, CheckCircle2, Clock, ChevronRight, ChevronDown,
   ChevronUp, Fingerprint, PhoneCall, Wifi, Shield, User,
-  CreditCard, FileText, ArrowRight, Phone, Target, Zap, Star,
+  CreditCard, FileText, ArrowRight, Target, Zap,
   Users, BarChart3, MapPin
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
 
 type Section = "overview" | "new-sim" | "mnp" | "replacement" | "byn" | "verification" | "dso-management";
 
@@ -135,6 +137,20 @@ const dsoManagementSteps = [
   { step: 4, title: "Manage Assignments", desc: "Assign and reassign territories, targets, and special tasks to DSOs.", icon: MapPin, detail: "Configure area territories, set monthly activation targets, and assign special campaigns or promotional activities." },
 ];
 
+const secColor: Record<string, { solid: string; light: string; text: string; border: string; borderS: string; chip: string }> = {
+  blue: { solid: "bg-blue-500", light: "bg-blue-50", text: "text-blue-600", border: "border-blue-200", borderS: "border-blue-300", chip: "bg-blue-50 text-blue-700" },
+  purple: { solid: "bg-purple-500", light: "bg-purple-50", text: "text-purple-600", border: "border-purple-200", borderS: "border-purple-300", chip: "bg-purple-50 text-purple-700" },
+  orange: { solid: "bg-orange-500", light: "bg-orange-50", text: "text-orange-600", border: "border-orange-200", borderS: "border-orange-300", chip: "bg-orange-50 text-orange-700" },
+  teal: { solid: "bg-teal-500", light: "bg-teal-50", text: "text-teal-600", border: "border-teal-200", borderS: "border-teal-300", chip: "bg-teal-50 text-teal-700" },
+  amber: { solid: "bg-amber-500", light: "bg-amber-50", text: "text-amber-600", border: "border-amber-200", borderS: "border-amber-300", chip: "bg-amber-50 text-amber-700" },
+  green: { solid: "bg-green-500", light: "bg-green-50", text: "text-green-600", border: "border-green-200", borderS: "border-green-300", chip: "bg-green-50 text-green-700" },
+};
+
+const _secFallback = secColor.green;
+function secOf(key: string) {
+  return (secColor as Record<string, typeof _secFallback>)[key] ?? _secFallback;
+}
+
 function PhoneMockup({ children, title }: { children: React.ReactNode; title: string }) {
   return (
     <div className="flex flex-col items-center">
@@ -193,78 +209,62 @@ export default function DSMGuidelinePage() {
     { key: "dso-management", label: "DSO Mgmt", icon: Users },
   ];
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#0043CC] via-[#0057FF] to-[#3385FF] text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/dsm/dashboard" className="p-2 hover:bg-white/10 rounded-xl transition-all">
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <h1 className="text-xl font-black flex items-center gap-2">
-                <BookOpen size={20} /> DSM Guideline & Instructions
-              </h1>
-              <p className="text-white/60 text-xs mt-0.5">Complete guide for using THE SMART ERP DSM Portal</p>
-            </div>
-          </div>
-        </div>
-      </div>
+return (
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumb={[{ label: "DSM" }, { label: "Guideline" }]}
+        title="DSM Guideline & Instructions"
+        description="Complete guide for using THE SMART ERP DSM Portal"
+      />
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-1 overflow-x-auto py-2 scrollbar-hide">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => { setActiveSection(item.key); setExpandedStep(null); setExpandedVerification(null); setExpandedDsoMgmt(null); }}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                  activeSection === item.key
-                    ? "bg-[#0057FF] text-white shadow-md"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
-              >
-                <item.icon size={14} /> {item.label}
-              </button>
-            ))}
-          </div>
+      <Card>
+        <div className="flex gap-1.5 overflow-x-auto p-2">
+          {navItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => { setActiveSection(item.key); setExpandedStep(null); setExpandedVerification(null); setExpandedDsoMgmt(null); }}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
+                activeSection === item.key
+                  ? "bg-[#0057FF] text-white shadow-md"
+                  : "text-slate-500 hover:bg-slate-100"
+              }`}
+            >
+              <item.icon size={14} /> {item.label}
+            </button>
+          ))}
         </div>
-      </div>
+      </Card>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW â•â•â•â•â•â•â•â•â•â•â• */}
-        {activeSection === "overview" && (
-          <div className="space-y-6">
-            {/* Welcome */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-              <h2 className="text-lg font-black text-gray-900 mb-2">Welcome to DSM Portal</h2>
+      {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW â•â•â•â•â•â•â•â•â•â•â• */}
+      {activeSection === "overview" && (
+        <div className="space-y-6">
+          {/* Welcome */}
+          <Card>
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                  <BookOpen size={22} />
+                </div>
+                <h2 className="text-lg font-black text-gray-900">Welcome to DSM Portal</h2>
+              </div>
               <p className="text-gray-600 text-sm leading-relaxed">
                 As a Distribution Sales Manager (DSM), you oversee multiple DSOs and manage the entire activation pipeline. This guide will walk you through every feature of the DSM portal, from assigning activations to monitoring your team&apos;s performance.
               </p>
             </div>
+          </Card>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { label: "Activation Types", value: "4", icon: Zap, color: "text-blue-600 bg-blue-50" },
-                { label: "Verification Steps", value: "3", icon: Shield, color: "text-amber-600 bg-amber-50" },
-                { label: "DSO Management", value: "4", icon: Users, color: "text-green-600 bg-green-50" },
-                { label: "Networks", value: "4", icon: Wifi, color: "text-purple-600 bg-purple-50" },
-              ].map((s) => (
-                <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
-                  <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center mb-3`}>
-                    <s.icon size={18} />
-                  </div>
-                  <p className="text-2xl font-black text-gray-900">{s.value}</p>
-                  <p className="text-gray-500 text-xs">{s.label}</p>
-                </div>
-              ))}
-            </div>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Activation Types" value="4" icon={Zap} iconClass="bg-blue-50 text-blue-600" />
+            <StatCard label="Verification Steps" value="3" icon={Shield} iconClass="bg-amber-50 text-amber-600" />
+            <StatCard label="DSO Management" value="4" icon={Users} iconClass="bg-green-50 text-green-600" />
+            <StatCard label="Networks" value="4" icon={Wifi} iconClass="bg-purple-50 text-purple-600" />
+          </div>
 
-            {/* Activation Flow Overview */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          {/* Activation Flow Overview */}
+          <Card>
+            <div className="p-6">
               <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                 <Target size={16} className="text-[#C8A951]" /> Activation Flow Overview
               </h3>
@@ -282,36 +282,38 @@ export default function DSMGuidelinePage() {
                 ))}
               </div>
             </div>
+          </Card>
 
-            {/* Card Links */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { key: "new-sim" as Section, title: "New SIM Activation", desc: "Activate new SIM cards for customers", icon: Plus, color: "blue" },
-                { key: "mnp" as Section, title: "MNP Process", desc: "Transfer numbers from other networks", icon: ArrowRightLeft, color: "purple" },
-                { key: "replacement" as Section, title: "SIM Replacement", desc: "Replace damaged or lost SIMs", icon: Repeat, color: "orange" },
-                { key: "byn" as Section, title: "BYN Registration", desc: "Register devices on the network", icon: Hash, color: "teal" },
-                { key: "dso-management" as Section, title: "DSO Management", desc: "Manage your DSO team and assignments", icon: Users, color: "green" },
-                { key: "verification" as Section, title: "Verification Process", desc: "BVS, FCA, and IFCA verification steps", icon: Shield, color: "amber" },
-              ].map((card) => (
-                <button
-                  key={card.key}
-                  onClick={() => { setActiveSection(card.key); setExpandedStep(null); setExpandedVerification(null); setExpandedDsoMgmt(null); }}
-                  className={`bg-white rounded-2xl border border-gray-200 p-5 text-left hover:shadow-lg transition-all group`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className={`w-12 h-12 rounded-xl bg-${card.color}-50 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <card.icon size={22} className={`text-${card.color}-600`} />
-                    </div>
-                    <ChevronRight size={16} className="text-gray-400 group-hover:text-gray-600 mt-1" />
+          {/* Card Links */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { key: "new-sim" as Section, title: "New SIM Activation", desc: "Activate new SIM cards for customers", icon: Plus, color: "blue" },
+              { key: "mnp" as Section, title: "MNP Process", desc: "Transfer numbers from other networks", icon: ArrowRightLeft, color: "purple" },
+              { key: "replacement" as Section, title: "SIM Replacement", desc: "Replace damaged or lost SIMs", icon: Repeat, color: "orange" },
+              { key: "byn" as Section, title: "BYN Registration", desc: "Register devices on the network", icon: Hash, color: "teal" },
+              { key: "dso-management" as Section, title: "DSO Management", desc: "Manage your DSO team and assignments", icon: Users, color: "green" },
+              { key: "verification" as Section, title: "Verification Process", desc: "BVS, FCA, and IFCA verification steps", icon: Shield, color: "amber" },
+            ].map((card) => (
+              <button
+                key={card.key}
+                onClick={() => { setActiveSection(card.key); setExpandedStep(null); setExpandedVerification(null); setExpandedDsoMgmt(null); }}
+                className="bg-white rounded-2xl border border-slate-200 p-5 text-left hover:shadow-lg transition-all group"
+              >
+                <div className="flex items-start justify-between">
+                  <div className={`w-12 h-12 rounded-xl ${secOf(card.color).light} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <card.icon size={22} className={secOf(card.color).text} />
                   </div>
-                  <h3 className="text-sm font-black text-gray-900 mt-3">{card.title}</h3>
-                  <p className="text-gray-500 text-xs mt-1">{card.desc}</p>
-                </button>
-              ))}
-            </div>
+                  <ChevronRight size={16} className="text-gray-400 group-hover:text-gray-600 mt-1" />
+                </div>
+                <h3 className="text-sm font-black text-gray-900 mt-3">{card.title}</h3>
+                <p className="text-gray-500 text-xs mt-1">{card.desc}</p>
+              </button>
+            ))}
+          </div>
 
-            {/* Verification Overview */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          {/* Verification Overview */}
+          <Card>
+            <div className="p-6">
               <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                 <Shield size={16} className="text-amber-500" /> Verification Process Overview
               </h3>
@@ -329,38 +331,42 @@ export default function DSMGuidelinePage() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          </Card>
+        </div>
+      )}
 
-        {/* â•â•â•â•â•â•â•â•â•â•â• ACTIVATION PAGES â•â•â•â•â•â•â•â•â•â•â• */}
-        {activeSection !== "overview" && activeSection !== "verification" && activeSection !== "dso-management" && steps[activeSection] && (
-          <div className="space-y-6">
-            {(() => {
-              const data = steps[activeSection];
-              return (
-                <>
-                  {/* Title */}
-                  <div className={`bg-gradient-to-r ${data.gradient} rounded-2xl p-6 text-white`}>
+      {/* â•â•â•â•â•â•â•â•â•â•â• ACTIVATION PAGES â•â•â•â•â•â•â•â•â•â•â• */}
+      {activeSection !== "overview" && activeSection !== "verification" && activeSection !== "dso-management" && steps[activeSection] && (
+        <div className="space-y-6">
+          {(() => {
+            const data = steps[activeSection as keyof typeof steps];
+            return (
+              <>
+                {/* Title */}
+                <Card>
+                  <div className="p-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                      <div className={`w-12 h-12 rounded-xl ${secOf(data.color).light} ${secOf(data.color).text} flex items-center justify-center`}>
                         <data.icon size={24} />
                       </div>
                       <div>
-                        <h2 className="text-xl font-black">{data.title}</h2>
-                        <p className="text-white/70 text-xs mt-0.5">Step-by-step procedure guide</p>
+                        <h2 className="text-xl font-black text-gray-900">{data.title}</h2>
+                        <p className="text-gray-500 text-xs mt-0.5">Step-by-step procedure guide</p>
                       </div>
                     </div>
                   </div>
+                </Card>
 
-                  {/* Flow Diagram */}
-                  <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                {/* Flow Diagram */}
+                <Card>
+                  <div className="p-6">
                     <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                       <Zap size={16} className="text-[#C8A951]" /> Process Flow
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
                       {data.flowDiagram.map((step, i, arr) => (
                         <div key={step} className="flex items-center gap-2">
-                          <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${i === arr.length - 1 ? "bg-green-50 text-green-700" : `${data.light} ${data.textColor}`}`}>
+                          <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${i === arr.length - 1 ? "bg-green-50 text-green-700" : secOf(data.color).chip}`}>
                             {step}
                           </div>
                           {i < arr.length - 1 && <ArrowRight size={12} className="text-gray-300" />}
@@ -368,102 +374,106 @@ export default function DSMGuidelinePage() {
                       ))}
                     </div>
                   </div>
+                </Card>
 
-                  {/* Steps + Phone Mockup */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Steps */}
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-black text-gray-900">Step-by-Step Procedure</h3>
+                {/* Steps + Phone Mockup */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Steps */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-black text-gray-900">Step-by-Step Procedure</h3>
+                    {data.steps.map((s) => (
+                      <div
+                        key={s.step}
+                        className={`bg-white rounded-xl border border-slate-200 overflow-hidden transition-all ${expandedStep === s.step ? "shadow-lg border-slate-300" : "hover:shadow-md"}`}
+                      >
+                        <button
+                          onClick={() => setExpandedStep(expandedStep === s.step ? null : s.step)}
+                          className="w-full flex items-center gap-3 p-4 text-left"
+                        >
+                          <div className={`w-8 h-8 rounded-lg ${secOf(data.color).light} ${secOf(data.color).text} flex items-center justify-center text-xs font-bold shrink-0`}>
+                            {s.step}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-900">{s.title}</p>
+                            <p className="text-gray-500 text-xs truncate">{s.desc}</p>
+                          </div>
+                          {expandedStep === s.step ? <ChevronUp size={16} className="text-gray-400 shrink-0" /> : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
+                        </button>
+                        {expandedStep === s.step && (
+                          <div className="px-4 pb-4 pt-0">
+                            <div className={`p-3 rounded-lg ${secOf(data.color).light} border ${secOf(data.color).border}`}>
+                              <p className={`text-xs ${secOf(data.color).text} leading-relaxed`}>{s.detail}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Phone Mockup */}
+                  <div className="flex justify-center lg:sticky lg:top-20 lg:self-start">
+                    <PhoneMockup title={data.title}>
+                      <StepIndicator current={expandedStep || 1} total={6} />
                       {data.steps.map((s) => (
                         <div
                           key={s.step}
-                          className={`bg-white rounded-xl border border-gray-200 overflow-hidden transition-all ${expandedStep === s.step ? "shadow-lg border-blue-200" : "hover:shadow-md"}`}
+                          className={`rounded-lg p-2.5 border transition-all ${
+                            expandedStep === s.step
+                              ? `${secOf(data.color).borderS} ${secOf(data.color).light}`
+                              : "border-gray-100 bg-gray-50"
+                          }`}
                         >
-                          <button
-                            onClick={() => setExpandedStep(expandedStep === s.step ? null : s.step)}
-                            className="w-full flex items-center gap-3 p-4 text-left"
-                          >
-                            <div className={`w-8 h-8 rounded-lg ${data.light} ${data.textColor} flex items-center justify-center text-xs font-bold shrink-0`}>
-                              {s.step}
+                          <div className="flex items-center gap-2">
+                            <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
+                              expandedStep === s.step
+                                ? `${secOf(data.color).text} bg-white`
+                                : "text-gray-400 bg-gray-100"
+                            }`}>
+                              {expandedStep === s.step ? <CheckCircle2 size={12} /> : s.step}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-gray-900">{s.title}</p>
-                              <p className="text-gray-500 text-xs truncate">{s.desc}</p>
+                              <p className="text-[10px] font-bold text-gray-900">{s.title}</p>
+                              <p className="text-[9px] text-gray-400 truncate">{s.desc}</p>
                             </div>
-                            {expandedStep === s.step ? <ChevronUp size={16} className="text-gray-400 shrink-0" /> : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
-                          </button>
-                          {expandedStep === s.step && (
-                            <div className="px-4 pb-4 pt-0">
-                              <div className={`p-3 rounded-lg ${data.light} border border-${data.color}-100`}>
-                                <p className={`text-xs ${data.textColor} leading-relaxed`}>{s.detail}</p>
-                              </div>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       ))}
-                    </div>
-
-                    {/* Phone Mockup */}
-                    <div className="flex justify-center lg:sticky lg:top-20 lg:self-start">
-                      <PhoneMockup title={data.title}>
-                        <StepIndicator current={expandedStep || 1} total={6} />
-                        {data.steps.map((s) => (
-                          <div
-                            key={s.step}
-                            className={`rounded-lg p-2.5 border transition-all ${
-                              expandedStep === s.step
-                                ? `border-${data.color}-300 bg-${data.color}-50`
-                                : "border-gray-100 bg-gray-50"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                                expandedStep === s.step
-                                  ? `${data.textColor} bg-white`
-                                  : "text-gray-400 bg-gray-100"
-                              }`}>
-                                {expandedStep === s.step ? <CheckCircle2 size={12} /> : s.step}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold text-gray-900">{s.title}</p>
-                                <p className="text-[9px] text-gray-400 truncate">{s.desc}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        <div className="mt-2">
-                          <div className={`w-full py-2 rounded-lg text-center text-[10px] font-bold text-white ${
-                            expandedStep === 6 ? "bg-green-500" : "bg-gray-300"
-                          }`}>
-                            {expandedStep === 6 ? "âœ“ Submit Activation" : "Complete all steps"}
-                          </div>
+                      <div className="mt-2">
+                        <div className={`w-full py-2 rounded-lg text-center text-[10px] font-bold text-white ${
+                          expandedStep === 6 ? "bg-green-500" : "bg-gray-300"
+                        }`}>
+                          {expandedStep === 6 ? "✓ Submit Activation" : "Complete all steps"}
                         </div>
-                      </PhoneMockup>
-                    </div>
+                      </div>
+                    </PhoneMockup>
                   </div>
-                </>
-              );
-            })()}
-          </div>
-        )}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
 
-        {/* â•â•â•â•â•â•â•â•â•â•â• VERIFICATION â•â•â•â•â•â•â•â•â•â•â• */}
-        {activeSection === "verification" && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
+      {/* â•â•â•â•â•â•â•â•â•â•â• VERIFICATION â•â•â•â•â•â•â•â•â•â•â• */}
+      {activeSection === "verification" && (
+        <div className="space-y-6">
+          <Card>
+            <div className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                   <Shield size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black">Verification Process</h2>
-                  <p className="text-white/70 text-xs mt-0.5">BVS â†’ FCA â†’ IFCA verification workflow</p>
+                  <h2 className="text-xl font-black text-gray-900">Verification Process</h2>
+                  <p className="text-gray-500 text-xs mt-0.5">BVS → FCA → IFCA verification workflow</p>
                 </div>
               </div>
             </div>
+          </Card>
 
-            {/* Verification Flow */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          {/* Verification Flow */}
+          <Card>
+            <div className="p-6">
               <h3 className="text-sm font-black text-gray-900 mb-4">Complete Verification Pipeline</h3>
               <div className="flex flex-wrap items-center gap-3">
                 {[
@@ -485,115 +495,119 @@ export default function DSMGuidelinePage() {
                 ))}
               </div>
             </div>
+          </Card>
 
-            {/* Verification Details */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                {verificationSteps.map((v, vi) => (
-                  <div
-                    key={v.title}
-                    className={`bg-white rounded-xl border border-gray-200 overflow-hidden transition-all ${expandedVerification === vi ? "shadow-lg" : "hover:shadow-md"}`}
+          {/* Verification Details */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              {verificationSteps.map((v, vi) => (
+                <div
+                  key={v.title}
+                  className={`bg-white rounded-xl border border-slate-200 overflow-hidden transition-all ${expandedVerification === vi ? "shadow-lg border-slate-300" : "hover:shadow-md"}`}
+                >
+                  <button
+                    onClick={() => setExpandedVerification(expandedVerification === vi ? null : vi)}
+                    className="w-full flex items-center gap-3 p-4 text-left"
                   >
-                    <button
-                      onClick={() => setExpandedVerification(expandedVerification === vi ? null : vi)}
-                      className="w-full flex items-center gap-3 p-4 text-left"
-                    >
-                      <div className={`w-10 h-10 rounded-xl bg-${v.color}-50 text-${v.color}-600 flex items-center justify-center shrink-0`}>
-                        <v.icon size={18} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-gray-900">{v.title}</p>
-                        <p className="text-gray-400 text-xs">{v.steps.length} steps</p>
-                      </div>
-                      {expandedVerification === vi ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-                    </button>
-                    {expandedVerification === vi && (
-                      <div className="px-4 pb-4 space-y-2">
-                        {v.steps.map((step, si) => (
-                          <div key={si} className="flex items-start gap-2.5">
-                            <div className={`w-5 h-5 rounded-full bg-${v.color}-100 text-${v.color}-600 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5`}>
-                              {si + 1}
-                            </div>
-                            <p className="text-xs text-gray-600 leading-relaxed">{step}</p>
+                    <div className={`w-10 h-10 rounded-xl ${secOf(v.color).light} ${secOf(v.color).text} flex items-center justify-center shrink-0`}>
+                      <v.icon size={18} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-gray-900">{v.title}</p>
+                      <p className="text-gray-400 text-xs">{v.steps.length} steps</p>
+                    </div>
+                    {expandedVerification === vi ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                  </button>
+                  {expandedVerification === vi && (
+                    <div className="px-4 pb-4 space-y-2">
+                      {v.steps.map((step, si) => (
+                        <div key={si} className="flex items-start gap-2.5">
+                          <div className={`w-5 h-5 rounded-full ${secOf(v.color).light} ${secOf(v.color).text} flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5`}>
+                            {si + 1}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Phone Mockup for Verification */}
-              <div className="flex justify-center lg:sticky lg:top-20 lg:self-start">
-                <PhoneMockup title="Verification">
-                  <div className="space-y-2">
-                    <StepIndicator current={expandedVerification !== null ? expandedVerification + 1 : 1} total={3} />
-                    {verificationSteps.map((v, vi) => (
-                      <div
-                        key={v.title}
-                        className={`rounded-lg p-2.5 border transition-all ${
-                          expandedVerification === vi
-                            ? `border-${v.color}-300 bg-${v.color}-50`
-                            : "border-gray-100 bg-gray-50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
-                            expandedVerification === vi
-                              ? `text-${v.color}-600 bg-white`
-                              : "text-gray-400 bg-gray-100"
-                          }`}>
-                            {expandedVerification === vi ? <CheckCircle2 size={12} /> : <v.icon size={10} />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-bold text-gray-900">{v.title.split("(")[0].trim()}</p>
-                            <p className="text-[9px] text-gray-400">{v.steps.length} steps</p>
-                          </div>
+                          <p className="text-xs text-gray-600 leading-relaxed">{step}</p>
                         </div>
-                        {expandedVerification === vi && (
-                          <div className="mt-2 space-y-1 pl-2 border-l-2 border-gray-200 ml-3">
-                            {v.steps.slice(0, 4).map((step, si) => (
-                              <div key={si} className="flex items-center gap-1.5">
-                                <div className={`w-3 h-3 rounded-full bg-${v.color}-100 flex items-center justify-center`}>
-                                  <div className={`w-1.5 h-1.5 rounded-full bg-${v.color}-500`} />
-                                </div>
-                                <p className="text-[8px] text-gray-600 truncate">{step}</p>
-                              </div>
-                            ))}
-                            <p className="text-[8px] text-gray-400 pl-4">+{v.steps.length - 4} more steps</p>
-                          </div>
-                        )}
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Phone Mockup for Verification */}
+            <div className="flex justify-center lg:sticky lg:top-20 lg:self-start">
+              <PhoneMockup title="Verification">
+                <div className="space-y-2">
+                  <StepIndicator current={expandedVerification !== null ? expandedVerification + 1 : 1} total={3} />
+                  {verificationSteps.map((v, vi) => (
+                    <div
+                      key={v.title}
+                      className={`rounded-lg p-2.5 border transition-all ${
+                        expandedVerification === vi
+                          ? `${secOf(v.color).borderS} ${secOf(v.color).light}`
+                          : "border-gray-100 bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
+                          expandedVerification === vi
+                            ? `${secOf(v.color).text} bg-white`
+                            : "text-gray-400 bg-gray-100"
+                        }`}>
+                          {expandedVerification === vi ? <CheckCircle2 size={12} /> : <v.icon size={10} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold text-gray-900">{v.title.split("(")[0].trim()}</p>
+                          <p className="text-[9px] text-gray-400">{v.steps.length} steps</p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  <div className="mt-2 p-2 bg-green-50 rounded-lg text-center">
-                    <p className="text-[9px] font-bold text-green-700">âœ“ All verifications passed</p>
-                    <p className="text-[8px] text-green-500">Activation Completed</p>
-                  </div>
-                </PhoneMockup>
-              </div>
+                      {expandedVerification === vi && (
+                        <div className="mt-2 space-y-1 pl-2 border-l-2 border-gray-200 ml-3">
+                          {v.steps.slice(0, 4).map((step, si) => (
+                            <div key={si} className="flex items-center gap-1.5">
+                              <div className={`w-3 h-3 rounded-full ${secOf(v.color).light} flex items-center justify-center`}>
+                                <div className={`w-1.5 h-1.5 rounded-full ${secOf(v.color).solid}`} />
+                              </div>
+                              <p className="text-[8px] text-gray-600 truncate">{step}</p>
+                            </div>
+                          ))}
+                          <p className="text-[8px] text-gray-400 pl-4">+{v.steps.length - 4} more steps</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-2 p-2 bg-green-50 rounded-lg text-center">
+                  <p className="text-[9px] font-bold text-green-700">✓ All verifications passed</p>
+                  <p className="text-[8px] text-green-500">Activation Completed</p>
+                </div>
+              </PhoneMockup>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* â•â•â•â•â•â•â•â•â•â•â• DSO MANAGEMENT â•â•â•â•â•â•â•â•â•â•â• */}
-        {activeSection === "dso-management" && (
-          <div className="space-y-6">
-            {/* Title */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white">
+      {/* â•â•â•â•â•â•â•â•â•â•â• DSO MANAGEMENT â•â•â•â•â•â•â•â•â•â•â• */}
+      {activeSection === "dso-management" && (
+        <div className="space-y-6">
+          {/* Title */}
+          <Card>
+            <div className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
                   <Users size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black">DSO Management</h2>
-                  <p className="text-white/70 text-xs mt-0.5">Manage your Distribution Sales Officers</p>
+                  <h2 className="text-xl font-black text-gray-900">DSO Management</h2>
+                  <p className="text-gray-500 text-xs mt-0.5">Manage your Distribution Sales Officers</p>
                 </div>
               </div>
             </div>
+          </Card>
 
-            {/* DSO Management Overview */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          {/* DSO Management Overview */}
+          <Card>
+            <div className="p-6">
               <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                 <Users size={16} className="text-green-500" /> DSO Management Overview
               </h3>
@@ -614,82 +628,82 @@ export default function DSMGuidelinePage() {
                 ))}
               </div>
             </div>
+          </Card>
 
-            {/* DSO Management Steps + Phone Mockup */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Steps */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-black text-gray-900">Management Procedures</h3>
+          {/* DSO Management Steps + Phone Mockup */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Steps */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-black text-gray-900">Management Procedures</h3>
+              {dsoManagementSteps.map((s) => (
+                <div
+                  key={s.step}
+                  className={`bg-white rounded-xl border border-slate-200 overflow-hidden transition-all ${expandedDsoMgmt === s.step ? "shadow-lg border-slate-300" : "hover:shadow-md"}`}
+                >
+                  <button
+                    onClick={() => setExpandedDsoMgmt(expandedDsoMgmt === s.step ? null : s.step)}
+                    className="w-full flex items-center gap-3 p-4 text-left"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center text-xs font-bold shrink-0">
+                      {s.step}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900">{s.title}</p>
+                      <p className="text-gray-500 text-xs truncate">{s.desc}</p>
+                    </div>
+                    {expandedDsoMgmt === s.step ? <ChevronUp size={16} className="text-gray-400 shrink-0" /> : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
+                  </button>
+                  {expandedDsoMgmt === s.step && (
+                    <div className="px-4 pb-4 pt-0">
+                      <div className="p-3 rounded-lg bg-green-50 border border-green-100">
+                        <p className="text-xs text-green-600 leading-relaxed">{s.detail}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Phone Mockup */}
+            <div className="flex justify-center lg:sticky lg:top-20 lg:self-start">
+              <PhoneMockup title="DSO Management">
+                <StepIndicator current={expandedDsoMgmt || 1} total={4} />
                 {dsoManagementSteps.map((s) => (
                   <div
                     key={s.step}
-                    className={`bg-white rounded-xl border border-gray-200 overflow-hidden transition-all ${expandedDsoMgmt === s.step ? "shadow-lg border-green-200" : "hover:shadow-md"}`}
+                    className={`rounded-lg p-2.5 border transition-all ${
+                      expandedDsoMgmt === s.step
+                        ? "border-green-300 bg-green-50"
+                        : "border-gray-100 bg-gray-50"
+                    }`}
                   >
-                    <button
-                      onClick={() => setExpandedDsoMgmt(expandedDsoMgmt === s.step ? null : s.step)}
-                      className="w-full flex items-center gap-3 p-4 text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center text-xs font-bold shrink-0">
-                        {s.step}
+                    <div className="flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
+                        expandedDsoMgmt === s.step
+                          ? "text-green-600 bg-white"
+                          : "text-gray-400 bg-gray-100"
+                      }`}>
+                        {expandedDsoMgmt === s.step ? <CheckCircle2 size={12} /> : s.step}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900">{s.title}</p>
-                        <p className="text-gray-500 text-xs truncate">{s.desc}</p>
+                        <p className="text-[10px] font-bold text-gray-900">{s.title}</p>
+                        <p className="text-[9px] text-gray-400 truncate">{s.desc}</p>
                       </div>
-                      {expandedDsoMgmt === s.step ? <ChevronUp size={16} className="text-gray-400 shrink-0" /> : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
-                    </button>
-                    {expandedDsoMgmt === s.step && (
-                      <div className="px-4 pb-4 pt-0">
-                        <div className="p-3 rounded-lg bg-green-50 border border-green-100">
-                          <p className="text-xs text-green-600 leading-relaxed">{s.detail}</p>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 ))}
-              </div>
-
-              {/* Phone Mockup */}
-              <div className="flex justify-center lg:sticky lg:top-20 lg:self-start">
-                <PhoneMockup title="DSO Management">
-                  <StepIndicator current={expandedDsoMgmt || 1} total={4} />
-                  {dsoManagementSteps.map((s) => (
-                    <div
-                      key={s.step}
-                      className={`rounded-lg p-2.5 border transition-all ${
-                        expandedDsoMgmt === s.step
-                          ? "border-green-300 bg-green-50"
-                          : "border-gray-100 bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                          expandedDsoMgmt === s.step
-                            ? "text-green-600 bg-white"
-                            : "text-gray-400 bg-gray-100"
-                        }`}>
-                          {expandedDsoMgmt === s.step ? <CheckCircle2 size={12} /> : s.step}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-bold text-gray-900">{s.title}</p>
-                          <p className="text-[9px] text-gray-400 truncate">{s.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="mt-2">
-                    <div className={`w-full py-2 rounded-lg text-center text-[10px] font-bold text-white ${
-                      expandedDsoMgmt === 4 ? "bg-green-500" : "bg-gray-300"
-                    }`}>
-                      {expandedDsoMgmt === 4 ? "âœ“ Management Complete" : "Complete all steps"}
-                    </div>
+                <div className="mt-2">
+                  <div className={`w-full py-2 rounded-lg text-center text-[10px] font-bold text-white ${
+                    expandedDsoMgmt === 4 ? "bg-green-500" : "bg-gray-300"
+                  }`}>
+                    {expandedDsoMgmt === 4 ? "✓ Management Complete" : "Complete all steps"}
                   </div>
-                </PhoneMockup>
-              </div>
+                </div>
+              </PhoneMockup>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

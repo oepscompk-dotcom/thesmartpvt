@@ -2,26 +2,38 @@
 
 import { useState, useMemo, Fragment } from "react";
 import {
-  Plus, Search, Edit, Trash2, Eye, X, Save, Users, ArrowRight,
-  Filter, FileText, DollarSign, Download, ChevronLeft, ChevronRight,
-  AlertTriangle, CheckCircle2, Upload, Calculator, TrendingUp, Wallet,
-  ChevronDown, ChevronUp, Printer, Smartphone,
+  Plus, Edit, Trash2, Eye, X, Save, Users, ArrowRight,
+  FileText, DollarSign,
+  AlertTriangle, CheckCircle2, Calculator, TrendingUp, Wallet,
+  ChevronDown, ChevronUp, Download,
 } from "lucide-react";
 import { useFranchiseData, DSO, genId, genUsername, genPassword } from "@/lib/FranchiseDataContext";
 import { useDSOData } from "@/lib/DSODataContext";
+import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, QuickChip } from "@/components/ui/Badge";
+import type { ToneValue } from "@/components/ui/Badge";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 
 type Tab = "all" | "documents" | "salary" | "inactive";
 
 const PAGE_SIZE = 10;
 
-const STATUS_COLORS: Record<string, string> = {
-  Active: "bg-green-50 text-green-700 border border-green-200",
-  Inactive: "bg-amber-50 text-amber-700 border border-amber-200",
-  Suspended: "bg-red-50 text-red-700 border border-red-200",
-  Resigned: "bg-purple-50 text-purple-700 border border-purple-200",
+const getStatusTone = (status: string): ToneValue => {
+  switch (status) {
+    case "Active": return "positive";
+    case "Inactive": return "warning";
+    case "Suspended": return "negative";
+    case "Resigned": return "accent";
+    default: return "neutral";
+  }
 };
 
 const SALARY_FIELDS: { key: string; label: string; field: keyof DSO; type?: string }[] = [
@@ -433,102 +445,73 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">DSO Management</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage Direct Sales Officers</p>
-        </div>
-        <Link
-          href="/franchise/dso/create"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105"
-        >
-          <Plus size={16} /> Register DSO <ArrowRight size={14} />
-        </Link>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise" }, { label: "DSO Management" }]}
+        title="DSO Management"
+        description="Manage Direct Sales Officers"
+        actions={
+          <Link href="/franchise/dso/create">
+            <Button><Plus className="h-4 w-4" /> Register DSO <ArrowRight className="h-4 w-4" /></Button>
+          </Link>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatCard icon={Users} label="Total DSOs" value={allFiltered.length} />
+        <StatCard icon={CheckCircle2} label="Active" value={activeDSO.length} iconClass="text-green-600 bg-green-50" />
+        <StatCard icon={AlertTriangle} label="Inactive" value={inactiveDSO.length} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard icon={AlertTriangle} label="Suspended" value={suspendedDSO.length} iconClass="text-red-600 bg-red-50" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard
-          icon={<Users size={18} />}
-          label="Total DSOs"
-          value={allFiltered.length}
-          color="bg-[#0A2647]"
-          textWhite
-        />
-        <StatCard
-          icon={<CheckCircle2 size={18} />}
-          label="Active"
-          value={activeDSO.length}
-          color="bg-green-500"
-          textWhite
-        />
-        <StatCard
-          icon={<AlertTriangle size={18} />}
-          label="Inactive"
-          value={inactiveDSO.length}
-          color="bg-amber-500"
-          textWhite
-        />
-        <StatCard
-          icon={<AlertTriangle size={18} />}
-          label="Suspended"
-          value={suspendedDSO.length}
-          color="bg-red-500"
-          textWhite
-        />
-      </div>
-
-      <div className="flex flex-wrap gap-2 bg-white rounded-2xl border border-gray-200 p-2">
-        {(["all", "documents", "salary", "inactive"] as Tab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === tab
-                ? "bg-[#0A2647] text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {tab === "all" && "All DSOs"}
-            {tab === "documents" && <span className="inline-flex items-center gap-1"><FileText size={14} /> Documents</span>}
-            {tab === "salary" && <span className="inline-flex items-center gap-1"><DollarSign size={14} /> Salary</span>}
-            {tab === "inactive" && "Inactive"}
-          </button>
-        ))}
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex items-center gap-2 flex-1 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-            <Search size={16} className="text-gray-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
+      <Card className="p-1">
+        <div className="flex flex-wrap gap-1">
+          {(["all", "documents", "salary", "inactive"] as Tab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab);
                 setPage(1);
               }}
-              placeholder="Search by name, ID, code, mobile..."
-              className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full"
-            />
-          </div>
+              className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === tab
+                  ? "bg-brand-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              {tab === "all" && "All DSOs"}
+              {tab === "documents" && <span className="inline-flex items-center gap-1"><FileText className="h-4 w-4" /> Documents</span>}
+              {tab === "salary" && <span className="inline-flex items-center gap-1"><DollarSign className="h-4 w-4" /> Salary</span>}
+              {tab === "inactive" && "Inactive"}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="space-y-3 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <SearchInput
+            value={search}
+            onChange={(v) => {
+              setSearch(v);
+              setPage(1);
+            }}
+            placeholder="Search by name, ID, code, mobile..."
+            className="min-w-0"
+          />
           <div className="flex items-center gap-2">
-            <Filter size={14} className="text-gray-400" />
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#0A2647]/50"
+              className="rounded-lg border border-slate-200 bg-background px-3 py-2 text-xs text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
               placeholder="From"
             />
-            <span className="text-gray-400 text-xs">to</span>
+            <span className="text-xs text-muted-foreground">to</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#0A2647]/50"
+              className="rounded-lg border border-slate-200 bg-background px-3 py-2 text-xs text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
               placeholder="To"
             />
           </div>
@@ -537,48 +520,15 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
         {activeTab !== "salary" && activeTab !== "documents" && (
           <div className="flex flex-wrap gap-2">
             {["All", "Active", "Inactive", "Suspended"].map((s) => (
-              <button
-                key={s}
-                onClick={() => { setStatusFilter(s); setPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                  statusFilter === s
-                    ? "bg-[#0A2647] text-white border-[#0A2647]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0A2647]/30"
-                }`}
-              >
-                {s}
-              </button>
+              <QuickChip key={s} label={s} active={statusFilter === s} onClick={() => { setStatusFilter(s); setPage(1); }} />
             ))}
           </div>
         )}
+      </Card>
 
-        {activeTab !== "salary" && activeTab !== "documents" && (
-          <div className="flex items-center justify-between">
-            <p className="text-gray-400 text-xs">
-              Showing {Math.min((safePage - 1) * PAGE_SIZE + 1, tabList.length)}â€“{Math.min(safePage * PAGE_SIZE, tabList.length)} of {tabList.length}
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                disabled={safePage <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <span className="text-xs font-bold text-gray-700 px-2">
-                {safePage}/{totalPages}
-              </span>
-              <button
-                disabled={safePage >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {(activeTab === "all" || activeTab === "inactive") && (
+        <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+      )}
 
       {activeTab === "all" && (
         <AllDSOTab
@@ -635,32 +585,6 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-  textWhite,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  color: string;
-  textWhite: boolean;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex items-center gap-3">
-      <div className={`${color} w-10 h-10 rounded-xl flex items-center justify-center ${textWhite ? "text-white" : "text-white"}`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-gray-900 text-xl font-black">{value}</p>
-        <p className="text-gray-500 text-xs font-medium">{label}</p>
-      </div>
-    </div>
-  );
-}
-
 function AllDSOTab({
   data,
   search,
@@ -677,33 +601,33 @@ function AllDSOTab({
   onDownloadSlip: (d: DSO) => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <Card>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[800px] text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Sr.No</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Mobile</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Assigned DSM</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Salary</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-              <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+            <tr className="border-b bg-slate-50 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <th className="px-4 py-3 text-left">Sr.No</th>
+              <th className="px-4 py-3 text-left">Employee</th>
+              <th className="hidden px-4 py-3 text-left md:table-cell">Mobile</th>
+              <th className="hidden px-4 py-3 text-left lg:table-cell">Assigned DSM</th>
+              <th className="hidden px-4 py-3 text-left xl:table-cell">Salary</th>
+              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {data.map((d, idx) => (
-              <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              <tr key={d.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-[10px] font-black">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-[10px] font-bold text-brand-700">
                     {idx + 1}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600 text-xs font-bold overflow-hidden flex-shrink-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-green-50 text-xs font-bold text-green-600">
                       {d.photo ? (
-                        <img src={d.photo} alt="" className="w-full h-full object-cover" />
+                        <img src={d.photo} alt="" className="h-full w-full object-cover" />
                       ) : (
                         d.name
                           .split(" ")
@@ -712,37 +636,35 @@ function AllDSOTab({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-gray-900 text-sm font-medium truncate">{d.name}</p>
-                      <p className="text-gray-400 text-xs font-mono truncate">
+                      <p className="truncate text-sm font-medium text-foreground">{d.name}</p>
+                      <p className="truncate font-mono text-xs text-muted-foreground">
                         {d.id}
                         {d.employeeCode ? ` Â· ${d.employeeCode}` : ""}
                       </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "â€”"}</td>
-                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-sm font-mono">{d.assignedDSM || "â€”"}</td>
-                <td className="px-4 py-3 hidden xl:table-cell text-gray-600 text-sm">
+                <td className="hidden px-4 py-3 text-xs text-foreground md:table-cell">{d.mobile || "â€”"}</td>
+                <td className="hidden px-4 py-3 text-xs text-foreground lg:table-cell">{d.assignedDSM || "â€”"}</td>
+                <td className="hidden px-4 py-3 text-sm text-foreground xl:table-cell">
                   PKR {(d.salary || 0).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[d.status] || "bg-gray-50 text-gray-600"}`}>
-                    {d.status}
-                  </span>
+                  <StatusPill label={d.status} tone={getStatusTone(d.status)} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => onView(d)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View">
-                      <Eye size={14} />
+                    <button onClick={() => onView(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-blue-50 hover:text-blue-600" title="View">
+                      <Eye className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onEdit(d)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
-                      <Edit size={14} />
+                    <button onClick={() => onEdit(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-amber-50 hover:text-amber-600" title="Edit">
+                      <Edit className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onDownloadSlip(d)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Download Salary Slip">
-                      <Download size={14} />
+                    <button onClick={() => onDownloadSlip(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-green-50 hover:text-green-600" title="Download Salary Slip">
+                      <Download className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onDelete(d.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
-                      <Trash2 size={14} />
+                    <button onClick={() => onDelete(d.id)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600" title="Delete">
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </td>
@@ -752,12 +674,9 @@ function AllDSOTab({
         </table>
       </div>
       {data.length === 0 && (
-        <div className="px-6 py-12 text-center">
-          <Users size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No DSOs found</p>
-        </div>
+        <EmptyState icon={Users} title="No DSOs found" description="No DSOs found." />
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -1317,9 +1236,7 @@ function InactiveTab({
                   PKR {(d.salary || 0).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[d.status] || "bg-gray-50 text-gray-600"}`}>
-                    {d.status}
-                  </span>
+                  <StatusPill label={d.status} tone={getStatusTone(d.status)} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
@@ -1377,8 +1294,8 @@ function ViewModal({ dso, onClose }: { dso: DSO; onClose: () => void }) {
                 {dso.id}
                 {dso.employeeCode ? ` Â· ${dso.employeeCode}` : ""}
               </p>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-medium mt-1 inline-block ${STATUS_COLORS[dso.status] || ""}`}>
-                {dso.status}
+              <span className="mt-1 inline-block">
+                <StatusPill label={dso.status} tone={getStatusTone(dso.status)} />
               </span>
             </div>
           </div>

@@ -1,9 +1,18 @@
 ﻿"use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Plus, Search, Edit, Trash2, X, Save, Wrench, Package, ArrowRightLeft, Tag, Filter, Calendar, ChevronDown, ChevronUp, User, CheckCircle, Clock, RotateCcw } from "lucide-react";
+import { Plus, Search, Edit, Trash2, X, Save, Wrench, Package, ArrowRightLeft, Tag, Filter, Calendar, ChevronDown, User, CheckCircle, Clock, RotateCcw } from "lucide-react";
 import { useFranchiseData, Equipment, EquipmentItemName, EquipmentIssueRecord } from "@/lib/FranchiseDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type Tab = "list" | "issues" | "items";
 
@@ -157,198 +166,152 @@ export default function EquipmentPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Field Equipment</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage field equipment, issue/return and item names</p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "list" && (
-            <button onClick={openAdd} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-              <Plus size={16} /> Add Equipment
-            </button>
-          )}
-          {tab === "issues" && (
-            <button onClick={() => setShowIssueForm(true)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-              <Plus size={16} /> Issue Equipment
-            </button>
-          )}
-          {tab === "items" && (
-            <button onClick={() => setShowItemForm(true)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-              <Plus size={16} /> Add Item Name
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Field Equipment" }]}
+        title="Field Equipment"
+        description="Manage field equipment, issue/return and item names"
+        actions={<>
+          {tab === "list" && <Button onClick={openAdd}><Plus size={16} /> Add Equipment</Button>}
+          {tab === "issues" && <Button onClick={() => setShowIssueForm(true)}><Plus size={16} /> Issue Equipment</Button>}
+          {tab === "items" && <Button onClick={() => setShowItemForm(true)}><Plus size={16} /> Add Item Name</Button>}
+        </>}
+      />
 
-      <div className="flex gap-2 bg-white rounded-2xl border border-gray-200 p-1.5">
+      <div className="flex gap-2 rounded-xl border border-slate-200 bg-white p-1.5">
         {tabs.map((t) => (
-          <button key={t.key} onClick={() => { setTab(t.key); setSearch(""); }} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${tab === t.key ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}>
+          <Button key={t.key} size="sm" variant={tab === t.key ? "primary" : "ghost"} onClick={() => { setTab(t.key); setSearch(""); }} className="flex-1">
             <t.icon size={14} />
             {t.label}
-            <span className={`px-2 py-0.5 rounded-lg text-xs font-bold ${tab === t.key ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>{t.count}</span>
-          </button>
+            <span className={`rounded-md px-1.5 py-0.5 text-xs font-bold ${tab === t.key ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>{t.count}</span>
+          </Button>
         ))}
       </div>
 
       {tab === "list" && (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#0A2647]/10 flex items-center justify-center"><Package size={14} className="text-[#0A2647]" /></div>
-              <div><p className="text-lg font-black text-gray-900">{eqStats.total}</p><p className="text-gray-500 text-[10px]">Total</p></div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><CheckCircle size={14} className="text-green-600" /></div>
-              <div><p className="text-lg font-black text-green-600">{eqStats.available}</p><p className="text-gray-500 text-[10px]">Available</p></div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><Clock size={14} className="text-blue-600" /></div>
-              <div><p className="text-lg font-black text-blue-600">{eqStats.issued}</p><p className="text-gray-500 text-[10px]">Issued</p></div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center"><RotateCcw size={14} className="text-gray-600" /></div>
-              <div><p className="text-lg font-black text-gray-600">{eqStats.returned}</p><p className="text-gray-500 text-[10px]">Returned</p></div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center"><Trash2 size={14} className="text-red-600" /></div>
-              <div><p className="text-lg font-black text-red-600">{eqStats.damaged}</p><p className="text-gray-500 text-[10px]">Damaged</p></div>
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            <StatCard label="Total" value={eqStats.total} icon={Package} iconClass="text-brand-600 bg-brand-50" />
+            <StatCard label="Available" value={eqStats.available} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
+            <StatCard label="Issued" value={eqStats.issued} icon={Clock} iconClass="text-blue-600 bg-blue-50" />
+            <StatCard label="Returned" value={eqStats.returned} icon={RotateCcw} iconClass="text-slate-600 bg-slate-100" />
+            <StatCard label="Damaged" value={eqStats.damaged} icon={Trash2} iconClass="text-red-600 bg-red-50" />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <Search size={16} className="text-gray-400" />
-              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, ID, assigned to..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-            </div>
+            <SearchInput value={search} onChange={setSearch} placeholder="Search by name, ID, assigned to..." className="flex-1" />
             <div className="flex gap-2 flex-wrap">
               {["All", "Available", "Issued", "Returned", "Damaged"].map((s) => (
-                <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${statusFilter === s ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
-                  <span className="flex items-center gap-1.5"><Filter size={12} /> {s}</span>
-                </button>
+                <Button key={s} size="sm" variant={statusFilter === s ? "primary" : "outline"} onClick={() => setStatusFilter(s)}>
+                  <Filter size={12} /> {s}
+                </Button>
               ))}
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+          <Card>
+            <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">Sr.No</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Item Name</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Equipment ID</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Price (PKR)</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Condition</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Assigned To</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Issue Date</th>
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+                  <tr className="border-b border-slate-100 bg-muted/50">
+                    <th className="w-14 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Sr.No</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Item Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Equipment ID</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Price (PKR)</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Condition</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Assigned To</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Issue Date</th>
+                    <th className="px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredEquipment.map((e, idx) => (
-                    <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <tr key={e.id} className="border-b border-slate-100 text-sm transition-colors hover:bg-slate-50">
                       <td className="px-3 py-3 text-center">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600/10 text-xs font-black text-brand-600">{idx + 1}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-gray-900 text-sm font-medium">{e.name}</p>
+                        <p className="font-medium text-slate-900">{e.name}</p>
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs font-mono">{e.id}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-gray-900 text-sm font-medium">PKR {e.price.toLocaleString()}</td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${e.condition === "New" ? "bg-green-50 text-green-600" : e.condition === "Good" ? "bg-blue-50 text-blue-600" : e.condition === "Fair" ? "bg-amber-50 text-amber-600" : "bg-red-50 text-red-600"}`}>{e.condition}</span>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{e.id}</td>
+                      <td className="hidden px-4 py-3 font-medium text-slate-900 md:table-cell">PKR {e.price.toLocaleString()}</td>
+                      <td className="hidden px-4 py-3 md:table-cell">
+                        <StatusPill label={e.condition} tone={e.condition === "New" ? "positive" : e.condition === "Good" ? "accent" : e.condition === "Fair" ? "warning" : "negative"} />
                       </td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-gray-700 text-xs font-mono">{e.assignedTo || "â€”"}</td>
+                      <td className="hidden px-4 py-3 font-mono text-xs text-slate-700 lg:table-cell">{e.assignedTo || "\u2014"}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${e.status === "Available" ? "bg-green-50 text-green-700" : e.status === "Issued" ? "bg-blue-50 text-blue-700" : e.status === "Returned" ? "bg-gray-50 text-gray-700" : "bg-red-50 text-red-700"}`}>{e.status}</span>
+                        <StatusPill label={e.status} tone={e.status === "Available" ? "positive" : e.status === "Issued" ? "accent" : e.status === "Returned" ? "neutral" : "negative"} />
                       </td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(e.issueDate)}</td>
+                      <td className="hidden px-4 py-3 text-xs text-muted-foreground lg:table-cell">{formatDateDDMMYYYY(e.issueDate)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => openEdit(e)} className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-all" title="Edit"><Edit size={14} /></button>
-                          <button onClick={() => deleteEquipment(e.id)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-all" title="Delete"><Trash2 size={14} /></button>
+                          <button onClick={() => openEdit(e)} className="rounded-lg p-1.5 text-amber-600 transition-all hover:bg-amber-50" title="Edit"><Edit size={14} /></button>
+                          <button onClick={() => deleteEquipment(e.id)} className="rounded-lg p-1.5 text-red-600 transition-all hover:bg-red-50" title="Delete"><Trash2 size={14} /></button>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-            {filteredEquipment.length === 0 && (
-              <div className="px-6 py-12 text-center">
-                <Wrench size={32} className="text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">No equipment found</p>
-              </div>
-            )}
-          </div>
+              {filteredEquipment.length === 0 && (
+                <EmptyState icon={Wrench} title="No equipment found" description="No equipment matches your search." />
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
 
       {tab === "issues" && (
         <>
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#0A2647]/10 flex items-center justify-center"><ArrowRightLeft size={14} className="text-[#0A2647]" /></div>
-              <div><p className="text-lg font-black text-gray-900">{issueStats.total}</p><p className="text-gray-500 text-[10px]">Total</p></div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><Clock size={14} className="text-blue-600" /></div>
-              <div><p className="text-lg font-black text-blue-600">{issueStats.active}</p><p className="text-gray-500 text-[10px]">Active</p></div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><CheckCircle size={14} className="text-green-600" /></div>
-              <div><p className="text-lg font-black text-green-600">{issueStats.returned}</p><p className="text-gray-500 text-[10px]">Returned</p></div>
-            </div>
+            <StatCard label="Total" value={issueStats.total} icon={ArrowRightLeft} iconClass="text-brand-600 bg-brand-50" />
+            <StatCard label="Active" value={issueStats.active} icon={Clock} iconClass="text-blue-600 bg-blue-50" />
+            <StatCard label="Returned" value={issueStats.returned} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
           </div>
 
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-            <Search size={16} className="text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by equipment, person name or ID..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-          </div>
+          <SearchInput value={search} onChange={setSearch} placeholder="Search by equipment, person name or ID..." />
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+          <Card>
+            <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">Sr.No</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Equipment</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Person</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Role</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Issue Date</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Return Date</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+                  <tr className="border-b border-slate-100 bg-muted/50">
+                    <th className="w-14 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Sr.No</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Equipment</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Person</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Role</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Issue Date</th>
+                    <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Return Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                    <th className="px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredIssues.map((r, idx) => (
-                    <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <tr key={r.id} className="border-b border-slate-100 text-sm transition-colors hover:bg-slate-50">
                       <td className="px-3 py-3 text-center">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600/10 text-xs font-black text-brand-600">{idx + 1}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-gray-900 text-sm font-medium">{r.equipmentName}</p>
-                        <p className="text-gray-400 text-[10px] font-mono">{r.equipmentId}</p>
+                        <p className="font-medium text-slate-900">{r.equipmentName}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground">{r.equipmentId}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-gray-900 text-sm">{r.personName}</p>
-                        <p className="text-gray-400 text-[10px] font-mono">{r.personId}</p>
+                        <p className="text-slate-900">{r.personName}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground">{r.personId}</p>
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${r.personRole === "dso" ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600"}`}>{r.personRole.toUpperCase()}</span>
+                      <td className="hidden px-4 py-3 md:table-cell">
+                        <StatusPill label={r.personRole.toUpperCase()} tone={r.personRole === "dso" ? "accent" : "neutral"} />
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(r.issueDate)}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{formatDateDDMMYYYY(r.returnDate)}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{formatDateDDMMYYYY(r.issueDate)}</td>
+                      <td className="hidden px-4 py-3 text-xs text-muted-foreground md:table-cell">{formatDateDDMMYYYY(r.returnDate)}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${r.status === "Issued" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{r.status}</span>
+                        <StatusPill label={r.status} tone={r.status === "Issued" ? "accent" : "positive"} />
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
                           {r.status === "Issued" && (
-                            <button onClick={() => handleReturn(r)} className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 transition-all" title="Return"><RotateCcw size={14} /></button>
+                            <button onClick={() => handleReturn(r)} className="rounded-lg p-1.5 text-green-600 transition-all hover:bg-green-50" title="Return"><RotateCcw size={14} /></button>
                           )}
                         </div>
                       </td>
@@ -356,66 +319,57 @@ export default function EquipmentPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
-            {filteredIssues.length === 0 && (
-              <div className="px-6 py-12 text-center">
-                <ArrowRightLeft size={32} className="text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">No issue/return records</p>
-              </div>
-            )}
-          </div>
+              {filteredIssues.length === 0 && (
+                <EmptyState icon={ArrowRightLeft} title="No issue/return records" description="No issue/return records match your search." />
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
 
       {tab === "items" && (
         <>
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-            <Search size={16} className="text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search item names..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-          </div>
+          <SearchInput value={search} onChange={setSearch} placeholder="Search item names..." />
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+          <Card>
+            <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">Sr.No</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Item Name</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Category</th>
-                    <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">ID</th>
-                    <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+                  <tr className="border-b border-slate-100 bg-muted/50">
+                    <th className="w-14 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Sr.No</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Item Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Category</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">ID</th>
+                    <th className="px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {equipmentItemNames
                     .filter((n) => !search || n.name.toLowerCase().includes(search.toLowerCase()) || n.category.toLowerCase().includes(search.toLowerCase()))
                     .map((n, idx) => (
-                    <tr key={n.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <tr key={n.id} className="border-b border-slate-100 text-sm transition-colors hover:bg-slate-50">
                       <td className="px-3 py-3 text-center">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600/10 text-xs font-black text-brand-600">{idx + 1}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-900 text-sm font-medium">{n.name}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900">{n.name}</td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600">{n.category}</span>
+                        <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">{n.category}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs font-mono">{n.id}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{n.id}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center">
-                          <button onClick={() => deleteEquipmentItemName(n.id)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-all" title="Delete"><Trash2 size={14} /></button>
+                          <button onClick={() => deleteEquipmentItemName(n.id)} className="rounded-lg p-1.5 text-red-600 transition-all hover:bg-red-50" title="Delete"><Trash2 size={14} /></button>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-            {equipmentItemNames.filter((n) => !search || n.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
-              <div className="px-6 py-12 text-center">
-                <Tag size={32} className="text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">No item names added yet</p>
-              </div>
-            )}
-          </div>
+              {equipmentItemNames.filter((n) => !search || n.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
+                <EmptyState icon={Tag} title="No item names added yet" description="Add an item name to get started." />
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
 
@@ -428,45 +382,45 @@ export default function EquipmentPage() {
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Equipment ID</label><input type="text" value={form.id} onChange={(e) => setForm((p) => ({ ...p, id: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-                <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Name of Item *</label><select value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50"><option value="">Select item...</option>{equipmentItemNames.map((n) => <option key={n.id} value={n.name}>{n.name} ({n.category})</option>)}</select></div>
-                <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Price (PKR)</label><input type="number" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-                <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Condition</label><select value={form.condition} onChange={(e) => setForm((p) => ({ ...p, condition: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["New", "Good", "Fair", "Poor"].map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
-                <div ref={assignedRef} className="relative"><label className="block text-gray-500 text-xs font-medium mb-1.5">Assigned To</label>
-                  <div onClick={() => setShowAssignedDropdown(!showAssignedDropdown)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm cursor-pointer flex items-center justify-between focus-within:border-[#0A2647]/50">
-                    <span className={form.assignedTo ? "text-gray-900" : "text-gray-400"}>
+                <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Equipment ID</label><Input type="text" value={form.id} onChange={(e) => setForm((p) => ({ ...p, id: e.target.value }))} /></div>
+                <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Name of Item *</label><Select value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}><option value="">Select item...</option>{equipmentItemNames.map((n) => <option key={n.id} value={n.name}>{n.name} ({n.category})</option>)}</Select></div>
+                <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Price (PKR)</label><Input type="number" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: Number(e.target.value) }))} /></div>
+                <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Condition</label><Select value={form.condition} onChange={(e) => setForm((p) => ({ ...p, condition: e.target.value }))}>{["New", "Good", "Fair", "Poor"].map((c) => <option key={c} value={c}>{c}</option>)}</Select></div>
+                <div ref={assignedRef} className="relative"><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Assigned To</label>
+                  <div onClick={() => setShowAssignedDropdown(!showAssignedDropdown)} className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+                    <span className={form.assignedTo ? "text-slate-900" : "text-muted-foreground"}>
                       {form.assignedTo ? (() => { const p = allPersonnel.find((x) => x.id === form.assignedTo); return p ? `${p.id} - ${p.name} (${p.role.toUpperCase()})` : form.assignedTo; })() : "Type to search..."}
                     </span>
-                    <ChevronDown size={14} className="text-gray-400" />
+                    <ChevronDown size={14} className="text-muted-foreground" />
                   </div>
                   {showAssignedDropdown && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                      <div className="sticky top-0 bg-white border-b border-gray-100 p-2">
-                        <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                          <Search size={14} className="text-gray-400" />
-                          <input type="text" value={assignedToSearch} onChange={(e) => setAssignedToSearch(e.target.value)} placeholder="Search by name, ID, role..." className="bg-transparent text-gray-900 text-xs focus:outline-none w-full" autoFocus />
+                    <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                      <div className="sticky top-0 border-b border-slate-100 bg-white p-2">
+                        <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2">
+                          <Search size={14} className="text-muted-foreground" />
+                          <input type="text" value={assignedToSearch} onChange={(e) => setAssignedToSearch(e.target.value)} placeholder="Search by name, ID, role..." className="w-full bg-transparent text-xs text-slate-900 focus:outline-none" autoFocus />
                         </div>
                       </div>
                       <div className="p-1">
-                        <button onClick={() => { setForm((p) => ({ ...p, assignedTo: "" })); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="w-full text-left px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 rounded-lg transition-all">None</button>
+                        <button onClick={() => { setForm((p) => ({ ...p, assignedTo: "" })); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="w-full rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-slate-50">None</button>
                         {filteredAssignedPersonnel.map((p) => (
-                          <button key={p.id} onClick={() => { setForm((prev) => ({ ...prev, assignedTo: p.id })); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-all">
-                            <p className="text-gray-900 text-xs font-medium">{p.name}</p>
-                            <p className="text-gray-400 text-[10px] font-mono">{p.id} Â· <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
+                          <button key={p.id} onClick={() => { setForm((prev) => ({ ...prev, assignedTo: p.id })); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="w-full rounded-lg px-3 py-2 text-left transition-all hover:bg-slate-50">
+                            <p className="text-xs font-medium text-slate-900">{p.name}</p>
+                            <p className="font-mono text-[10px] text-muted-foreground">{p.id} &middot; <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
                           </button>
                         ))}
-                        {filteredAssignedPersonnel.length === 0 && <p className="text-gray-400 text-xs text-center py-2">No results</p>}
+                        {filteredAssignedPersonnel.length === 0 && <p className="py-2 text-center text-xs text-muted-foreground">No results</p>}
                       </div>
                     </div>
                   )}
                 </div>
-                <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Status</label><select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["Available", "Issued", "Returned", "Damaged"].map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
-                <div className="sm:col-span-2"><label className="block text-gray-500 text-xs font-medium mb-1.5">Notes</label><textarea value={form.assignedTo ? "" : ""} placeholder="Optional notes..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 h-20 resize-none" /></div>
+                <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Status</label><Select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}>{["Available", "Issued", "Returned", "Damaged"].map((s) => <option key={s} value={s}>{s}</option>)}</Select></div>
+                <div className="sm:col-span-2"><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Notes</label><textarea value={form.assignedTo ? "" : ""} placeholder="Optional notes..." className="h-20 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" /></div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 sticky bottom-0 bg-white">
-              <button onClick={() => { setShowForm(false); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSave} disabled={!form.name} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"><Save size={14} /> {editing ? "Update" : "Add"}</button>
+            <div className="sticky bottom-0 flex gap-3 border-t border-slate-100 bg-white px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => { setShowForm(false); setShowAssignedDropdown(false); setAssignedToSearch(""); }}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSave} disabled={!form.name}><Save size={14} /> {editing ? "Update" : "Add"}</Button>
             </div>
           </div>
         </div>
@@ -479,41 +433,41 @@ export default function EquipmentPage() {
               <h3 className="text-gray-900 font-bold flex items-center gap-2"><ArrowRightLeft size={18} /> Issue Equipment</h3>
               <button onClick={() => { setShowIssueForm(false); setShowPersonDropdown(false); setPersonSearch(""); }} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
             </div>
-            <div className="p-6 space-y-4">
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Equipment *</label><select value={issueForm.equipmentId} onChange={(e) => setIssueForm((p) => ({ ...p, equipmentId: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50"><option value="">Select equipment...</option>{equipment.filter((e) => e.status === "Available").map((e) => <option key={e.id} value={e.id}>{e.id} - {e.name}</option>)}</select></div>
-              <div ref={personRef} className="relative"><label className="block text-gray-500 text-xs font-medium mb-1.5">Issue To *</label>
-                <div onClick={() => setShowPersonDropdown(!showPersonDropdown)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm cursor-pointer flex items-center justify-between focus-within:border-[#0A2647]/50">
-                  <span className={issueForm.personId ? "text-gray-900" : "text-gray-400"}>
+            <div className="space-y-4 p-6">
+              <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Equipment *</label><Select value={issueForm.equipmentId} onChange={(e) => setIssueForm((p) => ({ ...p, equipmentId: e.target.value }))}><option value="">Select equipment...</option>{equipment.filter((e) => e.status === "Available").map((e) => <option key={e.id} value={e.id}>{e.id} - {e.name}</option>)}</Select></div>
+              <div ref={personRef} className="relative"><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Issue To *</label>
+                <div onClick={() => setShowPersonDropdown(!showPersonDropdown)} className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+                  <span className={issueForm.personId ? "text-slate-900" : "text-muted-foreground"}>
                     {issueForm.personId ? (() => { const p = allPersonnel.find((x) => x.id === issueForm.personId); return p ? `${p.id} - ${p.name} (${p.role.toUpperCase()})` : issueForm.personId; })() : "Type to search..."}
                   </span>
-                  <ChevronDown size={14} className="text-gray-400" />
+                  <ChevronDown size={14} className="text-muted-foreground" />
                 </div>
                 {showPersonDropdown && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                    <div className="sticky top-0 bg-white border-b border-gray-100 p-2">
-                      <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                        <Search size={14} className="text-gray-400" />
-                        <input type="text" value={personSearch} onChange={(e) => setPersonSearch(e.target.value)} placeholder="Search by name, ID, role..." className="bg-transparent text-gray-900 text-xs focus:outline-none w-full" autoFocus />
+                  <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                    <div className="sticky top-0 border-b border-slate-100 bg-white p-2">
+                      <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2">
+                        <Search size={14} className="text-muted-foreground" />
+                        <input type="text" value={personSearch} onChange={(e) => setPersonSearch(e.target.value)} placeholder="Search by name, ID, role..." className="w-full bg-transparent text-xs text-slate-900 focus:outline-none" autoFocus />
                       </div>
                     </div>
                     <div className="p-1">
                       {filteredIssuePersonnel.map((p) => (
-                        <button key={p.id} onClick={() => { setIssueForm((prev) => ({ ...prev, personId: p.id, personRole: p.role })); setShowPersonDropdown(false); setPersonSearch(""); }} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-all">
-                          <p className="text-gray-900 text-xs font-medium">{p.name}</p>
-                          <p className="text-gray-400 text-[10px] font-mono">{p.id} Â· <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
+                        <button key={p.id} onClick={() => { setIssueForm((prev) => ({ ...prev, personId: p.id, personRole: p.role })); setShowPersonDropdown(false); setPersonSearch(""); }} className="w-full rounded-lg px-3 py-2 text-left transition-all hover:bg-slate-50">
+                          <p className="text-xs font-medium text-slate-900">{p.name}</p>
+                          <p className="font-mono text-[10px] text-muted-foreground">{p.id} &middot; <span className={`font-bold ${p.role === "dso" ? "text-blue-600" : "text-purple-600"}`}>{p.role.toUpperCase()}</span></p>
                         </button>
                       ))}
-                      {filteredIssuePersonnel.length === 0 && <p className="text-gray-400 text-xs text-center py-2">No results</p>}
+                      {filteredIssuePersonnel.length === 0 && <p className="py-2 text-center text-xs text-muted-foreground">No results</p>}
                     </div>
                   </div>
                 )}
               </div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Role (Auto-filled)</label><div className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-900 text-sm font-bold">{issueForm.personRole === "dso" ? "DSO" : "DSM"}</div></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Notes</label><textarea value={issueForm.notes} onChange={(e) => setIssueForm((p) => ({ ...p, notes: e.target.value }))} placeholder="Optional notes..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 h-20 resize-none" /></div>
+              <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Role (Auto-filled)</label><div className="rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-bold text-slate-900">{issueForm.personRole === "dso" ? "DSO" : "DSM"}</div></div>
+              <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Notes</label><textarea value={issueForm.notes} onChange={(e) => setIssueForm((p) => ({ ...p, notes: e.target.value }))} placeholder="Optional notes..." className="h-20 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" /></div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => { setShowIssueForm(false); setShowPersonDropdown(false); setPersonSearch(""); }} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={() => { handleIssue(); setShowPersonDropdown(false); setPersonSearch(""); }} disabled={!issueForm.equipmentId || !issueForm.personId} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"><ArrowRightLeft size={14} /> Issue</button>
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => { setShowIssueForm(false); setShowPersonDropdown(false); setPersonSearch(""); }}>Cancel</Button>
+              <Button className="flex-1" onClick={() => { handleIssue(); setShowPersonDropdown(false); setPersonSearch(""); }} disabled={!issueForm.equipmentId || !issueForm.personId}><ArrowRightLeft size={14} /> Issue</Button>
             </div>
           </div>
         </div>
@@ -526,13 +480,13 @@ export default function EquipmentPage() {
               <h3 className="text-gray-900 font-bold flex items-center gap-2"><Tag size={18} /> Add Item Name</h3>
               <button onClick={() => setShowItemForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
             </div>
-            <div className="p-6 space-y-4">
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Item Name *</label><input type="text" value={itemForm.name} onChange={(e) => setItemForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Umbrella, Table, Banner..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Category</label><select value={itemForm.category} onChange={(e) => setItemForm((p) => ({ ...p, category: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["General", "Marketing", "Furniture", "Uniform", "Electronics", "Tools"].map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
+            <div className="space-y-4 p-6">
+              <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Item Name *</label><Input type="text" value={itemForm.name} onChange={(e) => setItemForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Umbrella, Table, Banner..." /></div>
+              <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Category</label><Select value={itemForm.category} onChange={(e) => setItemForm((p) => ({ ...p, category: e.target.value }))}>{["General", "Marketing", "Furniture", "Uniform", "Electronics", "Tools"].map((c) => <option key={c} value={c}>{c}</option>)}</Select></div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowItemForm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleAddItem} disabled={!itemForm.name} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272] disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"><Plus size={14} /> Add</button>
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => setShowItemForm(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleAddItem} disabled={!itemForm.name}><Plus size={14} /> Add</Button>
             </div>
           </div>
         </div>

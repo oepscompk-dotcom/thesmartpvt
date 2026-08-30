@@ -1,8 +1,14 @@
 "use client";
 
-import StatsCard from "@/components/admin/StatsCard";
-import { Building2, Users, CreditCard, TrendingUp, Wifi, AlertTriangle, DollarSign, Activity, Bell, Clock, Server, ShieldCheck, MapPin, Package } from "lucide-react";
+import Link from "next/link";
+import { Building2, Users, CreditCard, TrendingUp, AlertTriangle, DollarSign, Activity, Bell, Clock, Server, ShieldCheck, MapPin, Package, Calendar } from "lucide-react";
 import { useData } from "@/lib/DataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function DashboardPage() {
   const { franchises, employees, payments, subscriptions, notifications, auditLogs } = useData();
@@ -38,284 +44,312 @@ export default function DashboardPage() {
   const unreadNotifs = notifications.filter((n) => !n.read).length;
 
   const stats = [
-    { title: "Total Franchises", value: String(franchises.length), change: `${active} active`, changeType: "up" as const, icon: <Building2 size={20} className="text-[#C8A951]" />, color: "bg-amber-50" },
-    { title: "Active Franchises", value: String(active), change: `${franchises.length > 0 ? Math.round((active / franchises.length) * 100) : 0}%`, changeType: "up" as const, icon: <TrendingUp size={20} className="text-green-600" />, color: "bg-green-50" },
-    { title: "Total Staff", value: String(totalStaff), change: `${totalDSM} DSM · ${totalDSO} DSO`, changeType: "neutral" as const, icon: <Users size={20} className="text-blue-600" />, color: "bg-blue-50" },
-    { title: "Total Revenue", value: `PKR ${(totalPaid / 1000).toFixed(0)}K`, change: `${payments.filter((p) => p.status === "Paid").length} invoices`, changeType: "up" as const, icon: <DollarSign size={20} className="text-[#C8A951]" />, color: "bg-amber-50" },
-    { title: "Pending", value: String(pending), change: "Awaiting approval", changeType: "neutral" as const, icon: <AlertTriangle size={20} className="text-yellow-600" />, color: "bg-yellow-50" },
-    { title: "Suspended", value: String(suspended), change: "Needs attention", changeType: "down" as const, icon: <Building2 size={20} className="text-red-600" />, color: "bg-red-50" },
-    { title: "Expiring Soon", value: String(expiring.length), change: "Within 30 days", changeType: "neutral" as const, icon: <CreditCard size={20} className="text-yellow-600" />, color: "bg-yellow-50" },
-    { title: "Notifications", value: String(unreadNotifs), change: `${todayActivityCount} events today`, changeType: unreadNotifs > 0 ? "up" as const : "neutral" as const, icon: <Bell size={20} className="text-[#C8A951]" />, color: "bg-amber-50" },
+    { label: "Total Franchises", value: String(franchises.length), sub: `${active} active`, icon: Building2, iconClass: "text-blue-600 bg-blue-50" },
+    { label: "Active Franchises", value: String(active), sub: `${franchises.length > 0 ? Math.round((active / franchises.length) * 100) : 0}% of all`, icon: TrendingUp, iconClass: "text-green-600 bg-green-50" },
+    { label: "Total Staff", value: String(totalStaff), sub: `${totalDSM} DSM · ${totalDSO} DSO`, icon: Users, iconClass: "text-blue-600 bg-blue-50" },
+    { label: "Total Revenue", value: `PKR ${(totalPaid / 1000).toFixed(0)}K`, sub: `${payments.filter((p) => p.status === "Paid").length} invoices`, icon: DollarSign, iconClass: "text-amber-600 bg-amber-50" },
+    { label: "Pending", value: String(pending), sub: "Awaiting approval", icon: AlertTriangle, iconClass: "text-orange-600 bg-orange-50" },
+    { label: "Suspended", value: String(suspended), sub: "Needs attention", icon: Building2, iconClass: "text-red-600 bg-red-50" },
+    { label: "Expiring Soon", value: String(expiring.length), sub: "Within 30 days", icon: CreditCard, iconClass: "text-orange-600 bg-orange-50" },
+    { label: "Notifications", value: String(unreadNotifs), sub: `${todayActivityCount} events today`, icon: Bell, iconClass: "text-blue-600 bg-blue-50" },
   ];
+
+  const iconMap: Record<string, React.ReactNode> = {
+    auth: <Users size={14} className="text-blue-600" />,
+    update: <Building2 size={14} className="text-amber-600" />,
+    payment: <DollarSign size={14} className="text-green-600" />,
+    system: <Server size={14} className="text-purple-600" />,
+  };
+  const colorMap: Record<string, string> = {
+    auth: "bg-blue-50",
+    update: "bg-amber-50",
+    payment: "bg-green-50",
+    system: "bg-purple-50",
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Dashboard Overview</h1>
-        <p className="text-gray-500 text-sm mt-1">Welcome back. {franchises.length} franchises · {totalStaff} staff · {todayActivityCount} events today.</p>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Dashboard" }]}
+        title="Dashboard Overview"
+        description={`Welcome back. ${franchises.length} franchises · ${totalStaff} staff · ${todayActivityCount} events today.`}
+        actions={
+          <>
+            <Button variant="outline" size="sm">
+              <Calendar className="h-4 w-4" /> Last 12 Months
+            </Button>
+            <Button variant="outline" size="sm">
+              <Bell className="h-4 w-4" /> Notifications
+            </Button>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {stats.map((s) => (
-          <StatsCard key={s.title} {...s} />
+          <StatCard key={s.label} label={s.label} value={s.value} sub={s.sub} icon={s.icon} iconClass={s.iconClass} />
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-gray-900 font-bold">Revenue Overview</h3>
-            <span className="text-gray-400 text-sm">Last 12 months</span>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>Revenue Overview</CardTitle>
+            <span className="text-xs text-muted-foreground">Last 12 months</span>
+          </CardHeader>
+          <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+            <div className="flex h-48 items-end gap-2">
+              {[35, 55, 40, 70, 45, 85, 60, 75, 50, 90, 65, 80].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-full flex-1 rounded-t-lg transition-all duration-500 hover:opacity-80"
+                  style={{ height: `${h}%`, background: i === 11 ? "linear-gradient(to top, #C8A951, #D4BC6A)" : "#2563eb" }}
+                />
+              ))}
+            </div>
+            <div className="mt-3 flex justify-between">
+              {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m) => (
+                <span key={m} className="text-[10px] text-muted-foreground">{m}</span>
+              ))}
+            </div>
           </div>
-          <div className="flex items-end gap-2 h-48">
-            {[35, 55, 40, 70, 45, 85, 60, 75, 50, 90, 65, 80].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
-                <div className="w-full rounded-t-lg transition-all duration-500 hover:opacity-80" style={{ height: `${h}%`, background: i === 11 ? "linear-gradient(to top, #C8A951, #D4BC6A)" : "linear-gradient(to top, #0A2647, #205295)" }} />
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-3">
-            {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m) => (
-              <span key={m} className="text-gray-400 text-[10px]">{m}</span>
-            ))}
-          </div>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
-          <h3 className="text-gray-900 font-bold mb-6">Franchise Status</h3>
-          <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Franchise Status</CardTitle>
+          </CardHeader>
+          <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
             {[
               { label: "Active", count: active, color: "bg-green-500", pct: franchises.length > 0 ? Math.round((active / franchises.length) * 100) : 0 },
-              { label: "Pending", count: pending, color: "bg-yellow-500", pct: franchises.length > 0 ? Math.round((pending / franchises.length) * 100) : 0 },
+              { label: "Pending", count: pending, color: "bg-amber-500", pct: franchises.length > 0 ? Math.round((pending / franchises.length) * 100) : 0 },
               { label: "Suspended", count: suspended, color: "bg-red-500", pct: franchises.length > 0 ? Math.round((suspended / franchises.length) * 100) : 0 },
             ].map((s) => (
               <div key={s.label}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-gray-600 text-sm">{s.label}</span>
-                  <span className="text-gray-900 font-bold text-sm">{s.count}</span>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{s.label}</span>
+                  <span className="text-sm font-bold text-foreground">{s.count}</span>
                 </div>
-                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                   <div className={`h-full ${s.color} rounded-full transition-all duration-1000`} style={{ width: `${s.pct}%` }} />
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <h4 className="text-gray-500 text-xs font-bold uppercase mb-3 flex items-center gap-2"><MapPin size={12} /> By Province</h4>
+          <div className="border-t border-slate-100 px-4 pb-4 pt-4 sm:px-6 sm:pb-6">
+            <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground"><MapPin className="h-3 w-3 text-brand-600" /> By Province</h4>
             <div className="space-y-2">
               {Object.entries(byProvince).map(([prov, count]) => {
                 const pct = Math.round((count / franchises.length) * 100);
                 return (
                   <div key={prov} className="flex items-center gap-2">
-                    <span className="text-gray-600 text-xs w-16 truncate">{prov}</span>
-                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#0A2647] rounded-full" style={{ width: `${pct}%` }} />
+                    <span className="w-16 truncate text-xs text-muted-foreground">{prov}</span>
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-full rounded-full bg-brand-600" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="text-gray-900 text-xs font-bold w-8 text-right">{count}</span>
+                    <span className="w-8 text-right text-xs font-bold text-foreground">{count}</span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <h4 className="text-gray-500 text-xs font-bold uppercase mb-3 flex items-center gap-2"><Package size={12} /> By Package</h4>
+          <div className="border-t border-slate-100 px-4 pb-4 pt-4 sm:px-6 sm:pb-6">
+            <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground"><Package className="h-3 w-3 text-brand-600" /> By Package</h4>
             <div className="grid grid-cols-3 gap-2">
               {Object.entries(byPackage).map(([pkg, count]) => (
-                <div key={pkg} className="bg-gray-50 rounded-lg p-2 text-center">
-                  <p className="text-gray-900 text-sm font-bold">{count}</p>
-                  <p className="text-gray-400 text-[10px]">{pkg}</p>
+                <div key={pkg} className="rounded-lg bg-slate-50 p-2 text-center">
+                  <p className="text-sm font-bold text-foreground">{count}</p>
+                  <p className="text-[10px] text-muted-foreground">{pkg}</p>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Franchises Table */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="text-gray-900 font-bold">Franchises</h3>
-            <a href="/admin/franchises" className="text-[#0A2647] text-xs font-medium hover:underline">View All</a>
-          </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="overflow-hidden">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>Franchises</CardTitle>
+            <Link href="/admin/franchises" className="text-xs font-medium text-brand-700 hover:underline">View All</Link>
+          </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-3 text-gray-500 text-xs font-medium uppercase">Franchise</th>
-                  <th className="text-left px-6 py-3 text-gray-500 text-xs font-medium uppercase">Owner</th>
-                  <th className="text-left px-6 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-                  <th className="text-right px-6 py-3 text-gray-500 text-xs font-medium uppercase">Team</th>
+                <tr className="border-b border-slate-100 bg-muted/50">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Franchise</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Owner</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Team</th>
                 </tr>
               </thead>
               <tbody>
                 {franchises.slice(0, 5).map((f) => (
-                  <tr key={f.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <tr key={f.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                     <td className="px-6 py-3">
                       <div>
-                        <p className="text-gray-900 text-sm font-medium">{f.id}</p>
-                        <p className="text-gray-500 text-xs">{f.name}</p>
+                        <p className="text-sm font-medium text-foreground">{f.name}</p>
+                        <p className="font-mono text-xs text-muted-foreground">{f.id}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-gray-600 text-sm">{f.owner}</td>
+                    <td className="px-6 py-3 text-sm text-slate-600">{f.owner}</td>
                     <td className="px-6 py-3">
-                      <span className={`px-2 py-1 rounded-lg text-xs font-medium ${f.status === "Active" ? "bg-green-50 text-green-700" : f.status === "Pending" ? "bg-yellow-50 text-yellow-700" : "bg-red-50 text-red-700"}`}>{f.status}</span>
+                      <StatusPill label={f.status} tone={toneForStatus(f.status)} />
                     </td>
-                    <td className="px-6 py-3 text-gray-600 text-sm text-right">DSM:{f.dsm} DSO:{f.dso}</td>
+                    <td className="px-6 py-3 text-right text-sm text-muted-foreground">DSM:{f.dsm} DSO:{f.dso}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        {/* Right Column */}
         <div className="space-y-6">
-          {/* Expiring Packages */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-900 font-bold">Expiring Packages</h3>
-              <span className="text-yellow-700 text-xs font-medium bg-yellow-50 px-2 py-1 rounded-lg">{expiring.length} pending</span>
-            </div>
-            <div className="space-y-3">
-              {expiring.length === 0 && <p className="text-gray-400 text-sm">No packages expiring soon</p>}
+          <Card>
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle>Expiring Packages</CardTitle>
+              <StatusPill label={`${expiring.length} pending`} tone="warning" />
+            </CardHeader>
+            <div className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
+              {expiring.length === 0 && (
+                <EmptyState icon={CreditCard} title="No packages expiring soon" description="All franchise agreements are more than 30 days out." />
+              )}
               {expiring.map((f) => {
                 const days = Math.ceil((new Date(f.agreementEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                 return (
-                  <div key={f.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <div key={f.id} className="flex items-center justify-between border-b border-slate-100 py-2 last:border-0">
                     <div>
-                      <p className="text-gray-900 text-sm font-medium">{f.id}</p>
-                      <p className="text-gray-500 text-xs">{f.name}</p>
+                      <p className="text-sm font-medium text-foreground">{f.name}</p>
+                      <p className="font-mono text-xs text-muted-foreground">{f.id}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-gray-500 text-xs">{f.agreementEnd}</p>
-                      <p className={`text-xs font-medium ${days <= 7 ? "text-red-600" : "text-yellow-600"}`}>{days} days left</p>
+                      <p className="text-xs text-muted-foreground">{f.agreementEnd}</p>
+                      <p className={`text-xs font-medium ${days <= 7 ? "text-red-600" : "text-amber-600"}`}>{days} days left</p>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </Card>
 
-          {/* System Health */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-200">
-            <h3 className="text-gray-900 font-bold mb-4 flex items-center gap-2"><Server size={16} className="text-[#0A2647]" /> System Health</h3>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-green-50 rounded-xl p-3 text-center">
-                <Server size={16} className="mx-auto mb-1 text-green-600" />
-                <p className="text-lg font-black text-green-600">99.9%</p>
-                <p className="text-gray-500 text-[10px]">Uptime</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-50 text-brand-600"><Server className="h-3.5 w-3.5" /></span>
+                System Health
+              </CardTitle>
+            </CardHeader>
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="mb-4 grid grid-cols-3 gap-3">
+                <div className="rounded-lg bg-green-50 p-3 text-center">
+                  <Server size={16} className="mx-auto mb-1 text-green-600" />
+                  <p className="text-lg font-bold text-green-600">99.9%</p>
+                  <p className="text-[10px] text-muted-foreground">Uptime</p>
+                </div>
+                <div className="rounded-lg bg-blue-50 p-3 text-center">
+                  <Activity size={16} className="mx-auto mb-1 text-blue-600" />
+                  <p className="text-lg font-bold text-blue-600">{totalStaff}</p>
+                  <p className="text-[10px] text-muted-foreground">Active Users</p>
+                </div>
+                <div className="rounded-lg bg-amber-50 p-3 text-center">
+                  <Clock size={16} className="mx-auto mb-1 text-amber-600" />
+                  <p className="text-lg font-bold text-amber-600">{recentSystemEvents}</p>
+                  <p className="text-[10px] text-muted-foreground">System Events</p>
+                </div>
               </div>
-              <div className="bg-blue-50 rounded-xl p-3 text-center">
-                <Activity size={16} className="mx-auto mb-1 text-blue-600" />
-                <p className="text-lg font-black text-blue-600">{totalStaff}</p>
-                <p className="text-gray-500 text-[10px]">Active Users</p>
-              </div>
-              <div className="bg-amber-50 rounded-xl p-3 text-center">
-                <Clock size={16} className="mx-auto mb-1 text-amber-600" />
-                <p className="text-lg font-black text-amber-600">{recentSystemEvents}</p>
-                <p className="text-gray-500 text-[10px]">System Events</p>
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1 font-medium text-green-600"><ShieldCheck size={12} /> All systems operational</span>
+                <span className="text-muted-foreground">{recentLogins} logins recorded</span>
               </div>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1 text-green-600"><ShieldCheck size={12} /> All systems operational</span>
-              <span className="text-gray-400">{recentLogins} logins recorded</span>
-            </div>
-          </div>
+          </Card>
 
-          {/* Quick Stats */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-200">
-            <h3 className="text-gray-900 font-bold mb-4">Quick Stats</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-gray-50">
-                <span className="text-gray-500 text-sm">Total Revenue Collected</span>
-                <span className="text-gray-900 font-bold text-sm">PKR {totalPaid.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-gray-50">
-                <span className="text-gray-500 text-sm">Pending Payments</span>
-                <span className="text-yellow-600 font-bold text-sm">PKR {payments.filter((p) => p.status === "Pending").reduce((s, p) => s + Number(p.amount), 0).toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-gray-50">
-                <span className="text-gray-500 text-sm">Total DSMs</span>
-                <span className="text-gray-900 font-bold text-sm">{totalDSM}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-gray-50">
-                <span className="text-gray-500 text-sm">Total DSOs</span>
-                <span className="text-gray-900 font-bold text-sm">{totalDSO}</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-gray-500 text-sm">Package Types</span>
-                <span className="text-gray-900 font-bold text-sm">{Object.keys(byPackage).length}</span>
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Stats</CardTitle>
+            </CardHeader>
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-muted-foreground">Total Revenue Collected</span>
+                  <span className="text-sm font-bold text-foreground">PKR {totalPaid.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 py-2">
+                  <span className="text-sm text-muted-foreground">Pending Payments</span>
+                  <span className="text-sm font-bold text-amber-600">PKR {payments.filter((p) => p.status === "Pending").reduce((s, p) => s + Number(p.amount), 0).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 py-2">
+                  <span className="text-sm text-muted-foreground">Total DSMs</span>
+                  <span className="text-sm font-bold text-foreground">{totalDSM}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 py-2">
+                  <span className="text-sm text-muted-foreground">Total DSOs</span>
+                  <span className="text-sm font-bold text-foreground">{totalDSO}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 py-2">
+                  <span className="text-sm text-muted-foreground">Package Types</span>
+                  <span className="text-sm font-bold text-foreground">{Object.keys(byPackage).length}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 
-      {/* Activity Timeline */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-gray-900 font-bold flex items-center gap-2"><Activity size={16} className="text-[#0A2647]" /> Recent Activity</h3>
+      <Card className="overflow-hidden">
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-50 text-brand-600"><Activity className="h-3.5 w-3.5" /></span>
+            Recent Activity
+          </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-xs">{auditLogs.length} events</span>
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-xs text-muted-foreground">{auditLogs.length} events</span>
+            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
           </div>
-        </div>
-        <div className="divide-y divide-gray-50">
-          {auditLogs.slice(0, 8).map((log, i) => {
-            const iconMap: Record<string, React.ReactNode> = {
-              auth: <Users size={14} className="text-blue-600" />,
-              update: <Building2 size={14} className="text-amber-600" />,
-              payment: <DollarSign size={14} className="text-green-600" />,
-              system: <Server size={14} className="text-purple-600" />,
-            };
-            const colorMap: Record<string, string> = {
-              auth: "bg-blue-50",
-              update: "bg-amber-50",
-              payment: "bg-green-50",
-              system: "bg-purple-50",
-            };
-            return (
-              <div key={i} className="px-6 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors">
-                <div className={`w-8 h-8 rounded-lg ${colorMap[log.type] || "bg-gray-50"} flex items-center justify-center flex-shrink-0`}>
-                  {iconMap[log.type] || <Clock size={14} className="text-gray-500" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-900 text-sm font-medium">{log.action}</span>
-                    <span className="text-gray-400 text-xs">by {log.user}</span>
-                  </div>
-                  <p className="text-gray-500 text-xs truncate">{log.detail}</p>
-                </div>
-                <span className="text-gray-400 text-[10px] whitespace-nowrap flex-shrink-0">{log.time}</span>
+        </CardHeader>
+        <div className="divide-y divide-slate-100">
+          {auditLogs.slice(0, 8).map((log, i) => (
+            <div key={i} className="flex items-center gap-4 px-6 py-3 transition-colors hover:bg-slate-50">
+              <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${colorMap[log.type] || "bg-slate-50"}`}>
+                {iconMap[log.type] || <Clock size={14} className="text-slate-500" />}
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Notifications */}
-      {notifications.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="text-gray-900 font-bold flex items-center gap-2"><Bell size={16} className="text-[#0A2647]" /> Notifications</h3>
-            <span className="text-[#0A2647] text-xs font-medium bg-gray-50 px-2 py-1 rounded-lg">{unreadNotifs} unread</span>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4">
-            {notifications.slice(0, 4).map((n, i) => (
-              <div key={i} className={`p-3 rounded-xl ${!n.read ? "bg-blue-50/50 border border-blue-100" : "bg-gray-50"}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`w-1.5 h-1.5 rounded-full ${n.type === "warning" ? "bg-amber-500" : n.type === "success" ? "bg-green-500" : n.type === "error" ? "bg-red-500" : "bg-blue-500"}`} />
-                  <span className="text-gray-900 text-xs font-bold truncate">{n.title}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-foreground">{log.action}</span>
+                  <span className="text-xs text-muted-foreground">by {log.user}</span>
                 </div>
-                <p className="text-gray-500 text-[10px] truncate">{n.message}</p>
-                <p className="text-gray-400 text-[10px] mt-1">{n.time}</p>
+                <p className="truncate text-xs text-muted-foreground">{log.detail}</p>
+              </div>
+              <span className="flex-shrink-0 whitespace-nowrap font-mono text-xs text-muted-foreground">{log.time}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {notifications.length > 0 && (
+        <Card className="overflow-hidden">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-50 text-brand-600"><Bell className="h-3.5 w-3.5" /></span>
+              Notifications
+            </CardTitle>
+            <StatusPill label={`${unreadNotifs} unread`} tone="brand" />
+          </CardHeader>
+          <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
+            {notifications.slice(0, 4).map((n, i) => (
+              <div key={i} className={`rounded-lg border p-3 ${!n.read ? "border-brand-100 bg-brand-50/50" : "border-slate-100 bg-slate-50"}`}>
+                <div className="mb-1 flex items-center gap-2">
+                  <span className={`h-1.5 w-1.5 rounded-full ${n.type === "warning" ? "bg-amber-500" : n.type === "success" ? "bg-green-500" : n.type === "error" ? "bg-red-500" : "bg-brand-500"}`} />
+                  <span className="truncate text-xs font-bold text-foreground">{n.title}</span>
+                </div>
+                <p className="truncate text-[10px] text-muted-foreground">{n.message}</p>
+                <p className="mt-1 text-[10px] text-muted-foreground/80">{n.time}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Save, User, Phone, Briefcase, Key, Smartphone, Target, DollarSign, Building2, FileText, Shield, CheckCircle, Camera, AlertTriangle, Search, X as XIcon } from "lucide-react";
@@ -185,13 +185,13 @@ export default function DSOCreatePage() {
     const val = getVal(field);
     const isRequired = REQUIRED_FIELDS.some((rf) => rf.field === field);
     const hasError = errorFields.has(field);
-    const borderClass = hasError ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50";
+    const borderClass = hasError ? "border-red-400 bg-red-50" : "border-slate-200 bg-slate-50";
 
     if (type === "select") {
       return (
         <div>
-          <label className="block text-gray-500 text-xs font-medium mb-1.5">{label}{(opts?.required || isRequired) && " *"}</label>
-          <select value={val || ""} onChange={(e) => set(field, e.target.value)} className={`w-full px-4 py-2.5 ${borderClass} border rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50`}>
+          <label className="block text-slate-500 text-xs font-medium mb-1.5">{label}{(opts?.required || isRequired) && " *"}</label>
+          <select value={val || ""} onChange={(e) => set(field, e.target.value)} className={`w-full px-4 py-2.5 ${borderClass} border rounded-lg text-slate-900 text-sm focus:outline-none focus:border-brand-500/50`}>
             <option value="">Select...</option>
             {opts?.options?.map((o: string) => <option key={o} value={o}>{o}</option>)}
           </select>
@@ -202,8 +202,8 @@ export default function DSOCreatePage() {
     if (type === "toggle") {
       return (
         <div className="flex items-center justify-between py-2">
-          <span className="text-gray-700 text-sm">{label}</span>
-          <button type="button" onClick={() => set(field, !val)} className={`w-11 h-6 rounded-full relative transition-colors ${val ? "bg-[#0A2647]" : "bg-gray-300"}`}>
+          <span className="text-slate-700 text-sm">{label}</span>
+          <button type="button" onClick={() => set(field, !val)} className={`w-11 h-6 rounded-full relative transition-colors ${val ? "bg-brand-600" : "bg-gray-300"}`}>
             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${val ? "left-6" : "left-1"}`} />
           </button>
         </div>
@@ -211,33 +211,33 @@ export default function DSOCreatePage() {
     }
     return (
       <div>
-        <label className="block text-gray-500 text-xs font-medium mb-1.5">{label}{(opts?.required || isRequired) && " *"}</label>
-        <input type={type} value={val || ""} onChange={(e) => set(field, type === "number" ? Number(e.target.value) : e.target.value)} disabled={opts?.disabled} placeholder={opts?.placeholder || ""} className={`w-full px-4 py-2.5 ${borderClass} border rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50 disabled:opacity-60`} />
+        <label className="block text-slate-500 text-xs font-medium mb-1.5">{label}{(opts?.required || isRequired) && " *"}</label>
+        <input type={type} value={val || ""} onChange={(e) => set(field, type === "number" ? Number(e.target.value) : e.target.value)} disabled={opts?.disabled} placeholder={opts?.placeholder || ""} className={`w-full px-4 py-2.5 ${borderClass} border rounded-lg text-slate-900 text-sm focus:outline-none focus:border-brand-500/50 disabled:opacity-60`} />
         {hasError && <p className="text-red-500 text-[10px] mt-1 flex items-center gap-1"><AlertTriangle size={10} /> Required</p>}
-        {opts?.hint && <p className="text-gray-400 text-xs mt-1">{opts?.hint}</p>}
+        {opts?.hint && <p className="text-slate-400 text-xs mt-1">{opts?.hint}</p>}
       </div>
     );
   };
 
   const SectionTitle = ({ icon: Icon, title }: { icon: any; title: string }) => (
-    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
-      <div className="w-8 h-8 rounded-lg bg-[#0A2647]/10 flex items-center justify-center"><Icon size={16} className="text-[#0A2647]" /></div>
-      <h3 className="text-gray-900 font-bold text-sm">{title}</h3>
+    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+      <div className="w-8 h-8 rounded-lg bg-brand-600/10 flex items-center justify-center"><Icon size={16} className="text-brand-600" /></div>
+      <h3 className="text-slate-900 font-bold text-sm">{title}</h3>
     </div>
   );
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
-        <Link href="/franchise/dso" className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"><ArrowLeft size={20} /></Link>
+        <Link href="/franchise/dso" className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors"><ArrowLeft size={20} /></Link>
         <div>
-          <h1 className="text-2xl font-black text-gray-900">{isEditMode ? "Edit DSO" : "DSO Registration"}</h1>
-          <p className="text-gray-500 text-sm mt-1">Step {step + 1} of {STEPS.length} â€” {STEPS[step].label}</p>
+          <h1 className="text-2xl font-black text-slate-900">{isEditMode ? "Edit DSO" : "DSO Registration"}</h1>
+          <p className="text-slate-500 text-sm mt-1">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
         </div>
       </div>
 
       {showErrors && errors.length > 0 && (
-        <div className="bg-red-50 rounded-2xl border border-red-200 p-4">
+        <div className="bg-red-50 rounded-lg border border-red-200 p-4">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={18} className="text-red-600" />
             <h3 className="text-red-800 font-bold text-sm">{errors.length} Required Field{errors.length > 1 ? "s" : ""} Missing</h3>
@@ -254,17 +254,17 @@ export default function DSOCreatePage() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-4">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-gray-500 text-xs font-medium">Progress</span>
-          <span className="text-[#0A2647] text-xs font-bold">{progress}%</span>
+          <span className="text-slate-500 text-xs font-medium">Progress</span>
+          <span className="text-brand-600 text-xs font-bold">{progress}%</span>
         </div>
-        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-[#0A2647] rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
+        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-brand-600 rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
         <div className="flex gap-1 mt-3 overflow-x-auto pb-1">
           {STEPS.map((s, i) => {
             const hasErr = errors.some((e) => e.step === i);
             return (
-              <button key={i} onClick={() => setStep(i)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all ${i === step ? "bg-[#0A2647] text-white" : hasErr ? "bg-red-50 text-red-600 border border-red-200" : i < step ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+              <button key={i} onClick={() => setStep(i)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all ${i === step ? "bg-brand-600 text-white" : hasErr ? "bg-red-50 text-red-600 border border-red-200" : i < step ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"}`}>
                 {i < step ? <CheckCircle size={10} /> : hasErr ? <AlertTriangle size={10} /> : <s.icon size={10} />}
                 {s.label}
               </button>
@@ -273,7 +273,7 @@ export default function DSOCreatePage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-6">
         {step === 0 && (
           <div className="space-y-6">
             <SectionTitle icon={User} title="Personal Information" />
@@ -290,13 +290,13 @@ export default function DSOCreatePage() {
               {renderField("Nationality", "nationality", "text")}
             </div>
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                {form.photo ? <img src={form.photo} alt="Photo" className="w-full h-full object-cover" /> : <Camera size={24} className="text-gray-400" />}
+              <div className="w-20 h-20 rounded-lg bg-slate-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                {form.photo ? <img src={form.photo} alt="Photo" className="w-full h-full object-cover" /> : <Camera size={24} className="text-slate-400" />}
               </div>
               <div>
-                <label className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 cursor-pointer inline-block mb-1">Upload Photo</label>
+                <label className="px-4 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-200 cursor-pointer inline-block mb-1">Upload Photo</label>
                 <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                <p className="text-gray-400 text-xs">Passport size photo (max 5MB)</p>
+                <p className="text-slate-400 text-xs">Passport size photo (max 5MB)</p>
               </div>
             </div>
           </div>
@@ -349,8 +349,8 @@ export default function DSOCreatePage() {
         {step === 3 && (
           <div className="space-y-6">
             <SectionTitle icon={Key} title="Login Information" />
-            <div className="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-4">
-              <p className="text-blue-700 text-xs font-medium">Credentials auto-generated. Customize below.</p>
+            <div className="bg-brand-50 rounded-lg p-4 border border-brand-200 mb-4">
+              <p className="text-brand-700 text-xs font-medium">Credentials auto-generated. Customize below.</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {renderField("Username", "username", "text", { hint: "Auto-generated" })}
@@ -362,7 +362,7 @@ export default function DSOCreatePage() {
         {step === 4 && (
           <div className="space-y-6">
             <SectionTitle icon={Smartphone} title="Device Assignment" />
-            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 mb-4">
+            <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 mb-4">
               <p className="text-amber-700 text-xs font-medium">Device can be assigned later from Device Management.</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -378,8 +378,8 @@ export default function DSOCreatePage() {
         {step === 5 && (
           <div className="space-y-6">
             <SectionTitle icon={Smartphone} title="SIM Allocation Limits" />
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">New SIM Limits</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">New SIM Limits</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {renderField("Jazz", "newSimLimits.jazz", "number")}
                 {renderField("Zong", "newSimLimits.zong", "number")}
@@ -387,8 +387,8 @@ export default function DSOCreatePage() {
                 {renderField("Telenor", "newSimLimits.telenor", "number")}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">HLR SIM Limits</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">HLR SIM Limits</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {renderField("Jazz HLR", "hlrSimLimits.jazz", "number")}
                 {renderField("Zong HLR", "hlrSimLimits.zong", "number")}
@@ -402,8 +402,8 @@ export default function DSOCreatePage() {
         {step === 6 && (
           <div className="space-y-6">
             <SectionTitle icon={Target} title="Targets" />
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">Daily Target</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">Daily Target</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {renderField("New SIM", "dailyTargets.newSIM", "number")}
                 {renderField("MNP", "dailyTargets.mnp", "number")}
@@ -411,8 +411,8 @@ export default function DSOCreatePage() {
                 {renderField("BYN", "dailyTargets.byn", "number")}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">Monthly Target</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">Monthly Target</h4>
               <div className="grid grid-cols-3 gap-4">
                 {renderField("Activations", "monthlyTargets.activations", "number")}
                 {renderField("Revenue (PKR)", "monthlyTargets.revenue", "number")}
@@ -425,8 +425,8 @@ export default function DSOCreatePage() {
         {step === 7 && (
           <div className="space-y-6">
             <SectionTitle icon={DollarSign} title="Salary & Commission" />
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">Salary Information</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">Salary Information</h4>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {renderField("Basic Salary (PKR) *", "salary", "number")}
                 {renderField("Fuel Allowance (PKR)", "fuelAllowance", "number")}
@@ -435,8 +435,8 @@ export default function DSOCreatePage() {
                 {renderField("Residence Allowance (PKR)", "residenceAllowance", "number")}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">Commission Rates (Rs. per activation)</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">Commission Rates (Rs. per activation)</h4>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {renderField("New SIM BVS (Rs.)", "newSimBvs", "number")}
                 {renderField("New SIM FCA (Rs.)", "newSimFca", "number")}
@@ -454,8 +454,8 @@ export default function DSOCreatePage() {
                 {renderField("Other Commission (Rs.)", "otherCommission", "number")}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">Bonuses & Deductions</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">Bonuses & Deductions</h4>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {renderField("Target Bonus (PKR)", "targetBonus", "number")}
                 {renderField("Performance Bonus (PKR)", "bonus", "number")}
@@ -489,9 +489,9 @@ export default function DSOCreatePage() {
             <SectionTitle icon={FileText} title="Employee Documents" />
             <div className="grid sm:grid-cols-2 gap-4">
               {["cnicFront", "cnicBack", "educationalCert", "experienceCert"].map((doc) => (
-                <div key={doc} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                  <p className="text-gray-700 text-sm font-medium mb-2">{doc.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}</p>
-                  <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
+                <div key={doc} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                  <p className="text-slate-700 text-sm font-medium mb-2">{doc.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}</p>
+                  <label className="px-3 py-2 bg-white text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer inline-block">Upload</label>
                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
@@ -509,9 +509,9 @@ export default function DSOCreatePage() {
               {renderField("Agreement Date", "agreements.agreementDate", "date")}
               {renderField("Expiry Date", "agreements.agreementExpiry", "date")}
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <p className="text-gray-700 text-sm font-medium mb-2">Agreement PDF</p>
-              <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload Agreement</label>
+            <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+              <p className="text-slate-700 text-sm font-medium mb-2">Agreement PDF</p>
+              <label className="px-3 py-2 bg-white text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer inline-block">Upload Agreement</label>
               <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
@@ -527,9 +527,9 @@ export default function DSOCreatePage() {
               {renderField("Amount (PKR)", "agreements.stampAmount", "number")}
               {renderField("Issue Date", "agreements.stampDate", "date")}
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <p className="text-gray-700 text-sm font-medium mb-2">Stamp Paper Copy</p>
-              <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload Stamp Paper</label>
+            <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+              <p className="text-slate-700 text-sm font-medium mb-2">Stamp Paper Copy</p>
+              <label className="px-3 py-2 bg-white text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer inline-block">Upload Stamp Paper</label>
               <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
@@ -549,9 +549,9 @@ export default function DSOCreatePage() {
               {renderField("Relationship", "guarantor.relationship", "select", { options: RELATIONSHIPS })}
             </div>
             <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-gray-700 text-sm font-medium mb-2">Guarantee Letter</p>
-                <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
+              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <p className="text-slate-700 text-sm font-medium mb-2">Guarantee Letter</p>
+                <label className="px-3 py-2 bg-white text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer inline-block">Upload</label>
                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -561,9 +561,9 @@ export default function DSOCreatePage() {
                 }} />
                 {(form.guarantor as any)?.guaranteeLetter && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-gray-700 text-sm font-medium mb-2">Guarantor CNIC Front</p>
-                <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
+              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <p className="text-slate-700 text-sm font-medium mb-2">Guarantor CNIC Front</p>
+                <label className="px-3 py-2 bg-white text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer inline-block">Upload</label>
                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -573,9 +573,9 @@ export default function DSOCreatePage() {
                 }} />
                 {(form.guarantor as any)?.cnicFront && <p className="text-green-600 text-xs mt-2 flex items-center gap-1"><CheckCircle size={12} /> Uploaded</p>}
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-gray-700 text-sm font-medium mb-2">Guarantor CNIC Back</p>
-                <label className="px-3 py-2 bg-white text-gray-600 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer inline-block">Upload</label>
+              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <p className="text-slate-700 text-sm font-medium mb-2">Guarantor CNIC Back</p>
+                <label className="px-3 py-2 bg-white text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer inline-block">Upload</label>
                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -608,8 +608,8 @@ export default function DSOCreatePage() {
         {step === 11 && (
           <div className="space-y-6">
             <SectionTitle icon={Shield} title="System Permissions" />
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">Sales Module</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">Sales Module</h4>
               <div className="grid sm:grid-cols-2 gap-2">
                 {renderField("New SIM", "permissions.newSIM", "toggle")}
                 {renderField("MNP", "permissions.mnp", "toggle")}
@@ -617,8 +617,8 @@ export default function DSOCreatePage() {
                 {renderField("BYN", "permissions.byn", "toggle")}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h4 className="text-gray-900 font-bold text-sm mb-3">Other Modules</h4>
+            <div className="rounded-lg border border-slate-200 bg-white shadow-sm p-4">
+              <h4 className="text-slate-900 font-bold text-sm mb-3">Other Modules</h4>
               <div className="grid sm:grid-cols-2 gap-2">
                 {renderField("Wallet", "permissions.wallet", "toggle")}
                 {renderField("Attendance", "permissions.attendance", "toggle")}
@@ -647,15 +647,15 @@ export default function DSOCreatePage() {
               ];
               const docsUploaded = docs.filter((d) => d.ok).length;
               return (
-                <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
+                <div className="rounded-lg bg-brand-50 border border-brand-200 p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-blue-900 font-bold text-sm">Documents Uploaded</h4>
+                    <h4 className="text-brand-900 font-bold text-sm">Documents Uploaded</h4>
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${docsUploaded === docs.length ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>{docsUploaded}/{docs.length}</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {docs.map((d) => (
                       <span key={d.name} className={`text-[10px] font-medium px-2 py-1 rounded-lg ${d.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-                        {d.ok ? "âœ“" : "âœ—"} {d.name}
+                        {d.ok ? "✓" : "✗"} {d.name}
                       </span>
                     ))}
                   </div>
@@ -664,42 +664,42 @@ export default function DSOCreatePage() {
             })()}
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <h4 className="text-gray-900 font-bold text-xs uppercase">Personal</h4>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <h4 className="text-slate-900 font-bold text-xs uppercase">Personal</h4>
+                <div className="bg-slate-50 rounded-lg p-4 space-y-2">
                   <InfoRow label="DSO ID" value={form.id} />
-                  <InfoRow label="Name" value={form.name || "â€”"} err={!form.name} />
-                  <InfoRow label="Father Name" value={form.fatherName || "â€”"} err={!form.fatherName} />
-                  <InfoRow label="CNIC" value={form.cnic || "â€”"} err={!form.cnic} />
-                  <InfoRow label="Mobile" value={form.mobile || "â€”"} err={!form.mobile} />
-                  <InfoRow label="Gender" value={form.gender || "â€”"} />
-                  <InfoRow label="DOB" value={form.dob || "â€”"} />
+                  <InfoRow label="Name" value={form.name || "—"} err={!form.name} />
+                  <InfoRow label="Father Name" value={form.fatherName || "—"} err={!form.fatherName} />
+                  <InfoRow label="CNIC" value={form.cnic || "—"} err={!form.cnic} />
+                  <InfoRow label="Mobile" value={form.mobile || "—"} err={!form.mobile} />
+                  <InfoRow label="Gender" value={form.gender || "—"} />
+                  <InfoRow label="DOB" value={form.dob || "—"} />
                 </div>
               </div>
               <div className="space-y-3">
-                <h4 className="text-gray-900 font-bold text-xs uppercase">Employment</h4>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <InfoRow label="DSM" value={form.assignedDSM || "â€”"} />
+                <h4 className="text-slate-900 font-bold text-xs uppercase">Employment</h4>
+                <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                  <InfoRow label="DSM" value={form.assignedDSM || "—"} />
                   <InfoRow label="Franchise" value={form.franchiseId} />
-                  <InfoRow label="Designation" value={form.designation || "â€”"} />
+                  <InfoRow label="Designation" value={form.designation || "—"} />
                   <InfoRow label="Status" value={form.status} />
-                  <InfoRow label="Joining Date" value={form.joiningDate || "â€”"} />
+                  <InfoRow label="Joining Date" value={form.joiningDate || "—"} />
                   <InfoRow label="Salary" value={`PKR ${form.salary.toLocaleString()}`} err={form.salary === 0} />
                 </div>
               </div>
               <div className="space-y-3">
-                <h4 className="text-gray-900 font-bold text-xs uppercase">Contact & Address</h4>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <InfoRow label="Email" value={form.email || "â€”"} />
-                  <InfoRow label="WhatsApp" value={form.whatsapp || "â€”"} />
-                  <InfoRow label="Province" value={form.province || "â€”"} />
-                  <InfoRow label="City" value={form.city || "â€”"} />
-                  <InfoRow label="Area" value={form.area || "â€”"} />
-                  <InfoRow label="Address" value={form.address || "â€”"} />
+                <h4 className="text-slate-900 font-bold text-xs uppercase">Contact & Address</h4>
+                <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                  <InfoRow label="Email" value={form.email || "—"} />
+                  <InfoRow label="WhatsApp" value={form.whatsapp || "—"} />
+                  <InfoRow label="Province" value={form.province || "—"} />
+                  <InfoRow label="City" value={form.city || "—"} />
+                  <InfoRow label="Area" value={form.area || "—"} />
+                  <InfoRow label="Address" value={form.address || "—"} />
                 </div>
               </div>
               <div className="space-y-3">
-                <h4 className="text-gray-900 font-bold text-xs uppercase">Targets</h4>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <h4 className="text-slate-900 font-bold text-xs uppercase">Targets</h4>
+                <div className="bg-slate-50 rounded-lg p-4 space-y-2">
                   <InfoRow label="Daily New SIM" value={String(form.dailyTargets?.newSIM || 0)} />
                   <InfoRow label="Daily MNP" value={String(form.dailyTargets?.mnp || 0)} />
                   <InfoRow label="Daily Replacement" value={String(form.dailyTargets?.replacement || 0)} />
@@ -708,14 +708,14 @@ export default function DSOCreatePage() {
                 </div>
               </div>
               <div className="space-y-3">
-                <h4 className="text-gray-900 font-bold text-xs uppercase">Salary Breakdown</h4>
+                <h4 className="text-slate-900 font-bold text-xs uppercase">Salary Breakdown</h4>
                   <div className="space-y-1.5 text-xs">
                     <InfoRow label="Basic" value={`PKR ${form.salary.toLocaleString()}`} />
                     <InfoRow label="Fuel Allow." value={`PKR ${(form.fuelAllowance || 0).toLocaleString()}`} />
                     <InfoRow label="Mobile Allow." value={`PKR ${(form.mobileAllowance || 0).toLocaleString()}`} />
                     <InfoRow label="Daily Allow." value={`PKR ${(form.dailyAllowance || 0).toLocaleString()}`} />
                     <InfoRow label="Residence Allow." value={`PKR ${(form.residenceAllowance || 0).toLocaleString()}`} />
-                    <div className="border-t border-gray-200 pt-1.5 mt-1.5">
+                    <div className="border-t border-slate-200 pt-1.5 mt-1.5">
                       <InfoRow label="New SIM BVS" value={`PKR ${(form.newSimBvs || 0).toLocaleString()}`} />
                       <InfoRow label="New SIM FCA" value={`PKR ${(form.newSimFca || 0).toLocaleString()}`} />
                       <InfoRow label="New SIM IFCA" value={`PKR ${(form.newSimIfca || 0).toLocaleString()}`} />
@@ -731,11 +731,11 @@ export default function DSOCreatePage() {
                       <InfoRow label="Hike Comm." value={`PKR ${(form.hikeCommission || 0).toLocaleString()}`} />
                       <InfoRow label="Other Comm." value={`PKR ${(form.otherCommission || 0).toLocaleString()}`} />
                     </div>
-                    <div className="border-t border-gray-200 pt-1.5 mt-1.5">
+                    <div className="border-t border-slate-200 pt-1.5 mt-1.5">
                       <InfoRow label="Target Bonus" value={`PKR ${(form.targetBonus || 0).toLocaleString()}`} />
                       <InfoRow label="Bonus" value={`PKR ${(form.bonus || 0).toLocaleString()}`} />
                     </div>
-                    <div className="border-t border-gray-200 pt-1.5 mt-1.5 text-red-600">
+                    <div className="border-t border-slate-200 pt-1.5 mt-1.5 text-red-600">
                       <InfoRow label="Advance" value={`-PKR ${(form.advanceSalary || 0).toLocaleString()}`} />
                       <InfoRow label="Loan" value={`-PKR ${(form.loanDeduction || 0).toLocaleString()}`} />
                       <InfoRow label="Other Ded." value={`-PKR ${(form.otherDeduction || 0).toLocaleString()}`} />
@@ -743,8 +743,8 @@ export default function DSOCreatePage() {
                   </div>
               </div>
               <div className="space-y-3">
-                <h4 className="text-gray-900 font-bold text-xs uppercase">Credentials</h4>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <h4 className="text-slate-900 font-bold text-xs uppercase">Credentials</h4>
+                <div className="bg-slate-50 rounded-lg p-4 space-y-2">
                   <InfoRow label="Username" value={form.username} />
                   <InfoRow label="Password" value={form.password} />
                   <InfoRow label="Retailer ID" value={form.retailerId || "Auto from mobile"} />
@@ -756,16 +756,16 @@ export default function DSOCreatePage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <button onClick={() => { setStep((s) => Math.max(0, s - 1)); setShowErrors(false); }} disabled={step === 0} className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 font-medium text-sm rounded-xl hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        <button onClick={() => { setStep((s) => Math.max(0, s - 1)); setShowErrors(false); }} disabled={step === 0} className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-700 font-medium text-sm rounded-lg hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
           <ArrowLeft size={16} /> Previous
         </button>
         <div className="flex gap-2">
           {step < STEPS.length - 1 ? (
-            <button onClick={() => { setStep((s) => Math.min(STEPS.length - 1, s + 1)); setShowErrors(false); }} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
+            <button onClick={() => { setStep((s) => Math.min(STEPS.length - 1, s + 1)); setShowErrors(false); }} className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white font-bold text-sm rounded-lg hover:bg-brand-700 shadow-md transition-all hover:scale-105">
               Next <ArrowRight size={16} />
             </button>
           ) : (
-            <button onClick={handleSave} disabled={saved} className="inline-flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white font-bold text-sm rounded-xl hover:bg-green-700 shadow-md transition-all hover:scale-105 disabled:opacity-60">
+            <button onClick={handleSave} disabled={saved} className="inline-flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white font-bold text-sm rounded-lg hover:bg-green-700 shadow-md transition-all hover:scale-105 disabled:opacity-60">
               {saved ? <><CheckCircle size={16} /> {isEditMode ? "Updated!" : "Created!"}</> : <><Save size={16} /> {isEditMode ? "Update DSO Account" : "Create DSO Account"}</>}
             </button>
           )}
@@ -795,31 +795,31 @@ function DSMSearchSelect({ dsms, value, onChange }: { dsms: any[]; value: string
 
   return (
     <div ref={ref} className="relative">
-      <label className="block text-gray-500 text-xs font-medium mb-1.5">Assigned DSM</label>
+      <label className="block text-slate-500 text-xs font-medium mb-1.5">Assigned DSM</label>
       <button type="button" onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-xl text-sm transition-all border-gray-200 bg-gray-50 ${open ? "border-[#0A2647]/50 ring-2 ring-[#0A2647]/10" : ""}`}>
-        <span className={selected ? "text-gray-900" : "text-gray-400"}>{selected ? `${selected.name} (${selected.id})` : "Select DSM..."}</span>
-        <Search size={14} className="text-gray-400" />
+        className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-lg text-sm transition-all border-slate-200 bg-slate-50 ${open ? "border-brand-500/50 ring-2 ring-brand-500/10" : ""}`}>
+        <span className={selected ? "text-slate-900" : "text-slate-400"}>{selected ? `${selected.name} (${selected.id})` : "Select DSM..."}</span>
+        <Search size={14} className="text-slate-400" />
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
-            <Search size={14} className="text-gray-400" />
+        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-64 overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-100">
+            <Search size={14} className="text-slate-400" />
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or ID..."
-              className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+              className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
               autoFocus />
-            {search && <button onClick={() => setSearch("")}><XIcon size={14} className="text-gray-400 hover:text-gray-600" /></button>}
+            {search && <button onClick={() => setSearch("")}><XIcon size={14} className="text-slate-400 hover:text-slate-600" /></button>}
           </div>
           <div className="overflow-y-auto max-h-48">
             {filtered.length === 0 ? (
-              <div className="px-3 py-6 text-center text-gray-400 text-sm">{dsms.length === 0 ? "No DSMs available" : "No DSMs match your search"}</div>
+              <div className="px-3 py-6 text-center text-slate-400 text-sm">{dsms.length === 0 ? "No DSMs available" : "No DSMs match your search"}</div>
             ) : (
               filtered.map((d) => (
                 <button key={d.id} type="button" onClick={() => { onChange(d.id); setOpen(false); setSearch(""); }}
-                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 transition-colors flex items-center justify-between ${d.id === value ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700"}`}>
-                  <span>{d.name} <span className="text-gray-400 font-mono text-xs">({d.id})</span></span>
-                  {d.id === value && <CheckCircle size={14} className="text-blue-600" />}
+                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-brand-50 transition-colors flex items-center justify-between ${d.id === value ? "bg-brand-50 text-brand-700 font-medium" : "text-slate-700"}`}>
+                  <span>{d.name} <span className="text-slate-400 font-mono text-xs">({d.id})</span></span>
+                  {d.id === value && <CheckCircle size={14} className="text-brand-600" />}
                 </button>
               ))
             )}
@@ -833,8 +833,8 @@ function DSMSearchSelect({ dsms, value, onChange }: { dsms: any[]; value: string
 function InfoRow({ label, value, err }: { label: string; value: string; err?: boolean }) {
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-gray-500">{label}</span>
-      <span className={`font-medium ${err ? "text-red-600" : "text-gray-900"}`}>{value}{err ? " âš " : ""}</span>
+      <span className="text-slate-500">{label}</span>
+      <span className={`font-medium ${err ? "text-red-600" : "text-slate-900"}`}>{value}{err ? " ⚠" : ""}</span>
     </div>
   );
 }

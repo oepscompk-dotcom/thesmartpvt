@@ -1,13 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Eye, Users, UserCheck, Smartphone, X } from "lucide-react";
+import { Eye, Users, UserCheck, Smartphone, X } from "lucide-react";
 import { useData, Employee } from "@/lib/DataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
+import { Pagination } from "@/components/ui/Pagination";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Avatar } from "@/components/ui/Avatar";
+
+const PAGE_SIZE = 8;
 
 export default function EmployeesPage() {
   const { employees } = useData();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
+  const [page, setPage] = useState(1);
   const [viewEmployee, setViewEmployee] = useState<Employee | null>(null);
 
   const filtered = employees.filter((e) => {
@@ -16,141 +28,142 @@ export default function EmployeesPage() {
     return matchSearch && matchRole;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   const stats = { total: employees.length, dsm: employees.filter((e) => e.role === "DSM").length, dso: employees.filter((e) => e.role === "DSO").length, active: employees.filter((e) => e.status === "Active").length };
+
+  const submitSearch = (v: string) => {
+    setSearch(v);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Employee Monitoring</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 text-xs font-medium rounded-lg mr-2">View Only</span>
-          Super Admin can view but not edit employee data
-        </p>
+      <PageHeader
+        breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Employees" }]}
+        title="Employee Monitoring"
+        description="Super Admin can view but not edit employee data"
+        actions={<StatusPill tone="warning" label="View Only" />}
+      />
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Total Employees" value={stats.total} icon={Users} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="DSM Count" value={stats.dsm} icon={UserCheck} iconClass="text-blue-600 bg-blue-50" />
+        <StatCard label="DSO Count" value={stats.dso} icon={Smartphone} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Active" value={stats.active} icon={Users} iconClass="text-green-600 bg-green-50" />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Employees", value: stats.total, icon: <Users size={18} className="text-[#C8A951]" />, color: "bg-amber-50" },
-          { label: "DSM Count", value: stats.dsm, icon: <UserCheck size={18} className="text-blue-600" />, color: "bg-blue-50" },
-          { label: "DSO Count", value: stats.dso, icon: <Smartphone size={18} className="text-green-600" />, color: "bg-green-50" },
-          { label: "Active", value: stats.active, icon: <Users size={18} className="text-green-600" />, color: "bg-green-50" },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center`}>{s.icon}</div>
-              <div>
-                <p className="text-2xl font-black text-gray-900">{s.value}</p>
-                <p className="text-gray-500 text-xs">{s.label}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 flex-1 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-          <Search size={16} className="text-gray-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by ID or name..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-        </div>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <SearchInput placeholder="Search by ID or name..." value={search} onSearch={submitSearch} />
+        <div className="flex flex-wrap gap-2">
           {["All", "DSM", "DSO"].map((r) => (
-            <button key={r} onClick={() => setRoleFilter(r)} className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${roleFilter === r ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>{r}</button>
+            <Button
+              key={r}
+              size="md"
+              variant={roleFilter === r ? "primary" : "outline"}
+              onClick={() => { setRoleFilter(r); setPage(1); }}
+            >
+              {r}
+            </Button>
           ))}
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Employee</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Role</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Franchise</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Joining</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Attendance</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Performance</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Status</th>
-                <th className="text-right px-6 py-4 text-gray-500 text-xs font-medium uppercase">Action</th>
+              <tr className="border-b border-slate-100 bg-muted/50">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Employee</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Role</th>
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Franchise</th>
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Joining</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Attendance</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Performance</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Action</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((e) => (
-                <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              {paginated.map((e) => (
+                <tr key={e.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold">{e.name.split(" ").map((n) => n[0]).join("")}</div>
+                      <Avatar name={e.name} />
                       <div>
-                        <p className="text-gray-900 text-sm font-medium">{e.name}</p>
-                        <p className="text-gray-400 text-xs font-mono">{e.id}</p>
+                        <p className="text-sm font-medium text-foreground">{e.name}</p>
+                        <p className="font-mono text-xs text-muted-foreground">{e.id}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-medium ${e.role === "DSM" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{e.role}</span>
+                    <StatusPill label={e.role} tone={e.role === "DSM" ? "brand" : "positive"} />
                   </td>
-                  <td className="px-6 py-4 hidden md:table-cell text-gray-600 text-sm font-mono">{e.franchise}</td>
-                  <td className="px-6 py-4 hidden lg:table-cell text-gray-600 text-sm">{e.joining}</td>
+                  <td className="hidden px-6 py-4 font-mono text-sm text-muted-foreground md:table-cell">{e.franchise}</td>
+                  <td className="hidden px-6 py-4 text-sm text-slate-600 lg:table-cell">{e.joining}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${e.attendance >= 90 ? "bg-green-500" : e.attendance >= 70 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${e.attendance}%` }} />
+                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+                        <div className={`h-full rounded-full ${e.attendance >= 90 ? "bg-green-500" : e.attendance >= 70 ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${e.attendance}%` }} />
                       </div>
-                      <span className="text-gray-600 text-xs">{e.attendance}%</span>
+                      <span className="text-xs text-muted-foreground">{e.attendance}%</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${e.performance >= 80 ? "bg-green-500" : e.performance >= 60 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${e.performance}%` }} />
+                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+                        <div className={`h-full rounded-full ${e.performance >= 80 ? "bg-green-500" : e.performance >= 60 ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${e.performance}%` }} />
                       </div>
-                      <span className="text-gray-600 text-xs">{e.performance}%</span>
+                      <span className="text-xs text-muted-foreground">{e.performance}%</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-medium ${e.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{e.status}</span>
+                    <StatusPill label={e.status} tone={toneForStatus(e.status)} />
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => setViewEmployee(e)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View Profile"><Eye size={14} /></button>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-brand-700 hover:bg-brand-50" onClick={() => setViewEmployee(e)} title="View Profile"><Eye className="h-4 w-4" /></Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {filtered.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <Users size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No employees found</p>
-          </div>
+        {filtered.length === 0 ? (
+          <EmptyState icon={Users} title="No employees found" description="Try adjusting your search or role filter." />
+        ) : (
+          <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
         )}
-      </div>
+      </Card>
 
       {/* View Employee Modal */}
       {viewEmployee && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewEmployee(null)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">Employee Profile</h3>
-              <button onClick={() => setViewEmployee(null)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setViewEmployee(null)}>
+          <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-base font-semibold text-foreground">Employee Profile</h3>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setViewEmployee(null)} title="Close"><X className="h-4 w-4" /></Button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="text-center mb-4">
-                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-gray-500 font-bold text-xl">{viewEmployee.name.split(" ").map((n) => n[0]).join("")}</span>
+            <div className="space-y-4 p-6">
+              <div className="mb-4 text-center">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-xl font-semibold text-brand-700">
+                  {viewEmployee.name.split(" ").map((n) => n[0]).join("")}
                 </div>
-                <h4 className="text-gray-900 font-bold text-lg">{viewEmployee.name}</h4>
-                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${viewEmployee.role === "DSM" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{viewEmployee.role}</span>
+                <h4 className="text-lg font-bold text-foreground">{viewEmployee.name}</h4>
+                <div className="mt-2">
+                  <StatusPill label={viewEmployee.role} tone={viewEmployee.role === "DSM" ? "brand" : "positive"} />
+                </div>
               </div>
               {[["Employee ID", viewEmployee.id], ["Franchise", viewEmployee.franchise], ["Mobile", viewEmployee.mobile], ["Email", viewEmployee.email], ["Joining Date", viewEmployee.joining], ["Attendance", `${viewEmployee.attendance}%`], ["Performance", `${viewEmployee.performance}%`], ["Status", viewEmployee.status]].map(([label, value]) => (
-                <div key={label as string} className="flex items-center justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500 text-sm">{label}</span>
-                  <span className="text-gray-900 text-sm font-medium">{value}</span>
+                <div key={label as string} className="flex items-center justify-between gap-4 border-b border-slate-100 py-2">
+                  <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                  <span className={`text-sm font-medium text-foreground ${label === "Employee ID" ? "font-mono text-xs text-muted-foreground" : ""}`}>{value}</span>
                 </div>
               ))}
             </div>
-            <div className="px-6 py-4 border-t border-gray-100">
-              <p className="text-xs text-yellow-600 text-center">View Only — Only Franchise Admin can edit employee data</p>
+            <div className="border-t border-slate-100 px-6 py-4">
+              <p className="text-center text-xs text-amber-600">View Only — Only Franchise Admin can edit employee data</p>
             </div>
           </div>
         </div>

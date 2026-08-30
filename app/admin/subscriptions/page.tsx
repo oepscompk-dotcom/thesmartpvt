@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Edit, X, Save } from "lucide-react";
+import { Check, Edit, X, Save, Trash2 } from "lucide-react";
 import { useData, Subscription } from "@/lib/DataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 export default function SubscriptionsPage() {
   const { subscriptions, updateSubscription } = useData();
@@ -27,101 +31,97 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Subscription Packages</h1>
-        <p className="text-gray-500 text-sm mt-1">Manage subscription plans and pricing</p>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Subscriptions" }]}
+        title="Subscription Packages"
+        description="Manage subscription plans and pricing"
+      />
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid gap-6 md:grid-cols-3">
         {subscriptions.map((pkg, index) => (
-          <div key={pkg.name} className={`relative bg-white rounded-2xl border overflow-hidden transition-all hover:scale-105 ${pkg.popular ? "border-[#C8A951]/30 shadow-[0_0_30px_rgba(200,169,81,0.15)]" : "border-gray-200"}`}>
-            {pkg.popular && <div className="absolute top-0 right-0 px-3 py-1 bg-[#C8A951] text-[#0A2647] text-[10px] font-bold rounded-bl-xl">MOST POPULAR</div>}
+          <Card
+            key={pkg.name}
+            className={`relative overflow-hidden transition-all hover:scale-[1.02] ${pkg.popular ? "border-brand-600/30 shadow-[0_0_30px_rgba(37,99,235,0.12)]" : ""}`}
+          >
+            {pkg.popular && <div className="absolute right-0 top-0 rounded-bl-lg bg-brand-600 px-3 py-1 text-[10px] font-bold text-white">MOST POPULAR</div>}
             <div className={`h-1.5 bg-gradient-to-r ${pkg.color}`} />
             <div className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-gray-900 font-bold text-lg">{pkg.name}</h3>
-                <button onClick={() => openEdit(index)} className="p-1.5 text-gray-400 hover:text-[#C8A951] hover:bg-[#C8A951]/10 rounded-lg transition-all"><Edit size={14} /></button>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-foreground">{pkg.name}</h3>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-brand-700 hover:bg-brand-50" onClick={() => openEdit(index)} title="Edit package"><Edit className="h-4 w-4" /></Button>
               </div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-sm text-gray-500">PKR</span>
-                <span className="text-3xl font-black text-gray-900">{Number(pkg.price).toLocaleString()}</span>
-                <span className="text-gray-400 text-sm">{pkg.period}</span>
+              <div className="mb-6 flex items-baseline gap-1">
+                <span className="text-sm text-muted-foreground">PKR</span>
+                <span className="text-3xl font-bold text-foreground">{Number(pkg.price).toLocaleString()}</span>
+                <span className="text-sm text-muted-foreground">{pkg.period}</span>
               </div>
-              <div className="space-y-3 mb-6">
+              <div className="mb-6 space-y-3">
                 {pkg.features.map((f) => (
-                  <div key={f} className="flex items-center gap-2 text-gray-600 text-sm">
-                    <Check size={14} className="text-green-500 flex-shrink-0" />
+                  <div key={f} className="flex items-center gap-2 text-sm text-slate-600">
+                    <Check size={14} className="flex-shrink-0 text-green-500" />
                     <span>{f}</span>
                   </div>
                 ))}
               </div>
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-gray-500 text-sm">
-                  <span className="text-gray-900 font-bold">{pkg.franchises}</span> franchises subscribed
+              <div className="border-t border-slate-100 pt-4">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-bold text-foreground">{pkg.franchises}</span> franchises subscribed
                 </p>
               </div>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
       {/* Edit Modal */}
       {editIndex !== null && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setEditIndex(null)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">Edit Package</h3>
-              <button onClick={() => setEditIndex(null)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setEditIndex(null)}>
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-base font-semibold text-foreground">Edit Package</h3>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setEditIndex(null)} title="Close"><X className="h-4 w-4" /></Button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-6">
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Package Name</label>
-                <input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Package Name</label>
+                <Input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Price (PKR)</label>
-                  <input type="text" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Price (PKR)</label>
+                  <Input type="text" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-gray-500 text-xs font-medium mb-1.5">Period</label>
-                  <input type="text" value={form.period} onChange={(e) => setForm((p) => ({ ...p, period: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Period</label>
+                  <Input type="text" value={form.period} onChange={(e) => setForm((p) => ({ ...p, period: e.target.value }))} />
                 </div>
               </div>
               <div>
-                <label className="block text-gray-500 text-xs font-medium mb-1.5">Franchises Subscribed</label>
-                <input type="number" value={form.franchises} onChange={(e) => setForm((p) => ({ ...p, franchises: Number(e.target.value) }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Franchises Subscribed</label>
+                <Input type="number" value={form.franchises} onChange={(e) => setForm((p) => ({ ...p, franchises: Number(e.target.value) }))} />
               </div>
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-gray-500 text-xs font-medium">Features</label>
-                  <button onClick={addFeature} type="button" className="text-[#0A2647] text-xs font-medium hover:underline">+ Add Feature</button>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label className="text-xs font-medium text-muted-foreground">Features</label>
+                  <Button variant="ghost" size="sm" onClick={addFeature} type="button" className="text-brand-700 hover:bg-brand-50">+ Add Feature</Button>
                 </div>
                 <div className="space-y-2">
                   {form.features.map((f, fi) => (
                     <div key={fi} className="flex items-center gap-2">
-                      <input type="text" value={f} onChange={(e) => updateFeature(fi, e.target.value)} className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
-                      <button onClick={() => removeFeature(fi)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={12} /></button>
+                      <Input type="text" value={f} onChange={(e) => updateFeature(fi, e.target.value)} className="flex-1" />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => removeFeature(fi)} title="Remove feature"><Trash2 className="h-3.5 w-3.5" /></Button>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setEditIndex(null)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition-all">Cancel</button>
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] transition-all inline-flex items-center justify-center gap-2"><Save size={14} /> Save Changes</button>
+            <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
+              <Button variant="outline" className="flex-1" onClick={() => setEditIndex(null)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSave}><Save className="h-4 w-4" /> Save Changes</Button>
             </div>
           </div>
         </div>
       )}
     </div>
-  );
-}
-
-function Trash2({ size, className }: { size: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" />
-    </svg>
   );
 }

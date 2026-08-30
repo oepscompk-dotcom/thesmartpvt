@@ -1,18 +1,20 @@
 ﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { useDSMData } from "@/lib/DSMDataContext";
 import { apiLoadById } from "@/lib/api";
 import {
   DollarSign, Calendar, Smartphone, ArrowRightLeft, Repeat, Hash,
   TrendingUp, TrendingDown, Wallet, AlertTriangle, CheckCircle2,
-  ChevronDown, ChevronUp, ArrowLeft, Download, Users
+  ChevronDown, ChevronUp, Download, Users
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { QuickChip } from "@/components/ui/Badge";
 
 export default function DSMSalaryDetailPage() {
   const { activations, dsos, auth, hydrated } = useDSMData();
-  const router = useRouter();
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [salaryData, setSalaryData] = useState<Record<string, number>>({});
@@ -340,292 +342,266 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
     );
   }
 
-  return (
+return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push("/dsm/dashboard")} className="p-2 hover:bg-gray-100 rounded-xl transition-all">
-            <ArrowLeft size={18} className="text-gray-500" />
+      <PageHeader
+        breadcrumb={[{ label: "DSM" }, { label: "Salary" }, { label: "Salary Detail" }]}
+        title="Salary Detail"
+        description="Month-wise salary breakdown &amp; payslips"
+        actions={
+          <button onClick={downloadSlip}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#C8A951] px-4 py-2 text-sm font-bold text-[#0A2647] shadow-sm transition-colors hover:bg-[#d4b560]">
+            <Download className="h-4 w-4" /> Download Slip
           </button>
-          <div>
-            <h1 className="text-2xl font-black text-gray-900">Salary Detail</h1>
-            <p className="text-gray-500 text-sm mt-1">Month-wise salary breakdown &amp; payslips</p>
-          </div>
-        </div>
-        <button onClick={downloadSlip}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#C8A951] text-[#0A2647] font-bold text-sm rounded-xl hover:bg-[#d4b560] shadow-md transition-all">
-          <Download size={14} /> Download Slip
-        </button>
-      </div>
+        }
+      />
 
-      {/* Month Selector + Summary */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+      <Card>
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-5">
           <div className="flex items-center gap-2">
-            <Calendar size={16} className="text-gray-400" />
+            <Calendar className="h-4 w-4 text-muted-foreground" />
             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:border-[#0057FF]/50" />
+              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-foreground outline-none focus:border-brand-500" />
           </div>
           <div className="flex flex-wrap gap-2">
             {allMonths.slice(0, 6).map((m) => {
               const label = new Date(m + "-01").toLocaleDateString("en-US", { month: "short", year: "2-digit" });
               return (
-                <button key={m} onClick={() => setSelectedMonth(m)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedMonth === m ? "bg-[#0057FF] text-white shadow" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-                  {label}
-                </button>
+                <QuickChip key={m} label={label} active={selectedMonth === m} onClick={() => setSelectedMonth(m)} />
               );
             })}
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap gap-3 text-xs">
-          <span className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 text-blue-700 rounded-lg font-bold">
-            <Smartphone size={12} /> {currentPayroll.newSimCount} New
+        <div className="mt-2 flex flex-wrap gap-2 px-5 pb-5 text-xs">
+          <span className="flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 font-bold text-blue-700">
+            <Smartphone className="h-3 w-3" /> {currentPayroll.newSimCount} New
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1.5 bg-purple-50 text-purple-700 rounded-lg font-bold">
-            <ArrowRightLeft size={12} /> {currentPayroll.mnpCount} MNP
+          <span className="flex items-center gap-1 rounded-lg bg-purple-50 px-2.5 py-1.5 font-bold text-purple-700">
+            <ArrowRightLeft className="h-3 w-3" /> {currentPayroll.mnpCount} MNP
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1.5 bg-orange-50 text-orange-700 rounded-lg font-bold">
-            <Repeat size={12} /> {currentPayroll.replacementCount} Repl.
+          <span className="flex items-center gap-1 rounded-lg bg-orange-50 px-2.5 py-1.5 font-bold text-orange-700">
+            <Repeat className="h-3 w-3" /> {currentPayroll.replacementCount} Repl.
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-50 text-teal-700 rounded-lg font-bold">
-            <Hash size={12} /> {currentPayroll.bynCount} BYN
+          <span className="flex items-center gap-1 rounded-lg bg-teal-50 px-2.5 py-1.5 font-bold text-teal-700">
+            <Hash className="h-3 w-3" /> {currentPayroll.bynCount} BYN
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1.5 bg-green-50 text-green-700 rounded-lg font-bold">
-            <CheckCircle2 size={12} /> {currentPayroll.totalActs} Team Acts
+          <span className="flex items-center gap-1 rounded-lg bg-green-50 px-2.5 py-1.5 font-bold text-green-700">
+            <CheckCircle2 className="h-3 w-3" /> {currentPayroll.totalActs} Team Acts
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1.5 bg-[#0057FF]/10 text-[#0057FF] rounded-lg font-bold">
-            <DollarSign size={12} /> Net: PKR {currentPayroll.netPay.toLocaleString()}
+          <span className="flex items-center gap-1 rounded-lg bg-brand-50 px-2.5 py-1.5 font-bold text-brand-700">
+            <DollarSign className="h-3 w-3" /> Net: PKR {currentPayroll.netPay.toLocaleString()}
           </span>
         </div>
-      </div>
+      </Card>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-        {[
-          { label: "Basic Salary", value: `PKR ${currentPayroll.basic.toLocaleString()}`, icon: DollarSign, color: "bg-[#0057FF]" },
-          { label: "Allowances", value: `PKR ${currentPayroll.totalAllowances.toLocaleString()}`, icon: Wallet, color: "bg-green-500" },
-          { label: "Commission", value: `PKR ${currentPayroll.totalCommission.toLocaleString()}`, icon: TrendingUp, color: "bg-purple-500" },
-          { label: "Bonuses", value: `PKR ${(currentPayroll.targetBonus + currentPayroll.perfBonus).toLocaleString()}`, icon: TrendingUp, color: "bg-blue-500" },
-          { label: "Deductions", value: `-PKR ${currentPayroll.totalDeductions.toLocaleString()}`, icon: AlertTriangle, color: "bg-red-500" },
-          { label: "Net Pay", value: `PKR ${currentPayroll.netPay.toLocaleString()}`, icon: CheckCircle2, color: "bg-[#C8A951]" },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-3">
-            <div className={`w-8 h-8 rounded-xl ${s.color} flex items-center justify-center mb-2`}>
-              <s.icon size={14} className="text-white" />
-            </div>
-            <p className="text-gray-400 text-[10px] font-medium">{s.label}</p>
-            <p className="text-gray-900 text-sm font-black">{s.value}</p>
-          </div>
-        ))}
+        <StatCard label="Basic Salary" value={`PKR ${currentPayroll.basic.toLocaleString()}`} icon={DollarSign} iconClass="bg-brand-50 text-brand-600" />
+        <StatCard label="Allowances" value={`PKR ${currentPayroll.totalAllowances.toLocaleString()}`} icon={Wallet} iconClass="bg-green-50 text-green-600" />
+        <StatCard label="Commission" value={`PKR ${currentPayroll.totalCommission.toLocaleString()}`} icon={TrendingUp} iconClass="bg-purple-50 text-purple-600" />
+        <StatCard label="Bonuses" value={`PKR ${(currentPayroll.targetBonus + currentPayroll.perfBonus).toLocaleString()}`} icon={TrendingUp} iconClass="bg-blue-50 text-blue-600" />
+        <StatCard label="Deductions" value={`-PKR ${currentPayroll.totalDeductions.toLocaleString()}`} icon={AlertTriangle} iconClass="bg-red-50 text-red-600" />
+        <StatCard label="Net Pay" value={`PKR ${currentPayroll.netPay.toLocaleString()}`} icon={CheckCircle2} iconClass="bg-amber-50 text-amber-600" />
       </div>
 
-      {/* Detailed Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Earnings */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2">
-            <DollarSign size={16} className="text-[#0057FF]" /> Earnings
+        <Card className="p-5">
+          <h3 className="flex items-center gap-2 text-sm font-bold mb-4 text-foreground">
+            <DollarSign className="h-4 w-4 text-brand-600" /> Earnings
           </h3>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">Basic Salary</span>
-              <span className="font-bold text-gray-900">PKR {currentPayroll.basic.toLocaleString()}</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">Basic Salary</span>
+              <span className="font-bold text-foreground">PKR {currentPayroll.basic.toLocaleString()}</span>
             </div>
-            <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mt-3 mb-1">Allowances</div>
-            {currentPayroll.fuel > 0 && <div className="flex justify-between py-1"><span className="text-gray-500">Fuel</span><span>PKR {currentPayroll.fuel.toLocaleString()}</span></div>}
-            {currentPayroll.mobile > 0 && <div className="flex justify-between py-1"><span className="text-gray-500">Mobile</span><span>PKR {currentPayroll.mobile.toLocaleString()}</span></div>}
-            {currentPayroll.daily > 0 && <div className="flex justify-between py-1"><span className="text-gray-500">Daily</span><span>PKR {currentPayroll.daily.toLocaleString()}</span></div>}
-            {currentPayroll.residence > 0 && <div className="flex justify-between py-1"><span className="text-gray-500">Residence</span><span>PKR {currentPayroll.residence.toLocaleString()}</span></div>}
-            <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-3 mb-1">Allowances</div>
+            {currentPayroll.fuel > 0 && <div className="flex justify-between py-1"><span className="text-muted-foreground">Fuel</span><span>PKR {currentPayroll.fuel.toLocaleString()}</span></div>}
+            {currentPayroll.mobile > 0 && <div className="flex justify-between py-1"><span className="text-muted-foreground">Mobile</span><span>PKR {currentPayroll.mobile.toLocaleString()}</span></div>}
+            {currentPayroll.daily > 0 && <div className="flex justify-between py-1"><span className="text-muted-foreground">Daily</span><span>PKR {currentPayroll.daily.toLocaleString()}</span></div>}
+            {currentPayroll.residence > 0 && <div className="flex justify-between py-1"><span className="text-muted-foreground">Residence</span><span>PKR {currentPayroll.residence.toLocaleString()}</span></div>}
+            <div className="flex justify-between border-t border-slate-200 pt-2 font-bold">
               <span>Total Allowances</span>
               <span>PKR {currentPayroll.totalAllowances.toLocaleString()}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Commission */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2">
-            <TrendingUp size={16} className="text-purple-500" /> Commission (Team)
+        <Card className="p-5">
+          <h3 className="flex items-center gap-2 text-sm font-bold mb-4 text-foreground">
+            <TrendingUp className="h-4 w-4 text-purple-500" /> Commission (Team)
           </h3>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">New SIM <span className="text-blue-500 font-bold">({currentPayroll.newSimCount})</span> Ã— Rs.{currentPayroll.newSimRate}</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">New SIM <span className="font-bold text-blue-500">({currentPayroll.newSimCount})</span> &times; Rs.{currentPayroll.newSimRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.newSimComm.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">MNP <span className="text-purple-500 font-bold">({currentPayroll.mnpCount})</span> Ã— Rs.{currentPayroll.mnpRate}</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">MNP <span className="font-bold text-purple-500">({currentPayroll.mnpCount})</span> &times; Rs.{currentPayroll.mnpRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.mnpComm.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">Replacement <span className="text-orange-500 font-bold">({currentPayroll.replacementCount})</span> Ã— Rs.{currentPayroll.replacementRate}</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">Replacement <span className="font-bold text-orange-500">({currentPayroll.replacementCount})</span> &times; Rs.{currentPayroll.replacementRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.replComm.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">BYN <span className="text-teal-500 font-bold">({currentPayroll.bynCount})</span> Ã— Rs.{currentPayroll.bynRate}</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">BYN <span className="font-bold text-teal-500">({currentPayroll.bynCount})</span> &times; Rs.{currentPayroll.bynRate}</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.bynComm.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">Hike Commission</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">Hike Commission</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.hike.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">Other Commission</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">Other Commission</span>
               <span className="font-medium text-green-600">PKR {currentPayroll.other.toLocaleString()}</span>
             </div>
-            <div className="pt-2 flex justify-between font-bold">
+            <div className="flex justify-between pt-2 font-bold">
               <span>Total Commission</span>
               <span className="text-green-600">PKR {currentPayroll.totalCommission.toLocaleString()}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Bonuses & Deductions */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2">
-            <Wallet size={16} className="text-[#C8A951]" /> Bonuses &amp; Deductions
+        <Card className="p-5">
+          <h3 className="flex items-center gap-2 text-sm font-bold mb-4 text-foreground">
+            <Wallet className="h-4 w-4 text-[#C8A951]" /> Bonuses &amp; Deductions
           </h3>
           <div className="space-y-3 text-sm">
-            <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Bonuses</div>
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">Target Bonus</span>
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Bonuses</div>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">Target Bonus</span>
               <span className="font-medium text-blue-600">PKR {currentPayroll.targetBonus.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-gray-50">
-              <span className="text-gray-500">Performance Bonus</span>
+            <div className="flex justify-between border-b border-slate-100 py-1.5">
+              <span className="text-muted-foreground">Performance Bonus</span>
               <span className="font-medium text-blue-600">PKR {currentPayroll.perfBonus.toLocaleString()}</span>
             </div>
-            <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mt-3 mb-1">Deductions</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-3 mb-1">Deductions</div>
             <div className="flex justify-between py-1">
-              <span className="text-gray-500">Advance Salary</span>
+              <span className="text-muted-foreground">Advance Salary</span>
               <span className="text-red-500">-PKR {currentPayroll.advance.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-gray-500">Loan Deduction</span>
+              <span className="text-muted-foreground">Loan Deduction</span>
               <span className="text-red-500">-PKR {currentPayroll.loan.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-gray-500">Other Deduction</span>
+              <span className="text-muted-foreground">Other Deduction</span>
               <span className="text-red-500">-PKR {currentPayroll.otherDed.toLocaleString()}</span>
             </div>
-            <div className="border-t border-gray-200 pt-2 flex justify-between text-red-500 font-bold">
+            <div className="flex justify-between border-t border-slate-200 pt-2 font-bold text-red-500">
               <span>Total Deductions</span>
               <span>-PKR {currentPayroll.totalDeductions.toLocaleString()}</span>
             </div>
           </div>
-          <div className="mt-5 p-4 bg-gradient-to-r from-[#0057FF] to-[#003DA5] rounded-xl text-white">
+          <div className="mt-5 rounded-xl bg-gradient-to-r from-brand-600 to-[#003DA5] p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/70 text-xs">Gross Pay</p>
+                <p className="text-xs text-white/70">Gross Pay</p>
                 <p className="text-lg font-bold">PKR {currentPayroll.gross.toLocaleString()}</p>
               </div>
               <div className="text-right">
-                <p className="text-white/70 text-xs">Net Payable</p>
+                <p className="text-xs text-white/70">Net Payable</p>
                 <p className="text-xl font-black text-[#C8A951]">PKR {currentPayroll.netPay.toLocaleString()}</p>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* DSO Performance for this month */}
       {dsoPerformance.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-              <Users size={16} className="text-[#0057FF]" /> DSO Team Performance &mdash; {new Date(selectedMonth + "-01").toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+        <Card className="overflow-hidden">
+          <div className="border-b border-slate-100 px-6 py-4">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Users className="h-4 w-4 text-brand-600" /> DSO Team Performance &mdash; {new Date(selectedMonth + "-01").toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">DSO</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">New SIM</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">MNP</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Repl.</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">BYN</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase font-bold">Total</th>
+                <tr className="border-b border-slate-100 bg-slate-50">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">DSO</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase text-muted-foreground hidden md:table-cell">New SIM</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase text-muted-foreground hidden md:table-cell">MNP</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase text-muted-foreground hidden md:table-cell">Repl.</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase text-muted-foreground hidden md:table-cell">BYN</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase font-bold text-muted-foreground">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {dsoPerformance.map((d, i) => (
-                  <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50">
+                  <tr key={d.id} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${i === 0 ? "bg-[#C8A951]" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-orange-400" : "bg-[#0057FF]"}`}>{i + 1}</div>
-                        <span className="text-gray-900 font-medium">{d.name}</span>
+                        <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white ${i === 0 ? "bg-[#C8A951]" : i === 1 ? "bg-slate-400" : i === 2 ? "bg-orange-400" : "bg-brand-600"}`}>{i + 1}</div>
+                        <span className="font-medium text-foreground">{d.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-600 hidden md:table-cell">{d.newSIM}</td>
-                    <td className="px-4 py-3 text-center text-gray-600 hidden md:table-cell">{d.mnp}</td>
-                    <td className="px-4 py-3 text-center text-gray-600 hidden md:table-cell">{d.replacement}</td>
-                    <td className="px-4 py-3 text-center text-gray-600 hidden md:table-cell">{d.byn}</td>
-                    <td className="px-4 py-3 text-center font-bold text-[#0057FF]">{d.activations}</td>
+                    <td className="px-4 py-3 text-center text-slate-600 hidden md:table-cell">{d.newSIM}</td>
+                    <td className="px-4 py-3 text-center text-slate-600 hidden md:table-cell">{d.mnp}</td>
+                    <td className="px-4 py-3 text-center text-slate-600 hidden md:table-cell">{d.replacement}</td>
+                    <td className="px-4 py-3 text-center text-slate-600 hidden md:table-cell">{d.byn}</td>
+                    <td className="px-4 py-3 text-center font-bold text-brand-600">{d.activations}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* Month-wise History */}
       {allMonths.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-              <Calendar size={16} className="text-[#0057FF]" /> Salary History
+        <Card className="overflow-hidden">
+          <div className="border-b border-slate-100 px-6 py-4">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Calendar className="h-4 w-4 text-brand-600" /> Salary History
             </h3>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-slate-100">
             {allMonths.map((m) => {
               const c = calcPayroll(m);
               const isExpanded = expandedMonth === m;
               const label = new Date(m + "-01").toLocaleDateString("en-US", { month: "long", year: "numeric" });
               return (
                 <div key={m}>
-                  <div className="px-6 py-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+                  <div className="flex items-center justify-between px-6 py-3 cursor-pointer transition-colors hover:bg-slate-50"
                     onClick={() => setExpandedMonth(isExpanded ? null : m)}>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#0057FF]/10 flex items-center justify-center">
-                        <Calendar size={16} className="text-[#0057FF]" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50">
+                        <Calendar className="h-4 w-4 text-brand-600" />
                       </div>
                       <div>
-                        <p className="text-gray-900 text-sm font-bold">{label}</p>
-                        <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                          <span className="flex items-center gap-1"><Smartphone size={10} />{c.newSimCount}</span>
-                          <span className="flex items-center gap-1"><ArrowRightLeft size={10} />{c.mnpCount}</span>
-                          <span className="flex items-center gap-1"><Repeat size={10} />{c.replacementCount}</span>
-                          <span className="flex items-center gap-1"><Hash size={10} />{c.bynCount}</span>
+                        <p className="text-sm font-bold text-foreground">{label}</p>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-1"><Smartphone className="h-2.5 w-2.5" />{c.newSimCount}</span>
+                          <span className="flex items-center gap-1"><ArrowRightLeft className="h-2.5 w-2.5" />{c.mnpCount}</span>
+                          <span className="flex items-center gap-1"><Repeat className="h-2.5 w-2.5" />{c.replacementCount}</span>
+                          <span className="flex items-center gap-1"><Hash className="h-2.5 w-2.5" />{c.bynCount}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-gray-900 font-black">PKR {c.netPay.toLocaleString()}</span>
-                      {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                      <span className="font-black text-foreground">PKR {c.netPay.toLocaleString()}</span>
+                      {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
                   </div>
                   {isExpanded && (
-                    <div className="px-6 py-4 bg-gray-50/80 border-t border-gray-100">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                        <div className="bg-white rounded-lg p-3 border border-gray-200">
-                          <p className="text-gray-400">Basic</p>
-                          <p className="text-gray-900 font-bold">PKR {c.basic.toLocaleString()}</p>
+                    <div className="border-t border-slate-100 bg-slate-50/80 px-6 py-4">
+                      <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="text-muted-foreground">Basic</p>
+                          <p className="font-bold text-foreground">PKR {c.basic.toLocaleString()}</p>
                         </div>
-                        <div className="bg-white rounded-lg p-3 border border-gray-200">
-                          <p className="text-gray-400">Allowances</p>
-                          <p className="text-gray-900 font-bold">PKR {c.totalAllowances.toLocaleString()}</p>
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="text-muted-foreground">Allowances</p>
+                          <p className="font-bold text-foreground">PKR {c.totalAllowances.toLocaleString()}</p>
                         </div>
-                        <div className="bg-white rounded-lg p-3 border border-gray-200">
-                          <p className="text-gray-400">Commission</p>
-                          <p className="text-green-600 font-bold">PKR {c.totalCommission.toLocaleString()}</p>
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="text-muted-foreground">Commission</p>
+                          <p className="font-bold text-green-600">PKR {c.totalCommission.toLocaleString()}</p>
                         </div>
-                        <div className="bg-white rounded-lg p-3 border border-gray-200">
-                          <p className="text-gray-400">Net Pay</p>
-                          <p className="text-[#0057FF] font-black">PKR {c.netPay.toLocaleString()}</p>
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="text-muted-foreground">Net Pay</p>
+                          <p className="font-black text-brand-600">PKR {c.netPay.toLocaleString()}</p>
                         </div>
                       </div>
                     </div>
@@ -634,7 +610,7 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
               );
             })}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

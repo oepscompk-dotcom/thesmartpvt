@@ -3,9 +3,30 @@
 import { useState, useMemo } from "react";
 import { useDSMData } from "@/lib/DSMDataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
-import { BarChart3, Search, ArrowUpDown, Smartphone, ArrowRightLeft, Repeat, Hash, CheckCircle2, Clock, Filter } from "lucide-react";
+import { BarChart3, ArrowUpDown, Smartphone, ArrowRightLeft, Repeat, Hash, CheckCircle2, Clock } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { StatusPill, QuickChip } from "@/components/ui/Badge";
+import { Card, CardContent } from "@/components/ui/Card";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type FilterTab = "all" | "New SIM" | "MNP" | "Replacement" | "BYN" | "Completed" | "Pending";
+
+const typeTone: Record<string, "positive" | "warning" | "negative" | "neutral" | "brand" | "accent"> = {
+  "New SIM": "positive",
+  "MNP": "accent",
+  "Replacement": "warning",
+  "BYN": "brand",
+};
+
+const statusTone: Record<string, "positive" | "warning" | "negative" | "neutral" | "brand" | "accent"> = {
+  "Completed": "positive",
+  "Pending BVS": "warning",
+  "Pending FCA": "warning",
+  "Pending IFCA": "negative",
+};
 
 export default function MySales() {
   const { activations } = useDSMData();
@@ -52,170 +73,110 @@ export default function MySales() {
   const replacementCount = activations.filter((a) => a.type === "Replacement").length;
   const bynCount = activations.filter((a) => a.type === "BYN").length;
 
-  const stats = [
-    { label: "Total", value: total, color: "bg-[#0057FF]" },
-    { label: "New SIM", value: newSimCount, color: "bg-emerald-500" },
-    { label: "MNP", value: mnpCount, color: "bg-purple-500" },
-    { label: "Replacement", value: replacementCount, color: "bg-amber-500" },
-    { label: "BYN", value: bynCount, color: "bg-cyan-500" },
-    { label: "Completed", value: completedCount, color: "bg-green-500" },
-    { label: "Pending", value: pendingCount, color: "bg-red-500" },
-  ];
-
-  const getTypeBadge = (type: string) => {
-    const styles: Record<string, string> = {
-      "New SIM": "bg-emerald-100 text-emerald-700",
-      "MNP": "bg-purple-100 text-purple-700",
-      "Replacement": "bg-amber-100 text-amber-700",
-      "BYN": "bg-cyan-100 text-cyan-700",
-    };
-    return styles[type] || "bg-gray-100 text-gray-700";
-  };
-
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      "Completed": "bg-green-100 text-green-700",
-      "Pending BVS": "bg-yellow-100 text-yellow-700",
-      "Pending FCA": "bg-orange-100 text-orange-700",
-      "Pending IFCA": "bg-red-100 text-red-700",
-    };
-    return styles[status] || "bg-gray-100 text-gray-700";
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "New SIM": return <Smartphone size={14} />;
-      case "MNP": return <ArrowRightLeft size={14} />;
-      case "Replacement": return <Repeat size={14} />;
-      case "BYN": return <Hash size={14} />;
-      default: return <Smartphone size={14} />;
-    }
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-12 h-12 bg-[#0057FF] rounded-2xl flex items-center justify-center">
-          <BarChart3 size={24} className="text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Sales</h1>
-          <p className="text-gray-500 text-sm">Overview of all your activations</p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "DSM" }, { label: "My Sales" }]}
+        title="My Sales"
+        description="Overview of all your activations"
+      />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl p-4 border border-gray-100 text-center">
-            <div className={`w-8 h-8 ${s.color} rounded-lg flex items-center justify-center mx-auto mb-2`}>
-              <span className="text-white font-bold text-sm">{s.value}</span>
-            </div>
-            <p className="text-xs font-medium text-gray-600">{s.label}</p>
-          </div>
-        ))}
+        <StatCard label="Total" value={total} icon={BarChart3} iconClass="text-brand-600 bg-brand-50" />
+        <StatCard label="New SIM" value={newSimCount} icon={Smartphone} iconClass="text-emerald-600 bg-emerald-50" />
+        <StatCard label="MNP" value={mnpCount} icon={ArrowRightLeft} iconClass="text-purple-600 bg-purple-50" />
+        <StatCard label="Replacement" value={replacementCount} icon={Repeat} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard label="BYN" value={bynCount} icon={Hash} iconClass="text-cyan-600 bg-cyan-50" />
+        <StatCard label="Completed" value={completedCount} icon={CheckCircle2} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Pending" value={pendingCount} icon={Clock} iconClass="text-red-600 bg-red-50" />
       </div>
 
-      <div className="bg-white rounded-2xl p-6 border border-gray-100">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
-          <div className="relative flex-1 w-full">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+      <Card>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
+            <SearchInput
               placeholder="Search by customer name or CNIC..."
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057FF]/20 focus:border-[#0057FF]"
+              value={searchQuery}
+              onSearch={setSearchQuery}
+              className="max-w-sm"
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSortDesc(!sortDesc)}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-medium hover:bg-gray-200 transition-all flex items-center gap-2 text-sm"
-            >
+            <Button variant="outline" onClick={() => setSortDesc(!sortDesc)}>
               <ArrowUpDown size={14} />
               {sortDesc ? "Newest" : "Oldest"}
-            </button>
+            </Button>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
-          <Filter size={14} className="text-gray-400 shrink-0" />
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                activeTab === tab.key
-                  ? "bg-[#0057FF] text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <BarChart3 size={48} className="mx-auto mb-3" />
-            <p className="font-medium">No activations found</p>
-            <p className="text-sm mt-1">Try adjusting your filters or search</p>
+          <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
+            {tabs.map((tab) => (
+              <QuickChip
+                key={tab.key}
+                label={tab.label}
+                count={tab.count}
+                active={activeTab === tab.key}
+                onClick={() => setActiveTab(tab.key)}
+              />
+            ))}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase">ID</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase">Customer</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">MSISDN</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase">Type</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Date</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase">Progress</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((a) => (
-                  <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3.5 text-sm font-mono text-gray-600">{a.id}</td>
-                    <td className="py-3.5">
-                      <p className="text-sm font-semibold text-gray-900">{a.customerName}</p>
-                      <p className="text-xs text-gray-400 md:hidden">{a.simNumber}</p>
-                    </td>
-                    <td className="py-3.5 text-sm text-gray-600 hidden md:table-cell">{a.simNumber}</td>
-                    <td className="py-3.5">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${getTypeBadge(a.type)}`}>
-                        {getTypeIcon(a.type)}
-                        {a.type}
-                      </span>
-                    </td>
-                    <td className="py-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusBadge(a.status)}`}>
-                        {a.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-sm text-gray-500 hidden sm:table-cell">{formatDateDDMMYYYY(a.createdAt)}</td>
-                    <td className="py-3.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-[#0057FF]" : a.progress >= 33 ? "bg-amber-500" : "bg-red-400"
-                            }`}
-                            style={{ width: `${a.progress}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium text-gray-500">{a.progress}%</span>
-                      </div>
-                    </td>
+
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={BarChart3}
+              title="No activations found"
+              description="Try adjusting your filters or search"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="pb-3 px-2 text-xs font-semibold uppercase text-muted-foreground">ID</th>
+                    <th className="pb-3 px-2 text-xs font-semibold uppercase text-muted-foreground">Customer</th>
+                    <th className="pb-3 px-2 text-xs font-semibold uppercase text-muted-foreground hidden md:table-cell">MSISDN</th>
+                    <th className="pb-3 px-2 text-xs font-semibold uppercase text-muted-foreground">Type</th>
+                    <th className="pb-3 px-2 text-xs font-semibold uppercase text-muted-foreground">Status</th>
+                    <th className="pb-3 px-2 text-xs font-semibold uppercase text-muted-foreground hidden sm:table-cell">Date</th>
+                    <th className="pb-3 px-2 text-xs font-semibold uppercase text-muted-foreground">Progress</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                </thead>
+                <tbody>
+                  {filtered.map((a) => (
+                    <tr key={a.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                      <td className="py-3.5 px-2 text-sm font-mono text-muted-foreground">{a.id}</td>
+                      <td className="py-3.5 px-2">
+                        <p className="text-sm font-semibold text-foreground">{a.customerName}</p>
+                        <p className="text-xs text-muted-foreground md:hidden">{a.simNumber}</p>
+                      </td>
+                      <td className="py-3.5 px-2 text-sm text-muted-foreground hidden md:table-cell">{a.simNumber}</td>
+                      <td className="py-3.5 px-2">
+                        <span className="inline-flex items-center gap-1">
+                          <StatusPill label={a.type} tone={typeTone[a.type] || "neutral"} />
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-2">
+                        <StatusPill label={a.status} tone={statusTone[a.status] || "neutral"} />
+                      </td>
+                      <td className="py-3.5 px-2 text-sm text-muted-foreground hidden sm:table-cell">{formatDateDDMMYYYY(a.createdAt)}</td>
+                      <td className="py-3.5 px-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-brand-600" : a.progress >= 33 ? "bg-amber-500" : "bg-red-400"
+                              }`}
+                              style={{ width: `${a.progress}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-medium text-muted-foreground">{a.progress}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

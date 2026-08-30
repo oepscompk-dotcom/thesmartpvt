@@ -1,14 +1,14 @@
 ﻿"use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
-  BookOpen, ArrowLeft, Plus, ArrowRightLeft, Repeat, Hash,
+  BookOpen, Plus, ArrowRightLeft, Repeat, Hash,
   Smartphone, CheckCircle2, Clock, AlertTriangle, ChevronRight,
   ChevronDown, ChevronUp, Fingerprint, PhoneCall, Wifi, Shield,
   ClipboardCheck, Eye, User, CreditCard, FileText, ArrowRight,
   Phone, Mail, MapPin, Calendar, Target, Zap, Star, Info
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 type Section = "overview" | "new-sim" | "mnp" | "replacement" | "byn" | "verification";
 
@@ -186,21 +186,17 @@ export default function DSOGuidelinePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#0A2647] via-[#144272] to-[#205295] text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/dso/dashboard" className="p-2 hover:bg-white/10 rounded-xl transition-all">
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <h1 className="text-xl font-black flex items-center gap-2">
-                <BookOpen size={20} /> DSO Guideline & Instructions
-              </h1>
-              <p className="text-white/60 text-xs mt-0.5">Complete guide for using THE SMART ERP DSO Portal</p>
-            </div>
-          </div>
-        </div>
+      {/* Page Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+        <PageHeader
+          breadcrumb={[{ label: "DSO Dashboard", href: "/dso/dashboard" }, { label: "Guideline" }]}
+          title={
+            <span className="flex items-center gap-2">
+              <BookOpen size={20} /> DSO Guideline & Instructions
+            </span>
+          }
+          description="Complete guide for using THE SMART ERP DSO Portal"
+        />
       </div>
 
       {/* Navigation Tabs */}

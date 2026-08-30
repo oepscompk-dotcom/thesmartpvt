@@ -5,8 +5,18 @@ import { useDSOData } from "@/lib/DSODataContext";
 import { VerifyConfirmPopup, VerifySuccessPopup } from "@/lib/VerifyPopup";
 import { apiLoad, apiSave, apiUpdate } from "@/lib/api";
 import {
-  Hash, X, Filter, ArrowRight, ArrowLeft, CheckCircle, Trash2, Search,
+  Hash, X, CheckCircle, Clock, ArrowRight, Trash2,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill, QuickChip } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface BYNForm {
   customerName: string;
@@ -31,6 +41,7 @@ interface SIMStock {
 }
 
 const NETWORKS = ["Telenor", "Jazz", "Ufone", "Zong"];
+const PAGE_SIZE = 10;
 
 const initialForm: BYNForm = {
   customerName: "",
@@ -134,6 +145,14 @@ export default function BYNPage() {
       ? bynActivations
       : bynActivations.filter((a) => a.status === filter);
 
+  const [page, setPage] = useState(1);
+  useEffect(() => {
+    setPage(1);
+  }, [filter]);
+
+  const pagedFiltered = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
@@ -218,14 +237,6 @@ export default function BYNPage() {
     return null;
   };
 
-  const statusColor = (s: string) => {
-    if (s === "Completed") return "bg-emerald-100 text-emerald-700";
-    if (s.includes("BVS")) return "bg-amber-100 text-amber-700";
-    if (s.includes("FCA")) return "bg-blue-100 text-blue-700";
-    if (s.includes("IFCA")) return "bg-purple-100 text-purple-700";
-    return "bg-gray-100 text-gray-600";
-  };
-
   const vcVal = (simNumber: string, field: "bvs" | "fca" | "ifca", fallback: string) => {
     return fallback === "Completed" ? "0" : "X";
   };
@@ -243,145 +254,135 @@ export default function BYNPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <button onClick={() => window.history.back()} className="p-2 rounded-lg hover:bg-gray-100 transition min-h-[48px] min-w-[48px] flex items-center justify-center shrink-0">
-            <ArrowLeft className="h-5 w-5" style={{ color: "#0A2647" }} />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#0A2647" }}>
-              <Hash className="inline-block mr-2 h-5 w-5 sm:h-6 sm:w-6" style={{ color: "#C8A951" }} />
-              Book Your Number (BYN)
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">Reserve specific mobile numbers for customers</p>
-          </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium text-sm min-h-[48px]"
-            style={{ backgroundColor: "#0A2647" }}
-          >
-            <Hash className="h-4 w-4" /> <span className="hidden sm:inline">New BYN</span>
-          </button>
+    <div className="mx-auto max-w-6xl space-y-6">
+        <PageHeader
+          breadcrumb={[{ label: "DSO Dashboard", href: "/dso" }, { label: "Book Your Number" }]}
+          title="Book Your Number (BYN)"
+          description="Reserve specific mobile numbers for customers"
+          actions={
+            <Button onClick={() => setShowModal(true)}>
+              <Hash size={16} /> <span className="hidden sm:inline">New BYN</span>
+            </Button>
+          }
+        />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatCard label="Total BYN" value={bynActivations.length} icon={Hash} />
+          <StatCard label="Pending Verification" value={bynActivations.filter((a) => a.status !== "Completed").length} icon={Clock} iconClass="text-amber-600 bg-amber-50" />
+          <StatCard label="Completed" value={bynActivations.filter((a) => a.status === "Completed").length} icon={CheckCircle} iconClass="text-green-600 bg-green-50" />
         </div>
 
-        {/* Workflow */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-semibold mb-4" style={{ color: "#0A2647" }}>BYN Workflow</h2>
-          <div className="flex items-center justify-between">
-            {["BVS", "FCA", "IFCA", "Complete"].map((step, i) => (
-              <React.Fragment key={step}>
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-full border-2 flex items-center justify-center text-sm font-bold"
-                    style={{ borderColor: "#C8A951", color: "#0A2647" }}>{i + 1}</div>
-                  <span className="text-xs font-medium text-gray-600">{step}</span>
-                </div>
-                {i < 3 && <ArrowRight className="h-5 w-5 text-gray-300" />}
-              </React.Fragment>
-            ))}
+        <Card>
+          <div className="px-4 py-4 sm:px-6">
+            <h2 className="mb-4 text-sm font-semibold text-foreground">BYN Workflow</h2>
+            <div className="flex items-center justify-between">
+              {["BVS", "FCA", "IFCA", "Complete"].map((step, i) => (
+                <React.Fragment key={step}>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-brand-300 text-sm font-bold text-brand-700">
+                      {i + 1}
+                    </div>
+                    <span className="text-xs font-medium text-muted-foreground">{step}</span>
+                  </div>
+                  {i < 3 && <ArrowRight className="h-5 w-5 text-slate-300" />}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Filter */}
-        <div className="flex items-center gap-3">
-          <Filter className="h-4 w-4 text-gray-400" />
+        <div className="flex flex-wrap items-center gap-3">
           {["All", "Pending BVS", "Pending FCA", "Pending IFCA", "Completed"].map((f) => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
-                filter === f ? "text-white border-transparent" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
-              }`}
-              style={filter === f ? { backgroundColor: "#0A2647" } : {}}>
-              {f}
-            </button>
+            <QuickChip key={f} label={f} active={filter === f} onClick={() => setFilter(f)} />
           ))}
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <Card>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">#</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Customer</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">CNIC</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Desired Number</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">SIM Number</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Network</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">BVS</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">FCA</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">IFCA</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Progress</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Action</th>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="text-center px-3 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground w-14">#</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Customer</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">CNIC</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Desired Number</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden lg:table-cell">SIM Number</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Network</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</th>
+                  <th className="text-center px-3 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">BVS</th>
+                  <th className="text-center px-3 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">FCA</th>
+                  <th className="text-center px-3 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">IFCA</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden md:table-cell">Progress</th>
+                  <th className="text-center px-3 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Action</th>
                 </tr>
               </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">No BYN activations found</td>
+              <tbody className="divide-y divide-slate-100">
+                {pagedFiltered.map((a, idx) => (
+                  <tr key={a.id} className="transition-colors hover:bg-slate-50">
+                    <td className="px-3 py-3 text-center">
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-xs font-bold text-brand-700">{(page - 1) * PAGE_SIZE + idx + 1}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{a.customerName}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{a.customerCNIC}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-foreground">{a.simNumber}</td>
+                    <td className="hidden px-4 py-3 font-mono text-sm font-medium text-foreground lg:table-cell">{a.simNumber}</td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${a.network === "Jazz" ? "bg-red-50 text-red-600" : a.network === "Telenor" ? "bg-blue-50 text-blue-600" : a.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{a.network}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusPill label={derivedStatus(a)} tone={derivedStatus(a) === "Completed" || derivedStatus(a) === "Verified" ? "positive" : "warning"} />
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "bvs", a.bvsStatus))}`}>{vcVal(a.simNumber, "bvs", a.bvsStatus)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "fca", a.fcaStatus))}`}>{vcVal(a.simNumber, "fca", a.fcaStatus)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "ifca", a.ifcaStatus))}`}>{vcVal(a.simNumber, "ifca", a.ifcaStatus)}</span>
+                    </td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-20 flex-1 rounded-full bg-slate-200">
+                          <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${a.progress}%`, backgroundColor: a.progress === 100 ? "#10b981" : "#2563eb" }} />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{a.progress}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        {verifyLabel(a) && (
+                          <button onClick={() => handleVerifyStep(a)} className={`rounded-lg px-2 py-1 text-[10px] font-bold text-white transition-all ${verifyLabel(a)!.color}`}>{verifyLabel(a)!.label}</button>
+                        )}
+                        <Button variant="outline" size="sm">View</Button>
+                        <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete this BYN activation?")) deleteActivation(a.id); }} className="text-red-600 hover:bg-red-50 hover:text-red-700"><Trash2 size={14} /></Button>
+                      </div>
+                    </td>
                   </tr>
-                ) : (
-                  filtered.map((a, idx) => (
-                    <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-3 text-center">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
-                      </td>
-                      <td className="px-4 py-3 font-medium text-sm text-gray-900">{a.customerName}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{a.customerCNIC}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-gray-700">{a.simNumber}</td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-gray-900 text-sm font-mono font-medium">{a.simNumber}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${a.network === "Jazz" ? "bg-red-50 text-red-600" : a.network === "Telenor" ? "bg-blue-50 text-blue-600" : a.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{a.network}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${derivedStatus(a) === "Completed" || derivedStatus(a) === "Verified" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{derivedStatus(a)}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "bvs", a.bvsStatus))}`}>{vcVal(a.simNumber, "bvs", a.bvsStatus)}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "fca", a.fcaStatus))}`}>{vcVal(a.simNumber, "fca", a.fcaStatus)}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "ifca", a.ifcaStatus))}`}>{vcVal(a.simNumber, "ifca", a.ifcaStatus)}</span>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-gray-200 rounded-full h-2 w-20">
-                            <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${a.progress}%`, backgroundColor: a.progress === 100 ? "#10b981" : "#C8A951" }} />
-                          </div>
-                          <span className="text-xs text-gray-400">{a.progress}%</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          {verifyLabel(a) && (
-                            <button onClick={() => handleVerifyStep(a)} className={`px-2 py-1 rounded-lg text-[10px] font-bold text-white transition-all ${verifyLabel(a)!.color}`}>{verifyLabel(a)!.label}</button>
-                          )}
-                          <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#0A2647] text-white hover:bg-[#144272] transition-all">View</button>
-                          <button onClick={() => { if (confirm("Delete this BYN activation?")) deleteActivation(a.id); }} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"><Trash2 size={14} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
-        </div>
+          {pagedFiltered.length === 0 && (
+            <EmptyState icon={Hash} title="No BYN activations found" description="Create a new BYN activation or adjust your filters." />
+          )}
+          {filtered.length > 0 && (
+            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+          )}
+        </Card>
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg mx-4 shadow-2xl">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-bold" style={{ color: "#0A2647" }}>Book Your Number</h3>
-                <button onClick={() => setShowModal(false)} className="p-1 rounded-lg hover:bg-gray-100">
-                  <X className="h-5 w-5 text-gray-500" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+            <div className="bg-white mx-4 w-full max-w-lg rounded-lg border border-slate-200 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                <h3 className="text-base font-semibold text-foreground">Book Your Number</h3>
+                <button onClick={() => setShowModal(false)} className="rounded-lg p-1 text-muted-foreground hover:text-foreground">
+                  <X className="h-5 w-5" />
                 </button>
               </div>
-              <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="max-h-[60vh] overflow-y-auto space-y-4 px-6 py-4">
                 {/* Step Indicator */}
                 <div className="flex items-center justify-center gap-2 py-2">
                   {[
@@ -391,37 +392,28 @@ export default function BYNPage() {
                   ].map((s, i) => (
                     <React.Fragment key={s.step}>
                       <div className="flex items-center gap-1.5">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                          s.current ? 'bg-[#0A2647] text-white' : selectedSimId ? 'bg-[#C8A951] text-[#0A2647]' : 'bg-gray-200 text-gray-500'
+                        <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                          s.current ? "bg-brand-600 text-white" : selectedSimId ? "bg-brand-100 text-brand-700" : "bg-slate-200 text-slate-500"
                         }`}>
                           {selectedSimId && !s.current ? (
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                           ) : s.step}
                         </div>
-                        <span className={`text-xs font-medium hidden sm:inline ${s.current ? 'text-[#0A2647]' : 'text-gray-400'}`}>{s.label}</span>
+                        <span className={`hidden text-xs font-medium sm:inline ${s.current ? "text-brand-700" : "text-slate-400"}`}>{s.label}</span>
                       </div>
-                      {i < 2 && <ArrowRight className="h-3 w-3 text-gray-300" />}
+                      {i < 2 && <ArrowRight className="h-3 w-3 text-slate-300" />}
                     </React.Fragment>
                   ))}
                 </div>
 
                 {/* Group 1: SIM Stock Selection */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Select SIM from Stock *</label>
-                  <div className="relative mb-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      value={simSearch}
-                      onChange={(e) => setSimSearch(e.target.value)}
-                      placeholder="Search by ICCID, SIM number or network..."
-                      className="w-full pl-9 pr-8 py-3 min-h-[48px] rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C8A951]"
-                    />
-                    {simSearch && <X size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onClick={() => setSimSearch("")} />}
-                  </div>
-                  <select
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Select SIM from Stock *</label>
+                  <SearchInput placeholder="Search by ICCID, SIM number or network..." value={simSearch} onSearch={setSimSearch} className="mb-2" />
+                  <Select
                     value={selectedSimId}
                     onChange={handleSimSelect}
-                    className="w-full min-h-[56px] px-4 py-3 rounded-xl border-2 border-gray-200 text-sm font-medium focus:outline-none focus:border-[#C8A951] bg-white md:min-h-[40px] md:px-3 md:py-2 md:rounded-lg md:border"
+                    className="h-11 border-2"
                   >
                     <option value="">-- {searchFilteredSims.length > 0 ? "Choose a SIM" : "No SIM matches search"} --</option>
                     {searchFilteredSims.map((s) => (
@@ -429,100 +421,97 @@ export default function BYNPage() {
                         {s.simNumber} | {s.network} | {s.iccid}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   {simSearch && (
-                    <p className="text-xs text-gray-400 mt-1.5">{searchFilteredSims.length} SIM(s) found</p>
+                    <p className="mt-1.5 text-xs text-muted-foreground">{searchFilteredSims.length} SIM(s) found</p>
                   )}
                 </div>
 
                 {/* Selected SIM Info Card */}
                 {selectedSimId && form.simNumber && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Selected SIM</p>
+                  <div className="rounded-lg border border-brand-100 bg-brand-50 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-700">Selected SIM</p>
                     <div className="grid grid-cols-3 gap-3 text-sm">
                       <div>
-                        <span className="text-gray-500 text-xs">SIM Number</span>
-                        <p className="font-medium text-[#0A2647]">{form.simNumber}</p>
+                        <span className="text-xs text-muted-foreground">SIM Number</span>
+                        <p className="font-medium text-brand-700">{form.simNumber}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500 text-xs">Network</span>
-                        <p className="font-medium text-[#0A2647]">{form.network}</p>
+                        <span className="text-xs text-muted-foreground">Network</span>
+                        <p className="font-medium text-brand-700">{form.network}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500 text-xs">ICCID</span>
-                        <p className="font-medium text-[#0A2647] text-xs break-all">{form.iccid}</p>
+                        <span className="text-xs text-muted-foreground">ICCID</span>
+                        <p className="break-all text-xs font-medium text-brand-700">{form.iccid}</p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                <hr className="border-gray-200" />
+                <hr className="border-slate-200" />
 
                 {/* Group 2: SIM Details (auto-filled, editable) */}
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">SIM Details</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">SIM Details</p>
                 {[
                   { name: "simNumber", label: "SIM Number" },
                   { name: "iccid", label: "ICCID" },
                   { name: "desiredNumber", label: "Desired Number" },
                 ].map((f) => (
                   <div key={f.name}>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
-                    <input name={f.name} value={(form as unknown as Record<string, string>)[f.name] || ""} onChange={handleChange}
-                      className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none bg-gray-50" />
+                    <label className="mb-1 block text-xs font-medium text-muted-foreground">{f.label}</label>
+                    <Input
+                      name={f.name}
+                      value={(form as unknown as Record<string, string>)[f.name] || ""}
+                      onChange={handleChange}
+                      className="bg-white"
+                    />
                   </div>
                 ))}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Network</label>
-                  <select name="network" value={form.network} disabled
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none bg-gray-100 cursor-not-allowed">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">Network</label>
+                  <Select name="network" value={form.network} disabled className="cursor-not-allowed bg-slate-100 text-muted-foreground">
                     <option value="">Select Network</option>
                     {NETWORKS.map((n) => <option key={n} value={n}>{n}</option>)}
-                  </select>
+                  </Select>
                 </div>
 
-                <hr className="border-gray-200" />
+                <hr className="border-slate-200" />
 
                 {/* Group 3: Customer Info (optional) */}
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Customer Info (Optional)</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Customer Info (Optional)</p>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Customer Name</label>
-                  <input
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">Customer Name</label>
+                  <Input
                     name="customerName"
                     value={form.customerName}
                     onChange={handleChange}
                     placeholder="XXXXX"
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">CNIC</label>
-                  <input
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">CNIC</label>
+                  <Input
                     name="customerCNIC"
                     value={form.customerCNIC}
                     onChange={handleChange}
                     placeholder="XXXXX-YYYYYYY-X"
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Contact Number</label>
-                  <input
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">Contact Number</label>
+                  <Input
                     name="customerMobile"
                     value={form.customerMobile}
                     onChange={handleChange}
                     placeholder="03XX-XXXXXXX"
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
                   />
                 </div>
               </div>
-              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-                <button onClick={() => setShowModal(false)}
-                  className="w-full sm:w-auto px-4 py-3 min-h-[48px] rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button onClick={handleSubmit}
-                  className="w-full sm:w-auto min-h-[56px] px-6 py-3 rounded-lg text-sm font-medium text-white flex items-center justify-center gap-2"
-                  style={{ backgroundColor: "#C8A951", color: "#0A2647" }}>
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
+                <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setShowModal(false)}>Cancel</Button>
+                <Button className="w-full sm:w-auto" onClick={handleSubmit}>
                   <CheckCircle className="h-4 w-4" /> Save BYN
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -533,7 +522,6 @@ export default function BYNPage() {
         {verifySuccess && (
           <VerifySuccessPopup message={verifySuccess} onClose={() => setVerifySuccess(null)} />
         )}
-      </div>
     </div>
   );
 }

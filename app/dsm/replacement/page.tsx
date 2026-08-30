@@ -5,8 +5,14 @@ import { useDSMData } from "@/lib/DSMDataContext";
 import { VerifyConfirmPopup, VerifySuccessPopup } from "@/lib/VerifyPopup";
 import { apiLoad, apiUpdate } from "@/lib/api";
 import {
-  RefreshCw, X, Filter, ArrowRight, ArrowLeft, CheckCircle, Trash2, Search,
+  RefreshCw, X, ArrowRight, ArrowLeft, CheckCircle, Trash2, Search,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { StatusPill, QuickChip } from "@/components/ui/Badge";
 
 interface ReplacementForm {
   customerName: string;
@@ -227,16 +233,16 @@ export default function ReplacementPage() {
   };
 
   const verifyLabel = (a: any) => {
-    if (a.bvsStatus !== "Completed") return { label: "Verify BVS", color: "bg-amber-500 hover:bg-amber-600" };
-    if (a.fcaStatus !== "Completed") return { label: "Verify FCA", color: "bg-blue-500 hover:bg-blue-600" };
-    if (a.ifcaStatus !== "Completed") return { label: "Verify IFCA", color: "bg-purple-500 hover:bg-purple-600" };
+    if (a.bvsStatus !== "Completed") return { label: "Verify BVS", cls: "bg-amber-500 hover:bg-amber-600" };
+    if (a.fcaStatus !== "Completed") return { label: "Verify FCA", cls: "bg-blue-500 hover:bg-blue-600" };
+    if (a.ifcaStatus !== "Completed") return { label: "Verify IFCA", cls: "bg-purple-500 hover:bg-purple-600" };
     return null;
   };
 
   const vcVal = (simNumber: string, field: "bvs" | "fca" | "ifca", fallback: string) => {
     return fallback === "Completed" ? "0" : "X";
   };
-  const vcBg = (v: string) => v === "0" || v === "1" ? "bg-green-100 text-green-700" : v === "X" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-400";
+  const vcBg = (v: string) => v === "0" || v === "1" ? "bg-green-100 text-green-700" : v === "X" ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-400";
   const derivedStatus = (a: any) => {
     const bvs = a.bvsStatus === "Completed" ? "0" : "X";
     const fca = a.fcaStatus === "Completed" ? "0" : "X";
@@ -248,309 +254,313 @@ export default function ReplacementPage() {
     if (bvs === "0" && fca === "0" && ifcaV === "0") return "Completed";
     return "Pending-V";
   };
+  const networkPill = (network: string) => {
+    switch (network) {
+      case "Jazz":
+        return "bg-red-50 text-red-600";
+      case "Telenor":
+        return "bg-blue-50 text-blue-600";
+      case "Ufone":
+        return "bg-green-50 text-green-600";
+      default:
+        return "bg-cyan-50 text-cyan-600";
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <button onClick={() => window.history.back()} className="p-2 rounded-lg hover:bg-gray-100 transition min-h-[48px] min-w-[48px] flex items-center justify-center shrink-0">
-            <ArrowLeft className="h-5 w-5" style={{ color: "#0A2647" }} />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#0A2647" }}>
-              <RefreshCw className="inline-block mr-2 h-5 w-5 sm:h-6 sm:w-6" style={{ color: "#C8A951" }} />
-              SIM Replacement
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">Replace lost, damaged or stolen SIMs</p>
-          </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium text-sm min-h-[48px]"
-            style={{ backgroundColor: "#0A2647" }}
-          >
-            <RefreshCw className="h-4 w-4" /> <span className="hidden sm:inline">New Replacement</span>
-          </button>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <button onClick={() => window.history.back()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition">
+          <ArrowLeft className="h-5 w-5 text-foreground" />
+        </button>
+        <PageHeader
+          breadcrumb={[{ label: "DSM" }, { label: "Activations" }, { label: "Replacement" }]}
+          title="SIM Replacement"
+          description="Replace lost, damaged or stolen SIMs"
+          actions={
+            <Button onClick={() => setShowModal(true)}>
+              <RefreshCw className="h-4 w-4" /> <span className="hidden sm:inline">New Replacement</span>
+            </Button>
+          }
+        />
+      </div>
 
-        {/* Workflow */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-semibold mb-4" style={{ color: "#0A2647" }}>Replacement Workflow</h2>
+      <Card>
+        <div className="p-6">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Replacement Workflow</h2>
           <div className="flex items-center justify-between">
             {["BVS", "FCA", "IFCA", "Complete"].map((step, i) => (
               <React.Fragment key={step}>
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-full border-2 flex items-center justify-center text-sm font-bold"
-                    style={{ borderColor: "#C8A951", color: "#0A2647" }}>{i + 1}</div>
-                  <span className="text-xs font-medium text-gray-600">{step}</span>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-brand-600 text-sm font-bold text-brand-700">
+                    {i + 1}
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground">{step}</span>
                 </div>
-                {i < 3 && <ArrowRight className="h-5 w-5 text-gray-300" />}
+                {i < 3 && <ArrowRight className="h-5 w-5 text-slate-300" />}
               </React.Fragment>
             ))}
           </div>
         </div>
+      </Card>
 
-        {/* Filter */}
-        <div className="flex items-center gap-3">
-          <Filter className="h-4 w-4 text-gray-400" />
-          {["All", "Pending BVS", "Pending FCA", "Pending IFCA", "Completed"].map((f) => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
-                filter === f ? "text-white border-transparent" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
-              }`}
-              style={filter === f ? { backgroundColor: "#0A2647" } : {}}>
-              {f}
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        {["All", "Pending BVS", "Pending FCA", "Pending IFCA", "Completed"].map((f) => (
+          <QuickChip key={f} label={f} active={filter === f} onClick={() => setFilter(f)} />
+        ))}
+      </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase w-14">#</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Customer</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">CNIC</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Reason</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">SIM Number</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Network</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">BVS</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">FCA</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">IFCA</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Progress</th>
-                  <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Action</th>
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="text-center px-3 py-3 text-muted-foreground text-xs font-medium uppercase w-14">#</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">Customer</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">CNIC</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">Reason</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase hidden lg:table-cell">SIM Number</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">Network</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase">Status</th>
+                <th className="text-center px-3 py-3 text-muted-foreground text-xs font-medium uppercase">BVS</th>
+                <th className="text-center px-3 py-3 text-muted-foreground text-xs font-medium uppercase">FCA</th>
+                <th className="text-center px-3 py-3 text-muted-foreground text-xs font-medium uppercase">IFCA</th>
+                <th className="text-left px-4 py-3 text-muted-foreground text-xs font-medium uppercase hidden md:table-cell">Progress</th>
+                <th className="text-center px-3 py-3 text-muted-foreground text-xs font-medium uppercase">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={12} className="px-6 py-12 text-center">
+                    <RefreshCw size={40} className="mx-auto mb-3 text-slate-300" />
+                    <p className="text-sm text-muted-foreground">No replacement activations found</p>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">No replacement activations found</td>
+              ) : (
+                filtered.map((a, idx) => (
+                  <tr key={a.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                    <td className="px-3 py-3 text-center">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 text-brand-700 text-xs font-black">{idx + 1}</span>
+                    </td>
+                    <td className="px-4 py-3 font-medium text-sm text-foreground">{a.customerName}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{a.customerCNIC}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill label={(a as any).reason || "Lost"} tone="negative" />
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell text-sm font-mono font-medium text-foreground">{a.simNumber}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${networkPill(a.network)}`}>{a.network}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusPill label={derivedStatus(a)} tone={derivedStatus(a) === "Completed" || derivedStatus(a) === "Verified" ? "positive" : "warning"} />
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "bvs", a.bvsStatus))}`}>{vcVal(a.simNumber, "bvs", a.bvsStatus)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "fca", a.fcaStatus))}`}>{vcVal(a.simNumber, "fca", a.fcaStatus)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "ifca", a.ifcaStatus))}`}>{vcVal(a.simNumber, "ifca", a.ifcaStatus)}</span>
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-slate-200 rounded-full h-2 w-20">
+                          <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${a.progress}%`, backgroundColor: a.progress === 100 ? "#10b981" : "#2563eb" }} />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{a.progress}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        {verifyLabel(a) && (
+                          <button onClick={() => handleVerifyStep(a)} className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-white transition-all ${verifyLabel(a)!.cls}`}>{verifyLabel(a)!.label}</button>
+                        )}
+                        <Button size="sm" variant="outline">View</Button>
+                        <button onClick={() => { if (confirm("Delete this replacement?")) deleteActivation(a.id); }} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"><Trash2 size={14} /></button>
+                      </div>
+                    </td>
                   </tr>
-                ) : (
-                  filtered.map((a, idx) => (
-                    <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-3 text-center">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-xs font-black">{idx + 1}</span>
-                      </td>
-                      <td className="px-4 py-3 font-medium text-sm text-gray-900">{a.customerName}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{a.customerCNIC}</td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">{(a as any).reason || "Lost"}</span>
-                      </td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-gray-900 text-sm font-mono font-medium">{a.simNumber}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${a.network === "Jazz" ? "bg-red-50 text-red-600" : a.network === "Telenor" ? "bg-blue-50 text-blue-600" : a.network === "Ufone" ? "bg-green-50 text-green-600" : "bg-cyan-50 text-cyan-600"}`}>{a.network}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${derivedStatus(a) === "Completed" || derivedStatus(a) === "Verified" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{derivedStatus(a)}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "bvs", a.bvsStatus))}`}>{vcVal(a.simNumber, "bvs", a.bvsStatus)}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "fca", a.fcaStatus))}`}>{vcVal(a.simNumber, "fca", a.fcaStatus)}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${vcBg(vcVal(a.simNumber, "ifca", a.ifcaStatus))}`}>{vcVal(a.simNumber, "ifca", a.ifcaStatus)}</span>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-gray-200 rounded-full h-2 w-20">
-                            <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${a.progress}%`, backgroundColor: a.progress === 100 ? "#10b981" : "#C8A951" }} />
-                          </div>
-                          <span className="text-xs text-gray-400">{a.progress}%</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          {verifyLabel(a) && (
-                            <button onClick={() => handleVerifyStep(a)} className={`px-2 py-1 rounded-lg text-[10px] font-bold text-white transition-all ${verifyLabel(a)!.color}`}>{verifyLabel(a)!.label}</button>
-                          )}
-                          <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#0A2647] text-white hover:bg-[#144272] transition-all">View</button>
-                          <button onClick={() => { if (confirm("Delete this replacement?")) deleteActivation(a.id); }} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"><Trash2 size={14} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
+      </Card>
 
-        {/* Modal */}
-        {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-lg mx-4 shadow-2xl">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-bold" style={{ color: "#0A2647" }}>SIM Replacement</h3>
-                <button onClick={() => setShowModal(false)} className="p-1 rounded-lg hover:bg-gray-100">
-                  <X className="h-5 w-5 text-gray-500" />
-                </button>
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-200 mx-4 shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-foreground">SIM Replacement</h3>
+              <button onClick={() => setShowModal(false)} className="p-1 rounded-lg hover:bg-slate-100">
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+              {/* Step Indicator */}
+              <div className="flex items-center justify-center gap-2 py-2">
+                {[
+                  { step: 1, label: "Select SIM", current: !selectedSimId },
+                  { step: 2, label: "Fill Details", current: !!selectedSimId },
+                  { step: 3, label: "Submit", current: false },
+                ].map((s, i) => (
+                  <React.Fragment key={s.step}>
+                    <div className="flex items-center gap-1.5">
+                      <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                        s.current ? 'bg-brand-600 text-white' : selectedSimId ? 'bg-brand-100 text-brand-700' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        {selectedSimId && !s.current ? (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                        ) : s.step}
+                      </div>
+                      <span className={`text-xs font-medium hidden sm:inline ${s.current ? 'text-brand-700' : 'text-muted-foreground'}`}>{s.label}</span>
+                    </div>
+                    {i < 2 && <ArrowRight className="h-3 w-3 text-slate-300" />}
+                  </React.Fragment>
+                ))}
               </div>
-              <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-                {/* Step Indicator */}
-                <div className="flex items-center justify-center gap-2 py-2">
-                  {[
-                    { step: 1, label: "Select SIM", current: !selectedSimId },
-                    { step: 2, label: "Fill Details", current: !!selectedSimId },
-                    { step: 3, label: "Submit", current: false },
-                  ].map((s, i) => (
-                    <React.Fragment key={s.step}>
-                      <div className="flex items-center gap-1.5">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                          s.current ? 'bg-[#0A2647] text-white' : selectedSimId ? 'bg-[#C8A951] text-[#0A2647]' : 'bg-gray-200 text-gray-500'
-                        }`}>
-                          {selectedSimId && !s.current ? (
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                          ) : s.step}
-                        </div>
-                        <span className={`text-xs font-medium hidden sm:inline ${s.current ? 'text-[#0A2647]' : 'text-gray-400'}`}>{s.label}</span>
-                      </div>
-                      {i < 2 && <ArrowRight className="h-3 w-3 text-gray-300" />}
-                    </React.Fragment>
+
+              {/* Group 1: SIM Stock Selection */}
+              <div>
+                <label className="block mb-1 text-xs font-medium text-muted-foreground">Select SIM from Stock *</label>
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={simSearch}
+                    onChange={(e) => setSimSearch(e.target.value)}
+                    placeholder="Search by ICCID, SIM number or network..."
+                    className="pl-9 pr-8"
+                  />
+                  {simSearch && <X size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer" onClick={() => setSimSearch("")} />}
+                </div>
+                <Select
+                  value={selectedSimId}
+                  onChange={handleSimSelect}
+                  className="h-11"
+                >
+                  <option value="">-- {searchFilteredSims.length > 0 ? "Choose a SIM" : "No SIM matches search"} --</option>
+                  {searchFilteredSims.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.simNumber} | {s.network} | {s.iccid}
+                    </option>
                   ))}
-                </div>
+                </Select>
+                {simSearch && (
+                  <p className="text-xs text-muted-foreground mt-1.5">{searchFilteredSims.length} SIM(s) found</p>
+                )}
+              </div>
 
-                {/* Group 1: SIM Stock Selection */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Select SIM from Stock *</label>
-                  <div className="relative mb-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      value={simSearch}
-                      onChange={(e) => setSimSearch(e.target.value)}
-                      placeholder="Search by ICCID, SIM number or network..."
-                      className="w-full pl-9 pr-8 py-3 min-h-[48px] rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C8A951]"
-                    />
-                    {simSearch && <X size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onClick={() => setSimSearch("")} />}
-                  </div>
-                  <select
-                    value={selectedSimId}
-                    onChange={handleSimSelect}
-                    className="w-full min-h-[56px] px-4 py-3 rounded-xl border-2 border-gray-200 text-sm font-medium focus:outline-none focus:border-[#C8A951] bg-white md:min-h-[40px] md:px-3 md:py-2 md:rounded-lg md:border"
-                  >
-                    <option value="">-- {searchFilteredSims.length > 0 ? "Choose a SIM" : "No SIM matches search"} --</option>
-                    {searchFilteredSims.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.simNumber} | {s.network} | {s.iccid}
-                      </option>
-                    ))}
-                  </select>
-                  {simSearch && (
-                    <p className="text-xs text-gray-400 mt-1.5">{searchFilteredSims.length} SIM(s) found</p>
-                  )}
-                </div>
-
-                {/* Selected SIM Info Card */}
-                {selectedSimId && form.newSimNumber && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Selected SIM</p>
-                    <div className="grid grid-cols-3 gap-3 text-sm">
-                      <div>
-                        <span className="text-gray-500 text-xs">SIM Number</span>
-                        <p className="font-medium text-[#0A2647]">{form.newSimNumber}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500 text-xs">Network</span>
-                        <p className="font-medium text-[#0A2647]">{form.network}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500 text-xs">ICCID</span>
-                        <p className="font-medium text-[#0A2647] text-xs break-all">{form.iccid}</p>
-                      </div>
+              {/* Selected SIM Info Card */}
+              {selectedSimId && form.newSimNumber && (
+                <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-600">Selected SIM</p>
+                  <div className="grid grid-cols-3 gap-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground text-xs">SIM Number</span>
+                      <p className="font-medium text-foreground">{form.newSimNumber}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs">Network</span>
+                      <p className="font-medium text-foreground">{form.network}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs">ICCID</span>
+                      <p className="font-medium text-foreground text-xs break-all">{form.iccid}</p>
                     </div>
                   </div>
-                )}
-
-                <hr className="border-gray-200" />
-
-                {/* Group 2: SIM Details (auto-filled, editable) */}
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">SIM Details</p>
-                {[
-                  { name: "lostSimNumber", label: "Lost SIM Number" },
-                  { name: "newSimNumber", label: "New SIM Number" },
-                  { name: "iccid", label: "ICCID" },
-                ].map((f) => (
-                  <div key={f.name}>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
-                    <input name={f.name} value={(form as unknown as Record<string, string>)[f.name] || ""} onChange={handleChange}
-                      className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none bg-gray-50" />
-                  </div>
-                ))}
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Network</label>
-                  <select name="network" value={form.network} disabled
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none bg-gray-100 cursor-not-allowed">
-                    <option value="">Select Network</option>
-                    {NETWORKS.map((n) => <option key={n} value={n}>{n}</option>)}
-                  </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Reason *</label>
-                  <select name="reason" value={form.reason} onChange={handleChange}
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none">
-                    <option value="">Select Reason</option>
-                    {REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
+              )}
 
-                <hr className="border-gray-200" />
+              <hr className="border-slate-100" />
 
-                {/* Group 3: Customer Info (optional) */}
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Customer Info (Optional)</p>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Customer Name</label>
-                  <input
-                    name="customerName"
-                    value={form.customerName}
+              {/* Group 2: SIM Details (auto-filled, editable) */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">SIM Details</p>
+              {[
+                { name: "lostSimNumber", label: "Lost SIM Number" },
+                { name: "newSimNumber", label: "New SIM Number" },
+                { name: "iccid", label: "ICCID" },
+              ].map((f) => (
+                <div key={f.name}>
+                  <label className="block mb-1 text-xs font-medium text-muted-foreground">{f.label}</label>
+                  <Input
+                    name={f.name}
+                    value={(form as unknown as Record<string, string>)[f.name] || ""}
                     onChange={handleChange}
-                    placeholder="XXXXX"
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
+                    className="bg-slate-50"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">CNIC</label>
-                  <input
-                    name="customerCNIC"
-                    value={form.customerCNIC}
-                    onChange={handleChange}
-                    placeholder="XXXXX-YYYYYYY-X"
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Contact Number</label>
-                  <input
-                    name="customerMobile"
-                    value={form.customerMobile}
-                    onChange={handleChange}
-                    placeholder="03XX-XXXXXXX"
-                    className="w-full px-3 py-3 min-h-[48px] rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2"
-                  />
-                </div>
+              ))}
+              <div>
+                <label className="block mb-1 text-xs font-medium text-muted-foreground">Network</label>
+                <Select
+                  name="network"
+                  value={form.network}
+                  disabled
+                  className="bg-slate-100 text-muted-foreground cursor-not-allowed"
+                >
+                  <option value="">Select Network</option>
+                  {NETWORKS.map((n) => <option key={n} value={n}>{n}</option>)}
+                </Select>
               </div>
-              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-                <button onClick={() => setShowModal(false)}
-                  className="w-full sm:w-auto px-4 py-3 min-h-[48px] rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button onClick={handleSubmit}
-                  className="w-full sm:w-auto min-h-[56px] px-6 py-3 rounded-lg text-sm font-medium text-white flex items-center justify-center gap-2"
-                  style={{ backgroundColor: "#C8A951", color: "#0A2647" }}>
-                  <CheckCircle className="h-4 w-4" /> Save Replacement
-                </button>
+              <div>
+                <label className="block mb-1 text-xs font-medium text-muted-foreground">Reason *</label>
+                <Select name="reason" value={form.reason} onChange={handleChange}>
+                  <option value="">Select Reason</option>
+                  {REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                </Select>
+              </div>
+
+              <hr className="border-slate-100" />
+
+              {/* Group 3: Customer Info (optional) */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Customer Info (Optional)</p>
+              <div>
+                <label className="block mb-1 text-xs font-medium text-muted-foreground">Customer Name</label>
+                <Input
+                  name="customerName"
+                  value={form.customerName}
+                  onChange={handleChange}
+                  placeholder="XXXXX"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-xs font-medium text-muted-foreground">CNIC</label>
+                <Input
+                  name="customerCNIC"
+                  value={form.customerCNIC}
+                  onChange={handleChange}
+                  placeholder="XXXXX-YYYYYYY-X"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-xs font-medium text-muted-foreground">Contact Number</label>
+                <Input
+                  name="customerMobile"
+                  value={form.customerMobile}
+                  onChange={handleChange}
+                  placeholder="03XX-XXXXXXX"
+                />
               </div>
             </div>
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShowModal(false)}>
+                Cancel
+              </Button>
+              <Button className="w-full sm:w-auto" onClick={handleSubmit}>
+                <CheckCircle className="h-4 w-4" /> Save Replacement
+              </Button>
+            </div>
           </div>
-        )}
-        {verifyConfirm && (
-          <VerifyConfirmPopup step={verifyConfirm.step} simNumber={verifyConfirm.simNumber} onConfirm={doVerifyConfirm} onCancel={() => setVerifyConfirm(null)} />
-        )}
-        {verifySuccess && (
-          <VerifySuccessPopup message={verifySuccess} onClose={() => setVerifySuccess(null)} />
-        )}
-      </div>
+        </div>
+      )}
+      {verifyConfirm && (
+        <VerifyConfirmPopup step={verifyConfirm.step} simNumber={verifyConfirm.simNumber} onConfirm={doVerifyConfirm} onCancel={() => setVerifyConfirm(null)} />
+      )}
+      {verifySuccess && (
+        <VerifySuccessPopup message={verifySuccess} onClose={() => setVerifySuccess(null)} />
+      )}
     </div>
   );
 }

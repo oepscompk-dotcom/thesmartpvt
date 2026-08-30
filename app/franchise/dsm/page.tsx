@@ -2,8 +2,8 @@
 
 import { useState, useMemo, Fragment } from "react";
 import {
-  Plus, Search, Edit, Trash2, Eye, X, Save, Users, ArrowRight,
-  Filter, FileText, DollarSign, ChevronLeft, ChevronRight,
+  Plus, Edit, Trash2, Eye, X, Save, Users, ArrowRight,
+  FileText, DollarSign,
   AlertTriangle, CheckCircle2, Calculator, TrendingUp, Wallet,
   ChevronDown, ChevronUp, Download,
 } from "lucide-react";
@@ -12,16 +12,28 @@ import { useDSOData } from "@/lib/DSODataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatusPill, QuickChip } from "@/components/ui/Badge";
+import type { ToneValue } from "@/components/ui/Badge";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 
 type Tab = "all" | "documents" | "salary" | "inactive";
 
 const PAGE_SIZE = 10;
 
-const STATUS_COLORS: Record<string, string> = {
-  Active: "bg-green-50 text-green-700 border border-green-200",
-  Inactive: "bg-amber-50 text-amber-700 border border-amber-200",
-  Suspended: "bg-red-50 text-red-700 border border-red-200",
-  Resigned: "bg-purple-50 text-purple-700 border border-purple-200",
+const getStatusTone = (status: string): ToneValue => {
+  switch (status) {
+    case "Active": return "positive";
+    case "Inactive": return "warning";
+    case "Suspended": return "negative";
+    case "Resigned": return "accent";
+    default: return "neutral";
+  }
 };
 
 const SALARY_FIELDS: { key: string; label: string; field: keyof DSM; type?: string }[] = [
@@ -434,102 +446,73 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">DSM Management</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage Direct Sales Managers</p>
-        </div>
-        <Link
-          href="/franchise/dsm/create"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105"
-        >
-          <Plus size={16} /> Register DSM <ArrowRight size={14} />
-        </Link>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise" }, { label: "DSM Management" }]}
+        title="DSM Management"
+        description="Manage Direct Sales Managers"
+        actions={
+          <Link href="/franchise/dsm/create">
+            <Button><Plus className="h-4 w-4" /> Register DSM <ArrowRight className="h-4 w-4" /></Button>
+          </Link>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatCard icon={Users} label="Total DSMs" value={allFiltered.length} />
+        <StatCard icon={CheckCircle2} label="Active" value={activeDSM.length} iconClass="text-green-600 bg-green-50" />
+        <StatCard icon={AlertTriangle} label="Inactive" value={inactiveDSM.length} iconClass="text-amber-600 bg-amber-50" />
+        <StatCard icon={AlertTriangle} label="Suspended" value={suspendedDSM.length} iconClass="text-red-600 bg-red-50" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard
-          icon={<Users size={18} />}
-          label="Total DSMs"
-          value={allFiltered.length}
-          color="bg-[#0A2647]"
-          textWhite
-        />
-        <StatCard
-          icon={<CheckCircle2 size={18} />}
-          label="Active"
-          value={activeDSM.length}
-          color="bg-green-500"
-          textWhite
-        />
-        <StatCard
-          icon={<AlertTriangle size={18} />}
-          label="Inactive"
-          value={inactiveDSM.length}
-          color="bg-amber-500"
-          textWhite
-        />
-        <StatCard
-          icon={<AlertTriangle size={18} />}
-          label="Suspended"
-          value={suspendedDSM.length}
-          color="bg-red-500"
-          textWhite
-        />
-      </div>
-
-      <div className="flex flex-wrap gap-2 bg-white rounded-2xl border border-gray-200 p-2">
-        {(["all", "documents", "salary", "inactive"] as Tab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === tab
-                ? "bg-[#0A2647] text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {tab === "all" && "All DSMs"}
-            {tab === "documents" && <span className="inline-flex items-center gap-1"><FileText size={14} /> Documents</span>}
-            {tab === "salary" && <span className="inline-flex items-center gap-1"><DollarSign size={14} /> Salary</span>}
-            {tab === "inactive" && "Inactive"}
-          </button>
-        ))}
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex items-center gap-2 flex-1 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-            <Search size={16} className="text-gray-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
+      <Card className="p-1">
+        <div className="flex flex-wrap gap-1">
+          {(["all", "documents", "salary", "inactive"] as Tab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab);
                 setPage(1);
               }}
-              placeholder="Search by name, ID, code, mobile, email..."
-              className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full"
-            />
-          </div>
+              className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === tab
+                  ? "bg-brand-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              {tab === "all" && "All DSMs"}
+              {tab === "documents" && <span className="inline-flex items-center gap-1"><FileText className="h-4 w-4" /> Documents</span>}
+              {tab === "salary" && <span className="inline-flex items-center gap-1"><DollarSign className="h-4 w-4" /> Salary</span>}
+              {tab === "inactive" && "Inactive"}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="space-y-3 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <SearchInput
+            value={search}
+            onChange={(v) => {
+              setSearch(v);
+              setPage(1);
+            }}
+            placeholder="Search by name, ID, code, mobile, email..."
+            className="min-w-0"
+          />
           <div className="flex items-center gap-2">
-            <Filter size={14} className="text-gray-400" />
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#0A2647]/50"
+              className="rounded-lg border border-slate-200 bg-background px-3 py-2 text-xs text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
               placeholder="From"
             />
-            <span className="text-gray-400 text-xs">to</span>
+            <span className="text-xs text-muted-foreground">to</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#0A2647]/50"
+              className="rounded-lg border border-slate-200 bg-background px-3 py-2 text-xs text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
               placeholder="To"
             />
           </div>
@@ -538,48 +521,15 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
         {activeTab !== "salary" && activeTab !== "documents" && (
           <div className="flex flex-wrap gap-2">
             {["All", "Active", "Inactive", "Suspended"].map((s) => (
-              <button
-                key={s}
-                onClick={() => { setStatusFilter(s); setPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                  statusFilter === s
-                    ? "bg-[#0A2647] text-white border-[#0A2647]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0A2647]/30"
-                }`}
-              >
-                {s}
-              </button>
+              <QuickChip key={s} label={s} active={statusFilter === s} onClick={() => { setStatusFilter(s); setPage(1); }} />
             ))}
           </div>
         )}
+      </Card>
 
-        {activeTab !== "salary" && activeTab !== "documents" && (
-          <div className="flex items-center justify-between">
-            <p className="text-gray-400 text-xs">
-              Showing {Math.min((safePage - 1) * PAGE_SIZE + 1, tabList.length)}â€“{Math.min(safePage * PAGE_SIZE, tabList.length)} of {tabList.length}
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                disabled={safePage <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <span className="text-xs font-bold text-gray-700 px-2">
-                {safePage}/{totalPages}
-              </span>
-              <button
-                disabled={safePage >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {(activeTab === "all" || activeTab === "inactive") && (
+        <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+      )}
 
       {activeTab === "all" && (
         <AllDSMTab
@@ -636,32 +586,6 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-  textWhite,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  color: string;
-  textWhite: boolean;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex items-center gap-3">
-      <div className={`${color} w-10 h-10 rounded-xl flex items-center justify-center ${textWhite ? "text-white" : "text-white"}`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-gray-900 text-xl font-black">{value}</p>
-        <p className="text-gray-500 text-xs font-medium">{label}</p>
-      </div>
-    </div>
-  );
-}
-
 function AllDSMTab({
   data,
   search,
@@ -678,33 +602,33 @@ function AllDSMTab({
   onDownloadSlip: (d: DSM) => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <Card>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[800px] text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Sr.No</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Mobile</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Email</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Salary</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-              <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+            <tr className="border-b bg-slate-50 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <th className="px-4 py-3 text-left">Sr.No</th>
+              <th className="px-4 py-3 text-left">Employee</th>
+              <th className="hidden px-4 py-3 text-left md:table-cell">Mobile</th>
+              <th className="hidden px-4 py-3 text-left lg:table-cell">Email</th>
+              <th className="hidden px-4 py-3 text-left xl:table-cell">Salary</th>
+              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {data.map((d, idx) => (
-              <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              <tr key={d.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-[10px] font-black">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-[10px] font-bold text-brand-700">
                     {idx + 1}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold overflow-hidden flex-shrink-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-50 text-xs font-bold text-blue-600">
                       {d.photo ? (
-                        <img src={d.photo} alt="" className="w-full h-full object-cover" />
+                        <img src={d.photo} alt="" className="h-full w-full object-cover" />
                       ) : (
                         d.name
                           .split(" ")
@@ -713,37 +637,35 @@ function AllDSMTab({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-gray-900 text-sm font-medium truncate">{d.name}</p>
-                      <p className="text-gray-400 text-xs font-mono truncate">
+                      <p className="truncate text-sm font-medium text-foreground">{d.name}</p>
+                      <p className="truncate font-mono text-xs text-muted-foreground">
                         {d.id}
                         {d.employeeCode ? ` Â· ${d.employeeCode}` : ""}
                       </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "â€”"}</td>
-                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-xs">{d.email || "â€”"}</td>
-                <td className="px-4 py-3 hidden xl:table-cell text-gray-600 text-sm">
+                <td className="hidden px-4 py-3 text-xs text-foreground md:table-cell">{d.mobile || "â€”"}</td>
+                <td className="hidden px-4 py-3 text-xs text-foreground lg:table-cell">{d.email || "â€”"}</td>
+                <td className="hidden px-4 py-3 text-sm text-foreground xl:table-cell">
                   PKR {(d.salary || 0).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[d.status] || "bg-gray-50 text-gray-600"}`}>
-                    {d.status}
-                  </span>
+                  <StatusPill label={d.status} tone={getStatusTone(d.status)} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => onView(d)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View">
-                      <Eye size={14} />
+                    <button onClick={() => onView(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-blue-50 hover:text-blue-600" title="View">
+                      <Eye className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onEdit(d)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
-                      <Edit size={14} />
+                    <button onClick={() => onEdit(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-amber-50 hover:text-amber-600" title="Edit">
+                      <Edit className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onDownloadSlip(d)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Download Salary Slip">
-                      <Download size={14} />
+                    <button onClick={() => onDownloadSlip(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-green-50 hover:text-green-600" title="Download Salary Slip">
+                      <Download className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onDelete(d.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
-                      <Trash2 size={14} />
+                    <button onClick={() => onDelete(d.id)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600" title="Delete">
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </td>
@@ -753,12 +675,9 @@ function AllDSMTab({
         </table>
       </div>
       {data.length === 0 && (
-        <div className="px-6 py-12 text-center">
-          <Users size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No DSMs found</p>
-        </div>
+        <EmptyState icon={Users} title="No DSMs found" description="No DSMs found." />
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -776,22 +695,21 @@ function DocumentsTab({
   return (
     <div className="space-y-3">
       {data.length === 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 px-6 py-12 text-center">
-          <FileText size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No DSMs found</p>
-        </div>
+        <Card>
+          <EmptyState icon={FileText} title="No DSMs found" description="No DSMs found." />
+        </Card>
       )}
       {data.map((d) => {
         const { uploaded, total } = getDocCount(d);
         const missing = total - uploaded;
         const complete = uploaded === total;
         return (
-          <div key={d.id} className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <Card key={d.id} className="p-4 sm:p-5">
+            <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0A2647] flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-600 text-xs font-bold text-white">
                   {d.photo ? (
-                    <img src={d.photo} alt="" className="w-full h-full object-cover" />
+                    <img src={d.photo} alt="" className="h-full w-full object-cover" />
                   ) : (
                     d.name
                       .split(" ")
@@ -800,46 +718,42 @@ function DocumentsTab({
                   )}
                 </div>
                 <div>
-                  <p className="text-gray-900 text-sm font-bold">{d.name}</p>
-                  <p className="text-gray-400 text-xs font-mono">{d.id}</p>
+                  <p className="text-sm font-bold text-foreground">{d.name}</p>
+                  <p className="font-mono text-xs text-muted-foreground">{d.id}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className={`px-3 py-1 rounded-lg text-xs font-bold ${complete ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
-                  {uploaded}/{total} Uploaded
-                </div>
+                <StatusPill label={`${uploaded}/${total} Uploaded`} tone={complete ? "positive" : "warning"} />
                 {missing > 0 && (
-                  <div className="px-3 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-700">
-                    {missing} Missing
-                  </div>
+                  <StatusPill label={`${missing} Missing`} tone="negative" />
                 )}
                 <button
                   onClick={() => onView(d)}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-blue-50 hover:text-blue-600"
                 >
-                  <Eye size={14} />
+                  <Eye className="h-4 w-4" />
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
               {DOC_FIELDS.map((f) => {
                 const hasDoc = !!f.path(d);
                 return (
                   <div
                     key={f.key}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${
                       hasDoc
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-600 border border-red-200"
+                        ? "border border-green-200 bg-green-50 text-green-700"
+                        : "border border-red-200 bg-red-50 text-red-600"
                     }`}
                   >
-                    {hasDoc ? <CheckCircle2 size={12} /> : <X size={12} />}
+                    {hasDoc ? <CheckCircle2 className="h-3 w-3" /> : <X className="h-3 w-3" />}
                     {f.label}
                   </div>
                 );
               })}
             </div>
-          </div>
+          </Card>
         );
       })}
     </div>
@@ -1003,51 +917,44 @@ function SalaryTab({
       </div>
 
       {/* Month Selector + Summary Stats */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      <Card className="p-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <label className="text-gray-500 text-xs font-medium">Calculation Month:</label>
+            <label className="text-xs font-medium text-muted-foreground">Calculation Month:</label>
             <input type="month" value={calcMonth} onChange={(e) => setCalcMonth(e.target.value)}
-              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+              className="rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm font-medium text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
           </div>
-          <p className="text-gray-400 text-xs">{filtered.length} DSMs</p>
+          <p className="text-xs text-muted-foreground">{filtered.length} DSMs</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: "Total Basic", value: totalStats.totalBasic, color: "text-[#0A2647]" },
-            { label: "Total Commissions", value: totalStats.totalCommission, color: "text-green-600" },
-            { label: "Total Gross", value: totalStats.totalGross, color: "text-blue-600" },
-            { label: "Total Net Pay", value: totalStats.totalNet, color: "text-[#C8A951]" },
-          ].map((s) => (
-            <div key={s.label} className="bg-gray-50 rounded-xl p-3">
-              <p className="text-gray-400 text-[10px] font-medium uppercase">{s.label}</p>
-              <p className={`${s.color} text-lg font-black mt-0.5`}>PKR {s.value.toLocaleString()}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <StatCard label="Total Basic" value={`PKR ${totalStats.totalBasic.toLocaleString()}`} icon={Calculator} iconClass="text-brand-600 bg-brand-50" />
+          <StatCard label="Total Commissions" value={`PKR ${totalStats.totalCommission.toLocaleString()}`} icon={TrendingUp} iconClass="text-green-600 bg-green-50" />
+          <StatCard label="Total Gross" value={`PKR ${totalStats.totalGross.toLocaleString()}`} icon={Wallet} iconClass="text-blue-600 bg-blue-50" />
+          <StatCard label="Total Net Pay" value={`PKR ${totalStats.totalNet.toLocaleString()}`} icon={DollarSign} iconClass="text-amber-600 bg-amber-50" />
         </div>
-      </div>
+      </Card>
 
       {/* Salary Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">DSM</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Basic</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Allow.</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">
+              <tr className="border-b bg-slate-50 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left">DSM</th>
+                <th className="hidden px-3 py-3 text-right lg:table-cell">Basic</th>
+                <th className="hidden px-3 py-3 text-right xl:table-cell">Allow.</th>
+                <th className="hidden px-3 py-3 text-center xl:table-cell">
                   <div className="flex flex-col items-center">
                     <span>Activations</span>
-                    <span className="text-[9px] text-gray-400 font-normal">Tot|BVS|FCA|IFCA</span>
+                    <span className="text-[9px] font-normal text-muted-foreground">Tot|BVS|FCA|IFCA</span>
                   </div>
                 </th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Commission</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Bonuses</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Deductions</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase font-bold">Net Pay</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Slip</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+                <th className="hidden px-3 py-3 text-right 2xl:table-cell">Commission</th>
+                <th className="hidden px-3 py-3 text-right 2xl:table-cell">Bonuses</th>
+                <th className="hidden px-3 py-3 text-right 2xl:table-cell">Deductions</th>
+                <th className="px-3 py-3 text-right font-bold">Net Pay</th>
+                <th className="px-3 py-3 text-center">Slip</th>
+                <th className="px-3 py-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1058,76 +965,76 @@ function SalaryTab({
                 const e = calcEarnings(d, acts);
                 return (
                   <Fragment key={d.id}>
-                    <tr className={`border-b border-gray-50 transition-colors ${isEditing ? "bg-blue-50/30" : "hover:bg-gray-50"}`}>
+                    <tr className={`border-b border-slate-100 transition-colors ${isEditing ? "bg-brand-50/30" : "hover:bg-slate-50"}`}>
                       <td className="px-4 py-3">
                         <div>
-                          <p className="text-gray-900 text-sm font-medium">{d.name}</p>
-                          <p className="text-gray-400 text-xs font-mono">{d.id}</p>
+                          <p className="text-sm font-medium text-foreground">{d.name}</p>
+                          <p className="font-mono text-xs text-muted-foreground">{d.id}</p>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-right hidden lg:table-cell">
+                      <td className="hidden px-3 py-2 text-right lg:table-cell">
                         {isEditing ? (
                           <input type="number" value={getSalaryValue(d, "salary")}
                             onChange={(ev) => updateSalaryField(d.id, "salary", Number(ev.target.value))}
-                            className="w-24 text-right px-2 py-1.5 rounded-lg text-xs font-medium border border-[#0A2647]/30 text-gray-900 focus:outline-none focus:border-[#0A2647] focus:ring-1 focus:ring-[#0A2647]/10" />
+                            className="w-24 rounded-lg border border-slate-200 bg-background px-2 py-1.5 text-right text-xs font-medium text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
                         ) : (
-                          <span className="text-gray-700 text-xs font-medium">PKR {(e.basic).toLocaleString()}</span>
+                          <span className="text-xs font-medium text-foreground">PKR {(e.basic).toLocaleString()}</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-right hidden xl:table-cell">
-                        <span className="text-gray-600 text-xs">{e.totalAllowances.toLocaleString()}</span>
+                      <td className="hidden px-3 py-2 text-right xl:table-cell">
+                        <span className="text-xs text-foreground">{e.totalAllowances.toLocaleString()}</span>
                       </td>
-                      <td className="px-3 py-2 text-center hidden xl:table-cell">
+                      <td className="hidden px-3 py-2 text-center xl:table-cell">
                         <div className="flex items-center justify-center gap-1 text-[10px]">
-                          <span className="px-1.5 py-0.5 bg-gray-900 text-white rounded font-bold" title="Total">{acts.total}</span>
-                          <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded font-bold" title="BVS">{acts.bvs}</span>
-                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-bold" title="FCA">{acts.fca}</span>
-                          <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold" title="IFCA">{acts.ifca}</span>
+                          <span className="rounded bg-slate-900 px-1.5 py-0.5 font-bold text-white" title="Total">{acts.total}</span>
+                          <span className="rounded bg-green-100 px-1.5 py-0.5 font-bold text-green-700" title="BVS">{acts.bvs}</span>
+                          <span className="rounded bg-blue-100 px-1.5 py-0.5 font-bold text-blue-700" title="FCA">{acts.fca}</span>
+                          <span className="rounded bg-purple-100 px-1.5 py-0.5 font-bold text-purple-700" title="IFCA">{acts.ifca}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-right hidden 2xl:table-cell">
-                        <span className="text-green-600 text-xs font-medium">PKR {e.totalCommission.toLocaleString()}</span>
+                      <td className="hidden px-3 py-2 text-right 2xl:table-cell">
+                        <span className="text-xs font-medium text-green-600">PKR {e.totalCommission.toLocaleString()}</span>
                       </td>
-                      <td className="px-3 py-2 text-right hidden 2xl:table-cell">
-                        <span className="text-blue-600 text-xs font-medium">PKR {(e.targetBonus + e.bonus).toLocaleString()}</span>
+                      <td className="hidden px-3 py-2 text-right 2xl:table-cell">
+                        <span className="text-xs font-medium text-blue-600">PKR {(e.targetBonus + e.bonus).toLocaleString()}</span>
                       </td>
-                      <td className="px-3 py-2 text-right hidden 2xl:table-cell">
-                        <span className="text-red-500 text-xs font-medium">PKR {e.totalDeductions.toLocaleString()}</span>
+                      <td className="hidden px-3 py-2 text-right 2xl:table-cell">
+                        <span className="text-xs font-medium text-red-500">PKR {e.totalDeductions.toLocaleString()}</span>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className="text-gray-900 text-sm font-black">PKR {e.netSalary.toLocaleString()}</span>
+                        <span className="text-sm font-bold text-foreground">PKR {e.netSalary.toLocaleString()}</span>
                       </td>
                       <td className="px-3 py-2 text-center">
-                        <button onClick={() => onDownloadSlip?.(d, calcMonth)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Download Salary Slip">
-                          <Download size={14} />
+                        <button onClick={() => onDownloadSlip?.(d, calcMonth)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-green-50 hover:text-green-600" title="Download Salary Slip">
+                          <Download className="h-4 w-4" />
                         </button>
                       </td>
                       <td className="px-3 py-2 text-center">
                         <div className="flex items-center justify-center gap-1">
                           {isEditing ? (
-                            <button onClick={() => saveSalaryRow(d)} className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all" title="Save">
-                              <Save size={14} />
+                            <button onClick={() => saveSalaryRow(d)} className="rounded-lg bg-green-500 p-2 text-white transition-colors hover:bg-green-600" title="Save">
+                              <Save className="h-4 w-4" />
                             </button>
                           ) : (
-                            <button onClick={() => { updateSalaryField(d.id, "salary", d.salary || 0); }} className="p-2 text-gray-400 hover:text-[#0A2647] hover:bg-gray-100 rounded-lg transition-all" title="Edit Salary">
-                              <Edit size={14} />
+                            <button onClick={() => { updateSalaryField(d.id, "salary", d.salary || 0); }} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-slate-900" title="Edit Salary">
+                              <Edit className="h-4 w-4" />
                             </button>
                           )}
-                          <button onClick={() => setExpandedRow(isExpanded ? null : d.id)} className="p-2 text-gray-400 hover:text-[#0A2647] hover:bg-gray-100 rounded-lg transition-all" title="Commission Settings">
-                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          <button onClick={() => setExpandedRow(isExpanded ? null : d.id)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-slate-900" title="Commission Settings">
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </button>
                         </div>
                       </td>
                     </tr>
 
                     {isExpanded && (
-                      <tr className="bg-gray-50/80">
+                      <tr className="bg-slate-50/80">
                         <td colSpan={10} className="px-4 py-4">
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {/* Commission Rates */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <DollarSign size={14} className="text-[#C8A951]" /> Commission Rates
+                            <div className="rounded-lg border border-slate-200 p-4">
+                              <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                                <DollarSign className="h-4 w-4 text-[#C8A951]" /> Commission Rates
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
                                 {[
@@ -1147,19 +1054,19 @@ function SalaryTab({
                                   { label: "Other Commission (Rs.)", field: "otherCommission" },
                                 ].map((f) => (
                                   <div key={f.field}>
-                                    <label className="block text-gray-500 text-[10px] font-medium mb-1">{f.label}</label>
+                                    <label className="mb-1 block text-[10px] font-medium text-muted-foreground">{f.label}</label>
                                     <input type="number" value={getSalaryValue(d, f.field)}
                                       onChange={(ev) => updateSalaryField(d.id, f.field, Number(ev.target.value))}
-                                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+                                      className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-xs font-medium text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
                                   </div>
                                 ))}
                               </div>
                             </div>
 
                             {/* Allowances & Bonuses */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <Wallet size={14} className="text-green-500" /> Allowances & Bonuses
+                            <div className="rounded-lg border border-slate-200 p-4">
+                              <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                                <Wallet className="h-4 w-4 text-green-500" /> Allowances & Bonuses
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
                                 {[
@@ -1171,19 +1078,19 @@ function SalaryTab({
                                   { label: "Performance Bonus (Rs.)", field: "bonus" },
                                 ].map((f) => (
                                   <div key={f.field}>
-                                    <label className="block text-gray-500 text-[10px] font-medium mb-1">{f.label}</label>
+                                    <label className="mb-1 block text-[10px] font-medium text-muted-foreground">{f.label}</label>
                                     <input type="number" value={getSalaryValue(d, f.field)}
                                       onChange={(ev) => updateSalaryField(d.id, f.field, Number(ev.target.value))}
-                                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+                                      className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-xs font-medium text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
                                   </div>
                                 ))}
                               </div>
                             </div>
 
                             {/* Deductions */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <AlertTriangle size={14} className="text-red-500" /> Deductions
+                            <div className="rounded-lg border border-slate-200 p-4">
+                              <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                                <AlertTriangle className="h-4 w-4 text-red-500" /> Deductions
                               </h4>
                               <div className="grid grid-cols-3 gap-3">
                                 {[
@@ -1192,10 +1099,10 @@ function SalaryTab({
                                   { label: "Other Deduction (Rs.)", field: "otherDeduction" },
                                 ].map((f) => (
                                   <div key={f.field}>
-                                    <label className="block text-gray-500 text-[10px] font-medium mb-1">{f.label}</label>
+                                    <label className="mb-1 block text-[10px] font-medium text-muted-foreground">{f.label}</label>
                                     <input type="number" value={getSalaryValue(d, f.field)}
                                       onChange={(ev) => updateSalaryField(d.id, f.field, Number(ev.target.value))}
-                                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+                                      className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-xs font-medium text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
                                   </div>
                                 ))}
                               </div>
@@ -1204,7 +1111,7 @@ function SalaryTab({
                             {/* Earnings Breakdown */}
                             <div className="bg-gradient-to-br from-[#0A2647] to-[#144272] rounded-xl p-4 text-white">
                               <h4 className="font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <TrendingUp size={14} /> Earnings Breakdown â€” {calcMonth}
+                                <TrendingUp className="h-4 w-4" /> Earnings Breakdown â€” {calcMonth}
                               </h4>
                               <div className="space-y-2 text-xs">
                                 <div className="flex justify-between"><span className="text-white/60">Basic Salary</span><span className="font-medium">PKR {e.basic.toLocaleString()}</span></div>
@@ -1241,12 +1148,9 @@ function SalaryTab({
           </table>
         </div>
         {filtered.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <DollarSign size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No DSMs found</p>
-          </div>
+          <EmptyState icon={DollarSign} title="No DSMs found" description="No DSMs found." />
         )}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -1265,37 +1169,37 @@ function InactiveTab({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
-        <AlertTriangle size={16} className="text-amber-600" />
-        <p className="text-amber-800 text-sm font-bold">Inactive / Resigned DSMs â€” {data.length} found</p>
+    <Card>
+      <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-3">
+        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <p className="text-sm font-bold text-amber-800">Inactive / Resigned DSMs â€” {data.length} found</p>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[800px] text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Sr.No</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Mobile</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Email</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Salary</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-              <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+            <tr className="border-b bg-slate-50 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <th className="px-4 py-3 text-left">Sr.No</th>
+              <th className="px-4 py-3 text-left">Employee</th>
+              <th className="hidden px-4 py-3 text-left md:table-cell">Mobile</th>
+              <th className="hidden px-4 py-3 text-left lg:table-cell">Email</th>
+              <th className="hidden px-4 py-3 text-left xl:table-cell">Salary</th>
+              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {data.map((d, idx) => (
-              <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              <tr key={d.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-[10px] font-black">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-[10px] font-bold text-brand-700">
                     {idx + 1}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold overflow-hidden flex-shrink-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-xs font-bold text-slate-500">
                       {d.photo ? (
-                        <img src={d.photo} alt="" className="w-full h-full object-cover" />
+                        <img src={d.photo} alt="" className="h-full w-full object-cover" />
                       ) : (
                         d.name
                           .split(" ")
@@ -1304,34 +1208,32 @@ function InactiveTab({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-gray-900 text-sm font-medium truncate">{d.name}</p>
-                      <p className="text-gray-400 text-xs font-mono truncate">
+                      <p className="truncate text-sm font-medium text-foreground">{d.name}</p>
+                      <p className="truncate font-mono text-xs text-muted-foreground">
                         {d.id}
                         {d.employeeCode ? ` Â· ${d.employeeCode}` : ""}
                       </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "â€”"}</td>
-                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-xs">{d.email || "â€”"}</td>
-                <td className="px-4 py-3 hidden xl:table-cell text-gray-600 text-sm">
+                <td className="hidden px-4 py-3 text-xs text-foreground md:table-cell">{d.mobile || "â€”"}</td>
+                <td className="hidden px-4 py-3 text-xs text-foreground lg:table-cell">{d.email || "â€”"}</td>
+                <td className="hidden px-4 py-3 text-sm text-foreground xl:table-cell">
                   PKR {(d.salary || 0).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[d.status] || "bg-gray-50 text-gray-600"}`}>
-                    {d.status}
-                  </span>
+                  <StatusPill label={d.status} tone={getStatusTone(d.status)} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => onView(d)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View">
-                      <Eye size={14} />
+                    <button onClick={() => onView(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-blue-50 hover:text-blue-600" title="View">
+                      <Eye className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onEdit(d)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
-                      <Edit size={14} />
+                    <button onClick={() => onEdit(d)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-amber-50 hover:text-amber-600" title="Edit">
+                      <Edit className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onDelete(d.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
-                      <Trash2 size={14} />
+                    <button onClick={() => onDelete(d.id)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600" title="Delete">
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </td>
@@ -1341,46 +1243,43 @@ function InactiveTab({
         </table>
       </div>
       {data.length === 0 && (
-        <div className="px-6 py-12 text-center">
-          <CheckCircle2 size={32} className="text-green-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No inactive or resigned DSMs</p>
-        </div>
+        <EmptyState icon={CheckCircle2} title="All clear" description="No inactive or resigned DSMs." />
       )}
-    </div>
+    </Card>
   );
 }
 
 function ViewModal({ dsm, onClose }: { dsm: DSM; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4" onClick={onClose}>
-      <div
-        className="bg-white rounded-t-2xl sm:rounded-2xl border border-gray-200 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center" onClick={onClose}>
+      <Card
+        className="max-h-[90vh] w-full overflow-y-auto sm:max-w-lg shadow-xl sm:rounded-t-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-          <h3 className="text-gray-900 font-bold">DSM Details</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
-            <X size={18} />
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-4">
+          <h3 className="text-base font-semibold text-foreground">DSM Details</h3>
+          <button onClick={onClose} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground">
+            <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="p-6 space-y-5">
+        <div className="space-y-5 p-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-[#0A2647] flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-600 text-xl font-bold text-white">
               {dsm.photo ? (
-                <img src={dsm.photo} alt="" className="w-full h-full object-cover" />
+                <img src={dsm.photo} alt="" className="h-full w-full object-cover" />
               ) : (
                 dsm.name.charAt(0)
               )}
             </div>
             <div>
-              <p className="text-gray-900 font-bold text-lg">{dsm.name}</p>
-              <p className="text-gray-500 text-xs font-mono">
+              <p className="text-lg font-bold text-foreground">{dsm.name}</p>
+              <p className="font-mono text-xs text-muted-foreground">
                 {dsm.id}
                 {dsm.employeeCode ? ` Â· ${dsm.employeeCode}` : ""}
               </p>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-medium mt-1 inline-block ${STATUS_COLORS[dsm.status] || ""}`}>
-                {dsm.status}
-              </span>
+              <div className="mt-1 inline-block">
+                <StatusPill label={dsm.status} tone={getStatusTone(dsm.status)} />
+              </div>
             </div>
           </div>
 
@@ -1406,9 +1305,9 @@ function ViewModal({ dsm, onClose }: { dsm: DSM; onClose: () => void }) {
                   const msg = `*THE SMART ERP - Account Credentials*\n\nDear ${dsm.name},\n\nYour DSM account has been created successfully. Please find your login credentials below:\n\nðŸ†” User ID: ${dsm.username}\nðŸ”‘ Password: ${dsm.password}\n\nðŸ”— Login Portal: https://thesmartpvt.com/dsm-login\n\nâš ï¸ *IMPORTANT SECURITY NOTICE:*\nâ€¢ Do NOT share your ID or password with anyone\nâ€¢ THE SMART will NEVER ask for your password\nâ€¢ Change your password after first login\nâ€¢ Keep your credentials confidential\n\nThank you,\nTHE SMART ERP Team`;
                   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
                 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-green-700"
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 Share via WhatsApp
               </button>
             </div>
@@ -1453,7 +1352,7 @@ function ViewModal({ dsm, onClose }: { dsm: DSM; onClose: () => void }) {
             </Section>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -1468,24 +1367,24 @@ function DeleteModal({
   onCancel: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onCancel}>
-      <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
-        <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-4">
-          <Trash2 size={20} className="text-red-600" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={onCancel}>
+      <Card className="max-w-sm p-6 text-center shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-50">
+          <Trash2 className="h-5 w-5 text-red-600" />
         </div>
-        <h3 className="text-gray-900 font-bold mb-2">Delete DSM?</h3>
-        <p className="text-gray-500 text-sm mb-6">
+        <h3 className="mb-2 text-base font-semibold text-foreground">Delete DSM?</h3>
+        <p className="mb-6 text-sm text-muted-foreground">
           DSM <span className="font-mono font-medium">{id}</span> will be permanently removed.
         </p>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">
+          <Button variant="outline" className="flex-1" onClick={onCancel}>
             Cancel
-          </button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700">
+          </Button>
+          <Button variant="destructive" className="flex-1" onClick={onConfirm}>
             Delete
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -1493,8 +1392,8 @@ function DeleteModal({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-2">{title}</h4>
-      <div className="bg-gray-50 rounded-xl p-4 space-y-2">{children}</div>
+      <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground">{title}</h4>
+      <div className="space-y-2 rounded-lg bg-slate-50 p-4">{children}</div>
     </div>
   );
 }
@@ -1502,9 +1401,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function InfoRow({ label, value }: { label: string; value: string | undefined }) {
   if (!value) return null;
   return (
-    <div className="flex justify-between text-sm">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-medium text-gray-900">{value}</span>
+    <div className="flex justify-between gap-4 text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium text-foreground">{value}</span>
     </div>
   );
 }

@@ -1,9 +1,16 @@
 ﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Target, LayoutGrid, List, Settings, Users, Save, X } from "lucide-react";
+import { Target, LayoutGrid, List, Settings, Users, Save, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { apiLoadById, apiSave } from "@/lib/api";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { StatusPill } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const defaultSettings = { deviceWeight: 2, simWeight: 1, warnLow: 50, warnHigh: 80 };
 
@@ -78,7 +85,7 @@ export default function TargetsPage() {
     const simPct = t.simTarget ? (t.simAchieved ?? 0) / t.simTarget : 0;
     return Math.round(((devPct * settings.deviceWeight + simPct * settings.simWeight) / (settings.deviceWeight + settings.simWeight)) * 100);
   };
-  const statusOf = (w: number) => w >= settings.warnHigh ? { label: "On Track", cls: "bg-green-50 text-green-700 border-green-200" } : w >= settings.warnLow ? { label: "Warning", cls: "bg-yellow-50 text-yellow-700 border-yellow-200" } : { label: "Behind", cls: "bg-red-50 text-red-700 border-red-200" };
+  const statusOf = (w: number) => w >= settings.warnHigh ? { label: "On Track", tone: "positive" as const } : w >= settings.warnLow ? { label: "Warning", tone: "warning" as const } : { label: "Behind", tone: "negative" as const };
   const barColor = (w: number) => w >= settings.warnHigh ? "bg-green-500" : w >= settings.warnLow ? "bg-yellow-500" : "bg-red-500";
 
   const ProgressBlock = ({ label, target, achieved, accent, onTarget, onAchieved }: {
@@ -107,88 +114,63 @@ export default function TargetsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Target & Achievement</h1>
-          <p className="text-gray-500 text-sm mt-1">Monthly targets for DSO & DSM teams</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-gray-200">
-            <Target size={16} className="text-gray-400" />
-            <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="bg-transparent text-gray-900 text-sm focus:outline-none" />
-          </div>
-          <div className="flex bg-white rounded-xl border border-gray-200 p-1">
-            <button onClick={() => setView("cards")} className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${view === "cards" ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}>
-              <LayoutGrid size={14} /> Cards
-            </button>
-            <button onClick={() => setView("list")} className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${view === "list" ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}>
-              <List size={14} /> List
-            </button>
-          </div>
-          <button onClick={() => setShowSettings((p) => !p)} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${showSettings ? "bg-[#0A2647] text-white shadow-md" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}>
-            <Settings size={14} /> Settings
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Targets" }]}
+        title="Target & Achievement"
+        description="Monthly targets for DSO & DSM teams"
+        actions={
+          <>
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm">
+              <Target size={16} className="text-muted-foreground" />
+              <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="bg-transparent text-xs outline-none" />
+            </div>
+            <div className="flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+              <button onClick={() => setView("cards")} className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${view === "cards" ? "bg-brand-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}>
+                <LayoutGrid size={14} /> Cards
+              </button>
+              <button onClick={() => setView("list")} className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${view === "list" ? "bg-brand-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}>
+                <List size={14} /> List
+              </button>
+            </div>
+            <Button variant={showSettings ? "primary" : "outline"} size="sm" onClick={() => setShowSettings((p) => !p)}>
+              <Settings size={14} /> Settings
+            </Button>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <p className="text-lg font-black text-[#0A2647]">{stats.total}</p>
-          <p className="text-gray-500 text-[10px]">Team Members</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <p className="text-lg font-black text-blue-600">{stats.withTargets}</p>
-          <p className="text-gray-500 text-[10px]">Targets Set</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <p className="text-lg font-black text-gray-900">{stats.totalPts.toLocaleString()}</p>
-          <p className="text-gray-500 text-[10px]">Total Points</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <p className="text-lg font-black text-green-600">{stats.onTrack}</p>
-          <p className="text-gray-500 text-[10px]">On Track</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <p className="text-lg font-black text-yellow-600">{stats.warning}</p>
-          <p className="text-gray-500 text-[10px]">Warning</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <p className="text-lg font-black text-red-600">{stats.behind}</p>
-          <p className="text-gray-500 text-[10px]">Behind</p>
-        </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <StatCard label="Team Members" value={stats.total} icon={Users} iconClass="text-brand-600 bg-brand-50" />
+        <StatCard label="Targets Set" value={stats.withTargets} icon={Target} iconClass="text-blue-600 bg-blue-50" />
+        <StatCard label="Total Points" value={stats.totalPts.toLocaleString()} icon={Target} iconClass="text-slate-600 bg-slate-100" />
+        <StatCard label="On Track" value={stats.onTrack} icon={CheckCircle2} iconClass="text-green-600 bg-green-50" />
+        <StatCard label="Warning" value={stats.warning} icon={AlertTriangle} iconClass="text-yellow-600 bg-yellow-50" />
+        <StatCard label="Behind" value={stats.behind} icon={AlertTriangle} iconClass="text-red-600 bg-red-50" />
       </div>
 
       {showSettings && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Settings size={16} className="text-[#0A2647]" /> Target Settings</h3>
-            <button onClick={() => setShowSettings(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={16} /></button>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Points per Device</label>
-              <input type="number" value={settings.deviceWeight} onChange={(e) => setSettings((p) => ({ ...p, deviceWeight: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900" />
-            </div>
-            <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Points per SIM</label>
-              <input type="number" value={settings.simWeight} onChange={(e) => setSettings((p) => ({ ...p, simWeight: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900" />
-            </div>
-            <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Warning Below (%)</label>
-              <input type="number" value={settings.warnLow} onChange={(e) => setSettings((p) => ({ ...p, warnLow: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900" />
-            </div>
-            <div><label className="block text-gray-500 text-xs font-medium mb-1.5">On Track Above (%)</label>
-              <input type="number" value={settings.warnHigh} onChange={(e) => setSettings((p) => ({ ...p, warnHigh: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900" />
-            </div>
-          </div>
-          <button onClick={saveSettings} className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-[#0A2647] text-white text-sm font-bold rounded-xl hover:bg-[#144272]">
-            <Save size={14} /> Save Settings
-          </button>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between p-5">
+            <CardTitle className="flex items-center gap-2 text-sm font-bold"><Settings size={16} className="text-brand-600" /> Target Settings</CardTitle>
+            <button onClick={() => setShowSettings(false)} className="p-1 text-muted-foreground hover:text-slate-900"><X size={16} /></button>
+          </CardHeader>
+          <CardContent className="grid gap-4 p-5 pt-0 sm:grid-cols-2 lg:grid-cols-4">
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Points per Device</label><Input type="number" value={settings.deviceWeight} onChange={(e) => setSettings((p) => ({ ...p, deviceWeight: Number(e.target.value) }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Points per SIM</label><Input type="number" value={settings.simWeight} onChange={(e) => setSettings((p) => ({ ...p, simWeight: Number(e.target.value) }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Warning Below (%)</label><Input type="number" value={settings.warnLow} onChange={(e) => setSettings((p) => ({ ...p, warnLow: Number(e.target.value) }))} /></div>
+            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">On Track Above (%)</label><Input type="number" value={settings.warnHigh} onChange={(e) => setSettings((p) => ({ ...p, warnHigh: Number(e.target.value) }))} /></div>
+          </CardContent>
+          <CardFooter className="pt-0">
+            <Button onClick={saveSettings}><Save size={14} /> Save Settings</Button>
+          </CardFooter>
+        </Card>
       )}
 
-      <div className="flex gap-2 bg-white rounded-2xl border border-gray-200 p-1.5 w-fit">
+      <div className="flex w-fit gap-2 rounded-xl border border-slate-200 bg-white p-1.5">
         {(["All", "DSO", "DSM"] as const).map((r) => (
-          <button key={r} onClick={() => setRoleFilter(r)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${roleFilter === r ? "bg-[#0A2647] text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}>
+          <button key={r} onClick={() => setRoleFilter(r)} className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${roleFilter === r ? "bg-brand-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}>
             <Users size={14} /> {r}
-            <span className={`px-2 py-0.5 rounded-lg text-xs font-bold ${roleFilter === r ? "bg-white/20" : "bg-gray-100"}`}>
+            <span className={`rounded-lg px-2 py-0.5 text-xs font-bold ${roleFilter === r ? "bg-white/20" : "bg-slate-100"}`}>
               {r === "All" ? rows.length : rows.filter((x) => x.role === r).length}
             </span>
           </button>
@@ -196,10 +178,11 @@ export default function TargetsPage() {
       </div>
 
       {rows.length === 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 py-16 text-center">
-          <Target size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No {roleFilter === "All" ? "" : roleFilter + " "}members found for this month</p>
-        </div>
+        <Card>
+          <CardContent>
+            <EmptyState icon={Target} title={`No ${roleFilter === "All" ? "" : roleFilter + " "}members found`} description="No members found for this month." />
+          </CardContent>
+        </Card>
       )}
 
       {view === "cards" ? (
@@ -218,7 +201,7 @@ export default function TargetsPage() {
                       <p className="text-gray-400 text-xs font-mono truncate">{r.id} · {r.role}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-lg text-[10px] font-bold border shrink-0 whitespace-nowrap ${st.cls}`}>{st.label}</span>
+                  <StatusPill label={st.label} tone={st.tone} />
                 </div>
 
                 <div className="space-y-3">
@@ -281,7 +264,7 @@ export default function TargetsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-gray-900">{pts.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-center"><span className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${st.cls}`}>{st.label}</span></td>
+                      <td className="px-4 py-3 text-center"><StatusPill label={st.label} tone={st.tone} /></td>
                     </tr>
                   );
                 })}

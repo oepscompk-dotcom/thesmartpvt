@@ -1,19 +1,19 @@
 ﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { useDSOData } from "@/lib/DSODataContext";
 import { apiLoadById } from "@/lib/api";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 import {
   DollarSign, Calendar, Smartphone, ArrowRightLeft, Repeat, Hash,
   TrendingUp, TrendingDown, Wallet, AlertTriangle, CheckCircle2,
-  ChevronDown, ChevronUp, ArrowLeft, Download
+  ChevronDown, ChevronUp, Download
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
 
 export default function DSOSalaryDetailPage() {
   const { activations, auth, hydrated } = useDSOData();
-  const router = useRouter();
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [salaryData, setSalaryData] = useState<Record<string, number>>({});
@@ -325,22 +325,17 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push("/dso/dashboard")} className="p-2 hover:bg-gray-100 rounded-xl transition-all">
-            <ArrowLeft size={18} className="text-gray-500" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-black text-gray-900">Salary Detail</h1>
-            <p className="text-gray-500 text-sm mt-1">Month-wise salary breakdown &amp; payslips</p>
-          </div>
-        </div>
-        <button onClick={downloadSlip}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#C8A951] text-[#0A2647] font-bold text-sm rounded-xl hover:bg-[#d4b560] shadow-md transition-all">
-          <Download size={14} /> Download Slip
-        </button>
-      </div>
+      {/* Page Header */}
+      <PageHeader
+        breadcrumb={[{ label: "DSO Dashboard", href: "/dso/dashboard" }, { label: "Salary Detail" }]}
+        title="Salary Detail"
+        description="Month-wise salary breakdown & payslips"
+        actions={
+          <Button onClick={downloadSlip}>
+            <Download size={14} /> Download Slip
+          </Button>
+        }
+      />
 
       {/* Month Selector + Summary */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5">

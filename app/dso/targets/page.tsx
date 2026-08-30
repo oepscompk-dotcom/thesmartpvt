@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { Target, Save, TrendingUp } from "lucide-react";
 import { useDSOData } from "@/lib/DSODataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 export default function DSOTargetsPage() {
   const { targets, updateTargets } = useDSOData();
@@ -46,59 +50,69 @@ export default function DSOTargetsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Targets & Achievements</h1>
-          <p className="text-gray-500 text-sm mt-1">{targets.month} â€” Track and update your monthly goals</p>
-        </div>
-        <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Save size={16} /> {saved ? "Saved!" : "Save Changes"}
-        </button>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "DSO Dashboard", href: "/dso" }, { label: "Targets" }]}
+        title="Targets & Achievements"
+        description={`${targets.month} — Track and update your monthly goals`}
+        actions={
+          <Button onClick={handleSave}>
+            <Save size={16} /> {saved ? "Saved!" : "Save Changes"}
+          </Button>
+        }
+      />
 
-      <div className="bg-white rounded-2xl p-5 border border-gray-200 text-center">
-        <div className="w-10 h-10 rounded-xl bg-[#C8A951]/20 flex items-center justify-center text-[#C8A951] mx-auto mb-2"><TrendingUp size={18} /></div>
-        <p className="text-3xl font-black text-gray-900">{overallPct}%</p>
-        <p className="text-gray-500 text-xs mt-1">Overall Progress ({overallAchieved}/{overallTarget})</p>
-        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mt-3">
-          <div className={`h-full rounded-full transition-all duration-500 ${overallPct >= 80 ? "bg-green-500" : overallPct >= 50 ? "bg-[#C8A951]" : "bg-red-500"}`} style={{ width: `${Math.min(overallPct, 100)}%` }} />
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <TrendingUp size={18} />
+            </div>
+            <p className="text-2xl font-bold text-foreground">{overallPct}%</p>
+            <p className="text-xs font-medium text-muted-foreground">Overall Progress ({overallAchieved}/{overallTarget})</p>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className={`h-full rounded-full transition-all duration-500 ${overallPct >= 80 ? "bg-green-500" : overallPct >= 50 ? "bg-brand-500" : "bg-red-500"}`} style={{ width: `${Math.min(overallPct, 100)}%` }} />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid sm:grid-cols-2 gap-4">
         {targetItems.map((item) => {
           const pct = item.target > 0 ? Math.round((item.achieved / item.target) * 100) : 0;
-          const borderColor = item.color === "blue" ? "border-blue-200" : item.color === "green" ? "border-green-200" : item.color === "orange" ? "border-orange-200" : "border-purple-200";
-          const bgColor = item.color === "blue" ? "bg-blue-50" : item.color === "green" ? "bg-green-50" : item.color === "orange" ? "bg-orange-50" : "bg-purple-50";
-          const textColor = item.color === "blue" ? "text-blue-600" : item.color === "green" ? "text-green-600" : item.color === "orange" ? "text-orange-600" : "text-purple-600";
+          const iconClass = item.color === "blue" ? "text-blue-600 bg-blue-50" : item.color === "green" ? "text-green-600 bg-green-50" : item.color === "orange" ? "text-orange-600 bg-orange-50" : "text-purple-600 bg-purple-50";
+          const barClass = pct >= 80 ? "bg-green-500" : pct >= 50 ? "bg-brand-500" : "bg-red-500";
 
           return (
-            <div key={item.key} className={`bg-white rounded-2xl p-5 border ${borderColor}`}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-xl ${bgColor} flex items-center justify-center ${textColor}`}><Target size={18} /></div>
-                <div>
-                  <p className="text-gray-900 font-bold text-sm">{item.label}</p>
-                  <p className="text-gray-400 text-xs font-mono">{pct}%</p>
+            <Card key={item.key}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconClass}`}><Target size={18} /></div>
+                  <div>
+                    <p className="text-foreground font-semibold text-sm">{item.label}</p>
+                    <p className="text-xs font-mono text-muted-foreground">{pct}%</p>
+                  </div>
                 </div>
-              </div>
-              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
-                <div className={`h-full rounded-full transition-all duration-500 ${pct >= 80 ? "bg-green-500" : pct >= 50 ? "bg-[#C8A951]" : "bg-red-500"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
-              </div>
-              <div className="flex gap-2">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className={`h-full rounded-full transition-all duration-500 ${barClass}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                </div>
+              </CardHeader>
+              <CardContent className="flex gap-2 pt-0">
                 <div className="flex-1">
-                  <label className="block text-gray-400 text-xs mb-1">Target</label>
-                  <input type="number" value={item.target} onChange={(e) => setForm((p) => ({ ...p, [item.fieldT]: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">Target</label>
+                  <Input type="number" value={item.target} onChange={(e) => setForm((p) => ({ ...p, [item.fieldT]: Number(e.target.value) }))} />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-gray-400 text-xs mb-1">Achieved</label>
-                  <input type="number" value={item.achieved} onChange={(e) => setForm((p) => ({ ...p, [item.fieldA]: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">Achieved</label>
+                  <Input type="number" value={item.achieved} onChange={(e) => setForm((p) => ({ ...p, [item.fieldA]: Number(e.target.value) }))} />
                 </div>
-              </div>
-              <div className="flex justify-between text-xs mt-3 pt-3 border-t border-gray-100">
-                <span className="text-gray-500">Remaining</span>
-                <span className="font-bold text-gray-900">{Math.max(item.target - item.achieved, 0)}</span>
-              </div>
-            </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <span className="text-xs text-muted-foreground">Remaining</span>
+                <span className="text-xs font-bold text-foreground">{Math.max(item.target - item.achieved, 0)}</span>
+              </CardFooter>
+            </Card>
           );
         })}
       </div>

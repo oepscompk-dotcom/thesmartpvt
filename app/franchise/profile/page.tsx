@@ -4,6 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { User, Save, Lock, Mail, Phone, Building2, MapPin, CheckCircle2, CreditCard, Calendar, Package, MapPinned, Hash } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
 import { useData } from "@/lib/DataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
 
 const PAKISTAN_CITIES: Record<string, string[]> = {
   "Punjab": ["Attock", "Bahawalnagar", "Bahawalpur", "Chakwal", "Dera Ghazi Khan", "Faisalabad", "Gujranwala", "Gujrat", "Hafizabad", "Jhang", "Jhelum", "Kasur", "Khanewal", "Khushab", "Lahore", "Layyah", "Lodhran", "Mandi Bahauddin", "Mianwali", "Multan", "Muzaffargarh", "Narowal", "Nankana Sahib", "Okara", "Pakpattan", "Rahim Yar Khan", "Rajanpur", "Rawalpindi", "Sahiwal", "Sargodha", "Sheikhupura", "Sialkot", "Toba Tek Singh", "Vehari"],
@@ -95,204 +101,155 @@ export default function ProfilePage() {
     return `${day}-${m}-${y}`;
   };
 
+  const infoItems = [
+    { icon: Hash, label: "Franchise ID", value: franchise?.id || auth.franchiseId, monospace: true },
+    { icon: Building2, label: "Franchise Name", value: franchise?.name || "\u2014" },
+    { icon: User, label: "Owner Name", value: franchise?.owner || "\u2014" },
+    { icon: CreditCard, label: "CNIC", value: franchise?.cnic || "\u2014", monospace: true },
+    { icon: Phone, label: "Mobile", value: franchise?.mobile || "\u2014" },
+    { icon: Mail, label: "Email", value: franchise?.email || "\u2014" },
+    { icon: MapPinned, label: "Province", value: franchise?.province || "\u2014" },
+    { icon: MapPin, label: "City", value: franchise?.city || "\u2014" },
+    { icon: Package, label: "Package", value: franchise?.package || "\u2014" },
+    { icon: CheckCircle2, label: "Status", value: franchise?.status || "\u2014", status: true },
+    { icon: Calendar, label: "Agreement Start", value: fmtDate(franchise?.agreementStart || "") },
+    { icon: Calendar, label: "Agreement End", value: fmtDate(franchise?.agreementEnd || "") },
+  ];
+
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">My Profile</h1>
-        <p className="text-gray-500 text-sm mt-1">Manage your franchise profile and account settings</p>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Profile" }]}
+        title="My Profile"
+        description="Manage your franchise profile and account settings"
+      />
 
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#0A2647] to-[#144272] flex items-center justify-center text-white text-2xl font-black shadow-lg">
-            {(form.ownerName || form.franchiseName || "F").charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h3 className="text-gray-900 font-bold text-lg">{form.ownerName || "Franchise Owner"}</h3>
-            <p className="text-gray-500 text-sm">{form.franchiseName || "Franchise Name"}</p>
-            <p className="text-[#C8A951] text-xs font-semibold">{auth.franchiseId}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><Hash size={14} /><span className="text-xs font-medium uppercase">Franchise ID</span></div>
-            <p className="text-gray-900 font-mono font-bold">{franchise?.id || auth.franchiseId}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><Building2 size={14} /><span className="text-xs font-medium uppercase">Franchise Name</span></div>
-            <p className="text-gray-900 font-medium">{franchise?.name || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><User size={14} /><span className="text-xs font-medium uppercase">Owner Name</span></div>
-            <p className="text-gray-900 font-medium">{franchise?.owner || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><CreditCard size={14} /><span className="text-xs font-medium uppercase">CNIC</span></div>
-            <p className="text-gray-900 font-mono">{franchise?.cnic || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><Phone size={14} /><span className="text-xs font-medium uppercase">Mobile</span></div>
-            <p className="text-gray-900">{franchise?.mobile || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><Mail size={14} /><span className="text-xs font-medium uppercase">Email</span></div>
-            <p className="text-gray-900">{franchise?.email || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><MapPinned size={14} /><span className="text-xs font-medium uppercase">Province</span></div>
-            <p className="text-gray-900">{franchise?.province || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><MapPin size={14} /><span className="text-xs font-medium uppercase">City</span></div>
-            <p className="text-gray-900">{franchise?.city || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><Package size={14} /><span className="text-xs font-medium uppercase">Package</span></div>
-            <p className="text-gray-900 font-medium">{franchise?.package || "\u2014"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><CheckCircle2 size={14} /><span className="text-xs font-medium uppercase">Status</span></div>
-            <span className={`inline-block px-2.5 py-0.5 rounded-lg text-xs font-bold ${franchise?.status === "Active" ? "bg-green-100 text-green-700" : franchise?.status === "Suspended" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>{franchise?.status || "\u2014"}</span>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><Calendar size={14} /><span className="text-xs font-medium uppercase">Agreement Start</span></div>
-            <p className="text-gray-900">{fmtDate(franchise?.agreementStart || "")}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-2 text-gray-400 mb-1"><Calendar size={14} /><span className="text-xs font-medium uppercase">Agreement End</span></div>
-            <p className="text-gray-900">{fmtDate(franchise?.agreementEnd || "")}</p>
-          </div>
-        </div>
-
-        <h4 className="text-gray-900 font-bold text-sm mb-3 uppercase tracking-wide">Edit Profile</h4>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Franchise Name</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <Building2 size={16} className="text-gray-400" />
-              <input type="text" value={form.franchiseName} onChange={(e) => setForm((p) => ({ ...p, franchiseName: e.target.value }))}
-                placeholder="Enter franchise name"
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+      <Card>
+        <CardContent className="p-6">
+          <div className="mb-6 flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 text-2xl font-black text-white shadow-lg">
+              {(form.ownerName || form.franchiseName || "F").charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">{form.ownerName || "Franchise Owner"}</h3>
+              <p className="text-sm text-muted-foreground">{form.franchiseName || "Franchise Name"}</p>
+              <p className="text-xs font-semibold text-amber-500">{auth.franchiseId}</p>
             </div>
           </div>
 
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Full Name (Owner)</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <User size={16} className="text-gray-400" />
-              <input type="text" value={form.ownerName} onChange={(e) => setForm((p) => ({ ...p, ownerName: e.target.value }))}
-                placeholder="Enter your full name"
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
-            </div>
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {infoItems.map(({ icon: Icon, label, value, monospace, status }) => (
+              <div key={label} className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div className="mb-1 flex items-center gap-2 text-muted-foreground"><Icon size={14} /><span className="text-xs font-medium uppercase">{label}</span></div>
+                {status ? (
+                  <StatusPill label={value} tone={toneForStatus(value)} />
+                ) : (
+                  <p className={`font-medium text-slate-900 ${monospace ? "font-mono" : ""}`}>{value}</p>
+                )}
+              </div>
+            ))}
           </div>
 
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Email</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <Mail size={16} className="text-gray-400" />
-              <input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                placeholder="Enter email address"
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+          <CardTitle className="mb-3 text-sm uppercase tracking-wide">Edit Profile</CardTitle>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Franchise Name</label>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3">
+                <Building2 size={16} className="text-muted-foreground" />
+                <Input value={form.franchiseName} onChange={(e) => setForm((p) => ({ ...p, franchiseName: e.target.value }))} placeholder="Enter franchise name" className="border-0 bg-transparent focus:ring-0" />
+              </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Phone</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <Phone size={16} className="text-gray-400" />
-              <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                placeholder="Enter phone number"
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Full Name (Owner)</label>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3">
+                <User size={16} className="text-muted-foreground" />
+                <Input value={form.ownerName} onChange={(e) => setForm((p) => ({ ...p, ownerName: e.target.value }))} placeholder="Enter your full name" className="border-0 bg-transparent focus:ring-0" />
+              </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Province</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <MapPinned size={16} className="text-gray-400 flex-shrink-0" />
-              <select value={form.province} onChange={(e) => setForm((p) => ({ ...p, province: e.target.value, city: "" }))}
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer pl-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</label>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3">
+                <Mail size={16} className="text-muted-foreground" />
+                <Input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="Enter email address" className="border-0 bg-transparent focus:ring-0" />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Phone</label>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3">
+                <Phone size={16} className="text-muted-foreground" />
+                <Input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="Enter phone number" className="border-0 bg-transparent focus:ring-0" />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Province</label>
+              <Select value={form.province} onChange={(e) => setForm((p) => ({ ...p, province: e.target.value, city: "" }))}>
                 <option value="">Select Province</option>
                 {Object.keys(PAKISTAN_CITIES).map((prov) => (
                   <option key={prov} value={prov}>{prov}</option>
                 ))}
-              </select>
+              </Select>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">City</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <MapPin size={16} className="text-gray-400 flex-shrink-0" />
-              <select value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
-                disabled={!form.province}
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full appearance-none cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed pl-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">City</label>
+              <Select value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} disabled={!form.province}>
                 <option value="">{form.province ? "Select City" : "Select Province first"}</option>
                 {(PAKISTAN_CITIES[form.province] || []).map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
-              </select>
+              </Select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Address (Optional)</label>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3">
+                <MapPin size={16} className="text-muted-foreground" />
+                <Input type="text" value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))} placeholder="Enter street address" className="border-0 bg-transparent focus:ring-0" />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Franchise ID</label>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3">
+                <Building2 size={16} className="text-muted-foreground" />
+                <span className="py-2 text-sm font-mono text-slate-500">{auth.franchiseId}</span>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Address (Optional)</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-[#0A2647]/50 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-              <MapPin size={16} className="text-gray-400" />
-              <input type="text" value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
-                placeholder="Enter street address"
-                className="bg-transparent text-gray-900 text-sm focus:outline-none w-full" />
-            </div>
+          <div className="mt-6 flex justify-end">
+            <Button onClick={handleSave} size="lg">
+              {saved ? <><CheckCircle2 size={14} /> Saved!</> : <><Save size={14} /> Save Changes</>}
+            </Button>
           </div>
+        </CardContent>
+      </Card>
 
+      <Card>
+        <CardHeader className="p-6 pb-4">
+          <CardTitle className="flex items-center gap-2"><Lock size={18} /> Change Password</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 p-6 pt-0">
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Franchise ID</label>
-            <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-xl px-4 py-2.5">
-              <Building2 size={16} className="text-gray-400" />
-              <span className="text-gray-500 text-sm font-mono">{auth.franchiseId}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end mt-6">
-          <button onClick={handleSave}
-            className="px-6 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105 inline-flex items-center gap-2">
-            {saved ? <><CheckCircle2 size={14} /> Saved!</> : <><Save size={14} /> Save Changes</>}
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <h3 className="text-gray-900 font-bold mb-4 flex items-center gap-2"><Lock size={18} /> Change Password</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Current Password</label>
-            <input type="password" value={passwords.current} onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Current Password</label>
+            <Input type="password" value={passwords.current} onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))} />
           </div>
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">New Password</label>
-            <input type="password" value={passwords.newPass} onChange={(e) => setPasswords((p) => ({ ...p, newPass: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">New Password</label>
+            <Input type="password" value={passwords.newPass} onChange={(e) => setPasswords((p) => ({ ...p, newPass: e.target.value }))} />
           </div>
           <div>
-            <label className="block text-gray-500 text-xs font-medium mb-1.5">Confirm Password</label>
-            <input type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" />
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Confirm Password</label>
+            <Input type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))} />
           </div>
           {passwords.newPass && passwords.confirm && passwords.newPass !== passwords.confirm && (
-            <p className="text-red-500 text-xs">Passwords do not match</p>
+            <p className="text-xs text-red-500">Passwords do not match</p>
           )}
-        </div>
-        <div className="flex justify-end mt-4">
-          <button onClick={handlePasswordChange}
-            disabled={!passwords.current || !passwords.newPass || passwords.newPass !== passwords.confirm}
-            className="px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105 inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+        </CardContent>
+        <CardFooter className="flex justify-end">
+          <Button onClick={handlePasswordChange}
+            disabled={!passwords.current || !passwords.newPass || passwords.newPass !== passwords.confirm}>
             {pwSaved ? <><CheckCircle2 size={14} /> Updated!</> : <><Lock size={14} /> Update Password</>}
-          </button>
-        </div>
-      </div>
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

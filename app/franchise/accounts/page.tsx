@@ -1,8 +1,17 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Landmark, Plus, Edit, Trash2, X, Save, ArrowDown, ArrowUp } from "lucide-react";
+import { Landmark, Plus, Edit, Trash2, X, Save, Wallet } from "lucide-react";
 import { useFranchiseData, Account } from "@/lib/FranchiseDataContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function AccountsPage() {
   const { bankAccounts, addAccount, updateAccount, deleteAccount } = useFranchiseData();
@@ -28,66 +37,86 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Accounts</h1>
-          <p className="text-gray-500 text-sm mt-1">Bank accounts and cash management</p>
+      <PageHeader
+        breadcrumb={[{ label: "Franchise", href: "/franchise" }, { label: "Accounts" }]}
+        title="Accounts"
+        description="Bank accounts and cash management"
+        actions={<Button onClick={openAdd}><Plus size={16} /> Add Account</Button>}
+      />
+
+      <StatCard label="Total Balance" value={`PKR ${totalBalance.toLocaleString()}`} icon={Wallet} iconClass="text-brand-600 bg-brand-50" />
+
+      <SearchInput placeholder="Search accounts..." onSearch={setSearch} />
+
+      {filtered.length > 0 ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((a) => (
+            <Card key={a.id}>
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><Landmark size={18} /></div>
+                  <StatusPill label={a.status} tone={toneForStatus(a.status)} />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">{a.name}</h3>
+                <p className="text-xs font-mono text-muted-foreground mb-3">{a.accountNumber}</p>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{a.type}</span>
+                  <span className="ml-auto text-lg font-bold text-slate-900">PKR {a.balance.toLocaleString()}</span>
+                </div>
+                <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
+                  <Button variant="secondary" size="sm" className="flex-1" onClick={() => openEdit(a)}><Edit size={12} /> Edit</Button>
+                  <Button variant="destructive" size="sm" onClick={() => deleteAccount(a.id)}><Trash2 size={12} /></Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A2647] text-white font-bold text-sm rounded-xl hover:bg-[#144272] shadow-md transition-all hover:scale-105">
-          <Plus size={16} /> Add Account
-        </button>
-      </div>
-
-      <div className="bg-white rounded-2xl p-5 border border-gray-200 text-center">
-        <p className="text-gray-500 text-xs mb-1">Total Balance</p>
-        <p className="text-3xl font-black text-[#0A2647]">PKR {totalBalance.toLocaleString()}</p>
-      </div>
-
-      <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search accounts..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
-      </div>
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((a) => (
-          <div key={a.id} className="bg-white rounded-2xl p-5 border border-gray-200 hover:border-gray-300 transition-all">
-            <div className="flex items-start justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><Landmark size={18} /></div>
-              <span className={`px-2 py-1 rounded-lg text-xs font-medium ${a.status === "Active" ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-700"}`}>{a.status}</span>
-            </div>
-            <h3 className="text-gray-900 font-bold text-sm mb-1">{a.name}</h3>
-            <p className="text-gray-400 text-xs font-mono mb-3">{a.accountNumber}</p>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-100 rounded">{a.type}</span>
-              <span className="text-lg font-black text-gray-900 ml-auto">PKR {a.balance.toLocaleString()}</span>
-            </div>
-            <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-              <button onClick={() => openEdit(a)} className="flex-1 py-2 bg-gray-50 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-100 transition-all">Edit</button>
-              <button onClick={() => deleteAccount(a.id)} className="py-2 px-3 bg-red-50 text-red-600 text-xs font-medium rounded-lg hover:bg-red-100 transition-all"><Trash2 size={12} /></button>
-            </div>
-          </div>
-        ))}
-      </div>
+      ) : (
+        <Card>
+          <CardContent>
+            <EmptyState icon={Landmark} title="No accounts found" description="No bank accounts match your search." actions={<Button variant="outline" size="sm" onClick={openAdd}><Plus size={14} /> Add Account</Button>} />
+          </CardContent>
+        </Card>
+      )}
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold">{editing ? "Edit Account" : "Add Account"}</h3>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Account ID</label><input type="text" value={form.id} onChange={(e) => setField("id", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Name</label><input type="text" value={form.name} onChange={(e) => setField("name", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Type</label><select value={form.type} onChange={(e) => setField("type", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["Bank", "Cash", "Digital Wallet"].map((t) => <option key={t} value={t}>{t}</option>)}</select></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Account Number</label><input type="text" value={form.accountNumber} onChange={(e) => setField("accountNumber", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Balance (PKR)</label><input type="number" value={form.balance || ""} onChange={(e) => setField("balance", Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50" /></div>
-              <div><label className="block text-gray-500 text-xs font-medium mb-1.5">Status</label><select value={form.status} onChange={(e) => setField("status", e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-[#0A2647]/50">{["Active", "Inactive"].map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
-            </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Cancel</button>
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-[#0A2647] text-white text-sm font-medium rounded-xl hover:bg-[#144272] inline-flex items-center justify-center gap-2"><Save size={14} /> {editing ? "Update" : "Add"}</button>
-            </div>
-          </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setShowForm(false)}>
+          <Card className="w-full max-w-md" >
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-4">
+              <CardTitle>{editing ? "Edit Account" : "Add Account"}</CardTitle>
+              <button onClick={() => setShowForm(false)} className="p-1 text-muted-foreground hover:text-slate-900"><X size={18} /></button>
+            </CardHeader>
+            <CardContent className="space-y-4 p-6 pt-0">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Account ID</label>
+                <input type="text" value={form.id} onChange={(e) => setField("id", e.target.value)} className="h-9 w-full rounded-lg border border-slate-200 bg-background px-3 text-sm outline-none focus:border-brand-500" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Name</label>
+                <Input value={form.name} onChange={(e) => setField("name", e.target.value)} />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Type</label>
+                <Select value={form.type} onChange={(e) => setField("type", e.target.value)}>{["Bank", "Cash", "Digital Wallet"].map((t) => <option key={t} value={t}>{t}</option>)}</Select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Account Number</label>
+                <Input value={form.accountNumber} onChange={(e) => setField("accountNumber", e.target.value)} />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Balance (PKR)</label>
+                <Input type="number" value={form.balance || ""} onChange={(e) => setField("balance", Number(e.target.value))} />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Status</label>
+                <Select value={form.status} onChange={(e) => setField("status", e.target.value)}>{["Active", "Inactive"].map((s) => <option key={s} value={s}>{s}</option>)}</Select>
+              </div>
+            </CardContent>
+            <CardFooter className="flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSave}><Save size={14} /> {editing ? "Update" : "Add"}</Button>
+            </CardFooter>
+          </Card>
         </div>
       )}
     </div>

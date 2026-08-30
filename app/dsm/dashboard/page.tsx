@@ -8,14 +8,20 @@ import {
   Plus, ArrowRightLeft, Repeat, Hash, Wallet, Target, TrendingUp,
   TrendingDown, CheckCircle, Clock, AlertTriangle, Smartphone, Bell,
   ChevronRight, ArrowRight, Shield, CreditCard, Activity, Zap,
-  BarChart3, Home, Package, CircleDot, DollarSign, RefreshCw,
-  CheckCircle2, FileText, Star, X, BookOpen, Search, Users
+  BarChart3, Home, Package, DollarSign, RefreshCw,
+  CheckCircle2, FileText, BookOpen, X
 } from "lucide-react";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
 import { apiLoadById } from "@/lib/api";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill, toneForStatus } from "@/components/ui/Badge";
 
 export default function DSMDashboardPage() {
-  const { activations, dsos, targets, wallet, notifications, attendance, settings, auth, hydrated, markNotificationRead, totalSales, sims } = useDSMData();
+  const { activations, dsos, targets, wallet, notifications, settings, auth, hydrated, totalSales, sims } = useDSMData();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"overview" | "performance" | "finance">("overview");
   const [showActivatePopup, setShowActivatePopup] = useState(false);
@@ -126,9 +132,7 @@ export default function DSMDashboardPage() {
   }, [activations, searchQuery]);
 
   const activeDsoCount = dsos.filter((d) => d.status === "Active" || d.status === "Excellent" || d.status === "Good").length;
-  const pendingActivations = activations.filter((a) => a.status !== "Completed").slice(0, 5);
   const unreadNotifs = notifications.filter((n) => !n.read);
-  const topPerformer = [...dsos].sort((a, b) => b.monthlySales - a.monthlySales)[0];
 
   const getTypeBadge = (type: string) => {
     const styles: Record<string, string> = {
@@ -149,29 +153,28 @@ export default function DSMDashboardPage() {
   if (!hydrated) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-center"><RefreshCw size={32} className="animate-spin text-[#0057FF] mx-auto mb-4" /><p className="text-gray-500">Loading dashboard...</p></div>
+        <div className="text-center"><RefreshCw className="animate-spin h-8 w-8 text-brand-600 mx-auto mb-4" /><p className="text-muted-foreground">Loading dashboard...</p></div>
       </div>
     );
   }
 
   const primaryStats = [
-    { label: "Today's Activations", value: metrics.todayActs, icon: Activity, color: "from-blue-500 to-blue-600", light: "bg-blue-50", trend: metrics.todayActs > 0 ? `+${metrics.todayActs}` : "0", up: metrics.todayActs > 0 },
-    { label: "Pending Verifications", value: metrics.pendingTotal, icon: Clock, color: "from-amber-500 to-amber-600", light: "bg-amber-50", trend: `${metrics.pendingTotal}`, up: metrics.pendingTotal === 0 },
-    { label: "Completed Today", value: metrics.completedToday, icon: CheckCircle, color: "from-emerald-500 to-emerald-600", light: "bg-emerald-50", trend: `+${metrics.completedToday}`, up: metrics.completedToday > 0 },
-    { label: "Wallet", value: `PKR ${walletInfo.balance.toLocaleString()}`, icon: Wallet, color: "from-purple-500 to-purple-600", light: "bg-purple-50", trend: `+${walletInfo.count} txns`, up: true },
+    { label: "Today's Activations", value: metrics.todayActs, icon: Activity, iconClass: "bg-blue-50 text-blue-600", trend: `+${metrics.todayActs}`, trendUp: metrics.todayActs > 0 },
+    { label: "Pending Verifications", value: metrics.pendingTotal, icon: Clock, iconClass: "bg-amber-50 text-amber-600", trend: `${metrics.pendingTotal}`, trendUp: metrics.pendingTotal === 0 },
+    { label: "Completed Today", value: metrics.completedToday, icon: CheckCircle, iconClass: "bg-emerald-50 text-emerald-600", trend: `+${metrics.completedToday}`, trendUp: metrics.completedToday > 0 },
+    { label: "Wallet", value: `PKR ${walletInfo.balance.toLocaleString()}`, icon: Wallet, iconClass: "bg-purple-50 text-purple-600", trend: `+${walletInfo.count} txns`, trendUp: true },
   ];
 
   return (
     <div className="space-y-6">
-      {/* â”€â”€â”€ Activate Popup Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {showActivatePopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowActivatePopup(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h3 className="text-base font-black text-gray-900">Select Activation Type</h3>
-              <button onClick={() => setShowActivatePopup(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-                <X size={18} className="text-gray-500" />
+          <div className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <h3 className="text-base font-black text-foreground">Select Activation Type</h3>
+              <button onClick={() => setShowActivatePopup(false)} className="rounded-lg p-1.5 hover:bg-slate-100 transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
             <div className="grid grid-cols-2 gap-3 p-5">
@@ -192,122 +195,80 @@ export default function DSMDashboardPage() {
         </div>
       )}
 
-      {/* â”€â”€â”€ Greeting Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="bg-gradient-to-r from-[#0057FF] via-[#0047CC] to-[#003DA5] rounded-2xl p-6 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        <div className="relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <Home size={14} className="text-white/60 flex-shrink-0" />
-                  <span className="text-white/60 text-xs font-medium uppercase tracking-wider truncate">DSM Dashboard</span>
-                </div>
-                <h1 className="text-xl sm:text-2xl font-black leading-snug break-words">Welcome back, {dsmName}!</h1>
-                <p className="text-white/70 text-xs sm:text-sm mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
-                  <span className="truncate">{settings.franchiseName || "THE SMART ERP"}</span>
-                  <span>| {todayDate}</span>
-                  <span>| ID: {dsmId}</span>
-                </p>
-              </div>
-              <button onClick={() => setShowActivatePopup(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#C8A951] text-[#0A2647] rounded-xl font-bold text-sm hover:bg-[#d4b55e] transition-all shadow-lg flex-shrink-0">
-                <Plus size={16} /> Activate
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => router.push("/dsm/guideline")}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-all">
-                <BookOpen size={16} /> Guide
-              </button>
-              <button onClick={() => router.push("/dsm/notifications")}
-                className="relative p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-all">
-                <Bell size={18} />
-                {unreadNotifs.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center animate-pulse">
-                    {unreadNotifs.length}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
+      <PageHeader
+        breadcrumb={[{ label: "DSM" }, { label: "Dashboard" }]}
+        title={`Welcome back, ${dsmName}!`}
+        description={
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <span>{settings.franchiseName || "THE SMART ERP"}</span>
+            <span aria-hidden="true">|</span>
+            <span>{todayDate}</span>
+            <span aria-hidden="true">|</span>
+            <span>ID: {dsmId}</span>
+          </span>
+        }
+        actions={
+          <>
+            <button onClick={() => setShowActivatePopup(true)}
+              className="flex items-center gap-2 rounded-lg bg-[#C8A951] px-4 py-2 text-sm font-bold text-[#0A2647] shadow-sm transition-colors hover:bg-[#d4b55e]">
+              <Plus className="h-4 w-4" /> Activate
+            </button>
+            <Button variant="outline" onClick={() => router.push("/dsm/guideline")}>
+              <BookOpen className="h-4 w-4" /> Guide
+            </Button>
+            <button
+              onClick={() => router.push("/dsm/notifications")}
+              className="relative rounded-lg border border-slate-200 bg-white p-2 text-muted-foreground transition-colors hover:bg-slate-50 hover:text-foreground"
+            >
+              <Bell className="h-4 w-4" />
+              {unreadNotifs.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {unreadNotifs.length}
+                </span>
+              )}
+            </button>
+          </>
+        }
+      />
+
+      <Card>
+        <div className="flex gap-1 p-1">
+          {[
+            { key: "overview" as const, label: "Overview", icon: Home },
+            { key: "performance" as const, label: "Performance", icon: Target },
+            { key: "finance" as const, label: "Finance", icon: Wallet },
+          ].map((tab) => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold transition-all ${activeTab === tab.key ? "bg-brand-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <tab.icon className="h-3.5 w-3.5" /> {tab.label}
+            </button>
+          ))}
         </div>
-      </div>
+      </Card>
 
-      {/* â”€â”€â”€ Tab Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
-        {[
-          { key: "overview" as const, label: "Overview", icon: Home },
-          { key: "performance" as const, label: "Performance", icon: Target },
-          { key: "finance" as const, label: "Finance", icon: Wallet },
-        ].map((tab) => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab.key ? "bg-white text-[#0057FF] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
-            <tab.icon size={14} /> {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* â•â•â•â•â•â•â•â•â•â•â• OVERVIEW TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "overview" && (
         <>
-          {/* â”€â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {primaryStats.map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg transition-all group">
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`w-11 h-11 rounded-xl ${s.light} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <s.icon size={20} className={s.color.split(" ")[0].replace("from-", "text-")} />
-                  </div>
-                  {s.trend && (
-                    <span className={`flex items-center gap-0.5 text-xs font-bold ${s.up ? "text-green-600" : "text-red-600"}`}>
-                      {s.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {s.trend}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xl sm:text-3xl font-black text-gray-900 truncate">{s.value}</p>
-                <p className="text-gray-500 text-xs font-medium mt-0.5">{s.label}</p>
-              </div>
+              <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} iconClass={s.iconClass} trend={s.trend} trendUp={s.trendUp} />
             ))}
           </div>
 
-          {/* â”€â”€â”€ Secondary Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "Pending BVS", value: metrics.pendingBVS, icon: Shield, color: "text-amber-600", light: "bg-amber-50" },
-              { label: "Pending FCA", value: metrics.pendingFCA, icon: FileText, color: "text-blue-600", light: "bg-blue-50" },
-              { label: "Pending IFCA", value: metrics.pendingIFCA, icon: AlertTriangle, color: "text-purple-600", light: "bg-purple-50" },
-              { label: "Total Completed", value: metrics.totalCompleted, icon: CheckCircle2, color: "text-green-600", light: "bg-green-50" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-all">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center`}>
-                    <s.icon size={18} className={s.color} />
-                  </div>
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{s.value}</p>
-                    <p className="text-gray-500 text-[11px]">{s.label}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <StatCard label="Pending BVS" value={metrics.pendingBVS} icon={Shield} iconClass="bg-amber-50 text-amber-600" />
+            <StatCard label="Pending FCA" value={metrics.pendingFCA} icon={FileText} iconClass="bg-blue-50 text-blue-600" />
+            <StatCard label="Pending IFCA" value={metrics.pendingIFCA} icon={AlertTriangle} iconClass="bg-purple-50 text-purple-600" />
+            <StatCard label="Total Completed" value={metrics.totalCompleted} icon={CheckCircle2} iconClass="bg-green-50 text-green-600" />
           </div>
 
-          {/* â”€â”€â”€ Quick Actions + Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <Zap size={16} className="text-[#C8A951]" /> Quick Actions
+          <Card>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Zap className="h-4 w-4 text-[#C8A951]" /> Quick Actions
               </h3>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 max-w-xs">
-                <Search size={14} className="text-gray-400" />
-                <input placeholder="Search activations..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-0 p-0 text-xs focus:outline-none w-full text-gray-700 placeholder:text-gray-400" />
-                {searchQuery && <X size={14} className="text-gray-400 cursor-pointer" onClick={() => setSearchQuery("")} />}
-              </div>
+              <SearchInput placeholder="Search activations..." value={searchQuery} onSearch={setSearchQuery} className="max-w-xs" />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-5 pt-0">
               {[
                 { label: "New SIM", href: "/dsm/activation", icon: Plus, color: "bg-blue-50 text-blue-600" },
                 { label: "MNP", href: "/dsm/mnp", icon: ArrowRightLeft, color: "bg-purple-50 text-purple-600" },
@@ -315,26 +276,24 @@ export default function DSMDashboardPage() {
                 { label: "BYN", href: "/dsm/byn", icon: Hash, color: "bg-teal-50 text-teal-600" },
               ].map((a) => (
                 <Link key={a.label} href={a.href}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.color} hover:scale-105 transition-all`}>
-                  <a.icon size={20} />
+                  className={`flex flex-col items-center gap-2 rounded-xl p-3 ${a.color} transition-transform hover:scale-105`}>
+                  <a.icon className="h-5 w-5" />
                   <span className="text-[11px] font-bold">{a.label}</span>
                 </Link>
               ))}
             </div>
-          </div>
+          </Card>
 
-          {/* â”€â”€â”€ Main Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              {/* Verification Pipeline */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Shield size={16} className="text-[#0057FF]" /> Verification Pipeline
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <Card className="overflow-hidden">
+                <div className="border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <Shield className="h-4 w-4 text-brand-600" /> Verification Pipeline
                   </h3>
                 </div>
                 <div className="p-4">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     {[
                       { label: "BVS Pending", count: metrics.pendingBVS, color: "bg-amber-50 text-amber-700 border-amber-200", href: "/dsm/pending-bvs" },
                       { label: "FCA Pending", count: metrics.pendingFCA, color: "bg-blue-50 text-blue-700 border-blue-200", href: "/dsm/pending-fca" },
@@ -343,132 +302,128 @@ export default function DSMDashboardPage() {
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-2">
                         {step.href ? (
-                          <Link href={step.href} className={`flex-1 ${step.color} rounded-xl p-4 border hover:scale-[1.03] transition-all group`}>
-                            <div className="flex items-center justify-between mb-2">
+                          <Link href={step.href} className={`flex-1 ${step.color} rounded-xl border p-4 transition-all hover:scale-[1.03] group`}>
+                            <div className="mb-2 flex items-center justify-between">
                               <span className="text-xs font-bold uppercase tracking-wider">{step.label}</span>
-                              <ChevronRight size={14} className="opacity-50 group-hover:translate-x-1 transition-transform" />
+                              <ChevronRight className="h-3.5 w-3.5 opacity-50 transition-transform group-hover:translate-x-1" />
                             </div>
-                            <p className="text-gray-900 text-3xl font-black">{step.count}</p>
+                            <p className="text-3xl font-black text-foreground">{step.count}</p>
                           </Link>
                         ) : (
-                          <div className={`flex-1 ${step.color} rounded-xl p-4 border`}>
-                            <div className="flex items-center justify-between mb-2">
+                          <div className={`flex-1 ${step.color} rounded-xl border p-4`}>
+                            <div className="mb-2 flex items-center justify-between">
                               <span className="text-xs font-bold uppercase tracking-wider">{step.label}</span>
                             </div>
-                            <p className="text-gray-900 text-3xl font-black">{step.count}</p>
+                            <p className="text-3xl font-black text-foreground">{step.count}</p>
                           </div>
                         )}
-                        {i < 3 && <div className="hidden lg:flex items-center text-gray-300"><ArrowRight size={16} /></div>}
+                        {i < 3 && <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-300 lg:flex" />}
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              {/* Recent Activations with Search */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Activity size={16} className="text-[#0057FF]" /> Recent Activations
+              <Card className="overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <Activity className="h-4 w-4 text-brand-600" /> Recent Activations
                   </h3>
-                  <span className="text-xs text-gray-400">{filteredActivations.length} records</span>
+                  <span className="text-xs text-muted-foreground">{filteredActivations.length} records</span>
                 </div>
-                <div className="md:hidden divide-y divide-gray-50">
+                <div className="divide-y divide-slate-100 md:hidden">
                   {filteredActivations.slice(0, 6).map((a) => (
-                    <div key={a.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                    <div key={a.id} className="flex items-center justify-between gap-3 px-4 py-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
-                          <span className="text-gray-400 text-[10px] font-mono truncate">{a.simNumber}</span>
+                          <span className={`rounded-lg px-2 py-0.5 text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
+                          <span className="truncate font-mono text-[10px] text-muted-foreground">{a.simNumber}</span>
                         </div>
-                        <p className="text-gray-900 text-sm font-medium truncate mt-1">{a.customerName}</p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <div className="flex-1 max-w-[130px] h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+                        <p className="truncate text-sm font-medium text-foreground mt-1">{a.customerName}</p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <div className="h-1.5 max-w-[130px] flex-1 overflow-hidden rounded-full bg-slate-100">
+                            <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-slate-300"}`} style={{ width: `${a.progress}%` }} />
                           </div>
-                          <span className="text-[10px] font-bold text-gray-600">{a.progress}%</span>
+                          <span className="text-[10px] font-bold text-slate-600">{a.progress}%</span>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap ${getStatusBadge(a.status)}`}>{a.status}</span>
-                        <span className="text-gray-400 text-[10px]">{formatDateDDMMYYYY(a.createdAt)}</span>
+                        <StatusPill label={a.status} tone={toneForStatus(a.status)} />
+                        <span className="text-[10px] text-muted-foreground">{formatDateDDMMYYYY(a.createdAt)}</span>
                       </div>
                     </div>
                   ))}
-                  {filteredActivations.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No activations found</p>}
+                  {filteredActivations.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">No activations found</p>}
                 </div>
-                <div className="hidden md:block overflow-x-auto">
+                <div className="hidden overflow-x-auto md:block">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Type</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Customer</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden md:table-cell">SIM</th>
-                        <th className="px-4 py-3 text-center text-gray-500 text-xs font-medium uppercase">Progress</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Date</th>
+                      <tr className="border-b border-slate-100 bg-slate-50">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Type</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Customer</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground hidden md:table-cell">SIM</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Progress</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground hidden lg:table-cell">Date</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredActivations.slice(0, 6).map((a) => (
-                        <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50">
-                          <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getTypeBadge(a.type)}`}>{a.type}</span></td>
-                          <td className="px-4 py-3 font-medium text-gray-900">{a.customerName}</td>
-                          <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs font-mono">{a.simNumber}</td>
+                        <tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="px-4 py-3"><span className={`rounded-lg px-2.5 py-1 text-xs font-bold ${getTypeBadge(a.type)}`}>{a.type}</span></td>
+                          <td className="px-4 py-3 font-medium text-foreground">{a.customerName}</td>
+                          <td className="px-4 py-3 hidden font-mono text-xs text-muted-foreground md:table-cell">{a.simNumber}</td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2 justify-center">
-                              <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="h-2 w-16 overflow-hidden rounded-full bg-slate-100">
+                                <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-slate-300"}`} style={{ width: `${a.progress}%` }} />
                               </div>
-                              <span className="text-xs font-bold text-gray-600 w-8 text-right">{a.progress}%</span>
+                              <span className="w-8 text-right text-xs font-bold text-slate-600">{a.progress}%</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getStatusBadge(a.status)}`}>{a.status}</span></td>
-                          <td className="px-4 py-3 hidden lg:table-cell text-gray-400 text-xs">{formatDateDDMMYYYY(a.createdAt)}</td>
+                          <td className="px-4 py-3"><StatusPill label={a.status} tone={toneForStatus(a.status)} /></td>
+                          <td className="px-4 py-3 hidden text-xs text-muted-foreground lg:table-cell">{formatDateDDMMYYYY(a.createdAt)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              {/* Recent Activity */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <BarChart3 size={16} className="text-[#0057FF]" /> Recent Activity
+              <Card className="overflow-hidden">
+                <div className="border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <BarChart3 className="h-4 w-4 text-brand-600" /> Recent Activity
                   </h3>
                 </div>
                 <div className="p-4">
                   {recentActivity.length > 0 ? (
                     <div className="space-y-3">
                       {recentActivity.map((item, i) => (
-                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color}`}>
-                            <item.icon size={16} />
+                        <div key={i} className="flex items-start gap-3 rounded-xl p-3 transition-all hover:bg-slate-50">
+                          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${item.color}`}>
+                            <item.icon className="h-4 w-4" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-gray-900 text-sm font-medium truncate">{item.title}</p>
-                            <p className="text-gray-400 text-xs">{item.detail}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-foreground">{item.title}</p>
+                            <p className="text-xs text-muted-foreground">{item.detail}</p>
                           </div>
-                          <span className="text-gray-400 text-[10px] whitespace-nowrap">{formatDateDDMMYYYY(item.time)}</span>
+                          <span className="whitespace-nowrap text-[10px] text-muted-foreground">{formatDateDDMMYYYY(item.time)}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-sm text-center py-8">No recent activity</p>
+                    <p className="py-8 text-center text-sm text-muted-foreground">No recent activity</p>
                   )}
                 </div>
-              </div>
+              </Card>
             </div>
 
-            {/* Right Column */}
             <div className="space-y-6">
-              {/* Target Gauges */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Target size={16} className="text-[#0057FF]" /> Target Achievement
+              <Card className="overflow-hidden">
+                <div className="border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <Target className="h-4 w-4 text-brand-600" /> Target Achievement
                   </h3>
                 </div>
                 <div className="p-6">
@@ -484,36 +439,35 @@ export default function DSMDashboardPage() {
                       const off = circ - (pct / 100) * circ;
                       return (
                         <div key={g.label} className="flex flex-col items-center">
-                          <div className="relative w-20 h-20">
-                            <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                          <div className="relative h-20 w-20">
+                            <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
                               <circle cx="40" cy="40" r="36" fill="none" stroke="#f3f4f6" strokeWidth="6" />
                               <circle cx="40" cy="40" r="36" fill="none" stroke={g.color} strokeWidth="6"
                                 strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={off} className="transition-all duration-1000" />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-sm font-black text-gray-900">{pct}%</span>
+                              <span className="text-sm font-black text-foreground">{pct}%</span>
                             </div>
                           </div>
-                          <p className="text-gray-700 text-xs font-bold mt-2">{g.label}</p>
-                          <p className="text-gray-400 text-[10px]">{g.achieved}/{g.target}</p>
+                          <p className="mt-2 text-xs font-bold text-slate-600">{g.label}</p>
+                          <p className="text-[10px] text-muted-foreground">{g.achieved}/{g.target}</p>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              {/* Performance Bars */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <TrendingUp size={16} className="text-[#0057FF]" /> Performance Overview
+              <Card className="overflow-hidden">
+                <div className="border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <TrendingUp className="h-4 w-4 text-brand-600" /> Performance Overview
                   </h3>
                 </div>
-                <div className="p-4 space-y-4">
+                <div className="space-y-4 p-4">
                   <div className="text-center">
-                    <p className="text-4xl font-black text-[#0057FF]">{targetProgress}%</p>
-                    <p className="text-gray-400 text-xs">Monthly Progress</p>
+                    <p className="text-4xl font-black text-brand-600">{targetProgress}%</p>
+                    <p className="text-xs text-muted-foreground">Monthly Progress</p>
                   </div>
                   {[
                     { label: "Monthly Target", achieved: totalMonthlyAchieved, target: totalMonthlyTarget, color: "bg-blue-500" },
@@ -523,340 +477,310 @@ export default function DSMDashboardPage() {
                     const pct = safePct(t.achieved, t.target);
                     return (
                       <div key={t.label}>
-                        <div className="flex justify-between text-xs mb-1.5">
-                          <span className="text-gray-500 font-medium">{t.label}</span>
-                          <span className="font-bold text-gray-700">{t.achieved}/{t.target}</span>
+                        <div className="mb-1.5 flex justify-between text-xs">
+                          <span className="font-medium text-muted-foreground">{t.label}</span>
+                          <span className="font-bold text-slate-600">{t.achieved}/{t.target}</span>
                         </div>
-                        <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                           <div className={`h-full rounded-full transition-all duration-700 ${t.color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              </div>
+              </Card>
 
-              {/* DSO Performance Rankings */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <BarChart3 size={16} className="text-[#0057FF]" /> DSO Rankings
+              <Card className="overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <BarChart3 className="h-4 w-4 text-brand-600" /> DSO Rankings
                   </h3>
                 </div>
-                <div className="p-4 space-y-3">
+                <div className="space-y-3 p-4">
                   {dsoPerformers.slice(0, 5).map((d, i) => (
-                    <div key={d.id} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${i === 0 ? "bg-amber-50 border border-amber-200" : "hover:bg-gray-50"}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${i === 0 ? "bg-amber-400 text-white" : i === 1 ? "bg-gray-300 text-white" : i === 2 ? "bg-orange-400 text-white" : "bg-gray-100 text-gray-500"}`}>
+                    <div key={d.id} className={`flex items-center gap-3 rounded-xl p-3 transition-all ${i === 0 ? "border border-amber-200 bg-amber-50" : "hover:bg-slate-50"}`}>
+                      <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-black ${i === 0 ? "bg-amber-400 text-white" : i === 1 ? "bg-slate-300 text-white" : i === 2 ? "bg-orange-400 text-white" : "bg-slate-100 text-muted-foreground"}`}>
                         {i + 1}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-gray-900 text-sm font-bold truncate">{d.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-foreground">{d.name}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
                             <div className={`h-full rounded-full ${d.progress >= 80 ? "bg-gradient-to-r from-green-400 to-green-600" : d.progress >= 50 ? "bg-gradient-to-r from-yellow-400 to-yellow-600" : "bg-gradient-to-r from-red-400 to-red-600"}`} style={{ width: `${Math.min(100, d.progress)}%` }} />
                           </div>
-                          <span className="text-xs font-bold text-gray-600 w-12 text-right">{d.progress}%</span>
+                          <span className="w-12 text-right text-xs font-bold text-slate-600">{d.progress}%</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-gray-900 text-sm font-bold">{d.activations}/{d.target}</p>
-                        <p className="text-gray-400 text-[10px]">SIMs</p>
+                        <p className="text-sm font-bold text-foreground">{d.activations}/{d.target}</p>
+                        <p className="text-[10px] text-muted-foreground">SIMs</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
 
-              {/* Notifications */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Bell size={16} className="text-[#0057FF]" /> Notifications
+              <Card className="overflow-hidden">
+                <div className="border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <Bell className="h-4 w-4 text-brand-600" /> Notifications
                   </h3>
                 </div>
-                <div className="p-4 space-y-3">
+                <div className="space-y-3 p-4">
                   {notifications.slice(0, 3).map((n) => (
-                    <div key={n.id} className={`flex items-start gap-3 p-3 rounded-xl ${n.read ? "bg-gray-50" : "bg-blue-50/50"}`}>
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${n.type === "warning" ? "bg-amber-100 text-amber-600" : n.type === "success" ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"}`}>
-                        {n.type === "warning" ? <AlertTriangle size={14} /> : n.type === "success" ? <CheckCircle size={14} /> : <Clock size={14} />}
+                    <div key={n.id} className={`flex items-start gap-3 rounded-xl p-3 ${n.read ? "bg-slate-50" : "bg-blue-50/50"}`}>
+                      <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${n.type === "warning" ? "bg-amber-100 text-amber-600" : n.type === "success" ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"}`}>
+                        {n.type === "warning" ? <AlertTriangle className="h-3.5 w-3.5" /> : n.type === "success" ? <CheckCircle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-gray-900 text-xs font-bold truncate">{n.title}</p>
-                        <p className="text-gray-400 text-[10px] truncate">{n.message}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-bold text-foreground">{n.title}</p>
+                        <p className="truncate text-[10px] text-muted-foreground">{n.message}</p>
                       </div>
                     </div>
                   ))}
-                  {notifications.length === 0 && <p className="text-gray-400 text-sm text-center py-4">No notifications</p>}
+                  {notifications.length === 0 && <p className="py-4 text-center text-sm text-muted-foreground">No notifications</p>}
                 </div>
-              </div>
+              </Card>
 
-              {/* SIM Stock */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <Package size={16} className="text-[#0057FF]" /> My SIM Stock
+              <Card className="overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <Package className="h-4 w-4 text-brand-600" /> My SIM Stock
                   </h3>
-                  <Link href="/dsm/sim-stock" className="text-[10px] text-[#0057FF] font-bold hover:underline">View All</Link>
+                  <Link href="/dsm/sim-stock" className="text-[10px] font-bold text-brand-600 hover:underline">View All</Link>
                 </div>
                 <div className="p-4">
-                  <div className="grid grid-cols-3 gap-2 mb-3">
-                    <div className="bg-blue-50 rounded-xl p-3 text-center">
+                  <div className="mb-3 grid grid-cols-3 gap-2">
+                    <div className="rounded-xl bg-blue-50 p-3 text-center">
                       <p className="text-lg font-black text-blue-600">{simStock.total}</p>
-                      <p className="text-gray-500 text-[10px]">Total</p>
+                      <p className="text-[10px] text-muted-foreground">Total</p>
                     </div>
-                    <div className="bg-emerald-50 rounded-xl p-3 text-center">
+                    <div className="rounded-xl bg-emerald-50 p-3 text-center">
                       <p className="text-lg font-black text-emerald-600">{simStock.new}</p>
-                      <p className="text-gray-500 text-[10px]">New</p>
+                      <p className="text-[10px] text-muted-foreground">New</p>
                     </div>
-                    <div className="bg-purple-50 rounded-xl p-3 text-center">
+                    <div className="rounded-xl bg-purple-50 p-3 text-center">
                       <p className="text-lg font-black text-purple-600">{simStock.hlr}</p>
-                      <p className="text-gray-500 text-[10px]">HLR</p>
+                      <p className="text-[10px] text-muted-foreground">HLR</p>
                     </div>
                   </div>
                   {sims.length > 0 ? (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <div className="max-h-48 space-y-2 overflow-y-auto">
                       {sims.slice(0, 5).map((s) => (
-                        <div key={s.id} className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Smartphone size={14} className="text-gray-400 flex-shrink-0" />
+                        <div key={s.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Smartphone className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                              <p className="text-xs font-bold text-gray-900 truncate">{s.id}</p>
-                              <p className="text-[10px] text-gray-400">{s.network} · {s.simNumber}</p>
+                              <p className="truncate text-xs font-bold text-foreground">{s.id}</p>
+                              <p className="text-[10px] text-muted-foreground">{s.network} · {s.simNumber}</p>
                             </div>
                           </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-700">{s.type === "new" ? "New" : "HLR"}</span>
+                          <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">{s.type === "new" ? "New" : "HLR"}</span>
                         </div>
                       ))}
                       {simStock.networkCounts && Object.keys(simStock.networkCounts).length > 0 && (
-                        <div className="flex flex-wrap gap-1 pt-2 border-t border-gray-100">
+                        <div className="flex flex-wrap gap-1 border-t border-slate-100 pt-2">
                           {Object.entries(simStock.networkCounts).map(([net, cnt]) => (
-                            <span key={net} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">{net}: {cnt}</span>
+                            <span key={net} className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{net}: {cnt}</span>
                           ))}
                         </div>
                       )}
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-xs text-center py-4">No SIMs issued yet</p>
+                    <p className="py-4 text-center text-xs text-muted-foreground">No SIMs issued yet</p>
                   )}
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </>
       )}
 
-      {/* â•â•â•â•â•â•â•â•â•â•â• PERFORMANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "performance" && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "Overall Progress", value: `${targetProgress}%`, icon: Target, color: "text-[#0057FF]", light: "bg-blue-50" },
-              { label: "Total Activations", value: activations.length, icon: Activity, color: "text-blue-600", light: "bg-blue-50" },
-              { label: "Completed", value: metrics.totalCompleted, icon: CheckCircle2, color: "text-green-600", light: "bg-green-50" },
-              { label: "Pending", value: metrics.pendingTotal, icon: Clock, color: "text-amber-600", light: "bg-amber-50" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center mb-3`}>
-                  <s.icon size={20} className={s.color} />
-                </div>
-                <p className="text-2xl font-black text-gray-900">{s.value}</p>
-                <p className="text-gray-500 text-xs">{s.label}</p>
-              </div>
-            ))}
+            <StatCard label="Overall Progress" value={`${targetProgress}%`} icon={Target} iconClass="bg-brand-50 text-brand-600" />
+            <StatCard label="Total Activations" value={activations.length} icon={Activity} iconClass="bg-blue-50 text-blue-600" />
+            <StatCard label="Completed" value={metrics.totalCompleted} icon={CheckCircle2} iconClass="bg-green-50 text-green-600" />
+            <StatCard label="Pending" value={metrics.pendingTotal} icon={Clock} iconClass="bg-amber-50 text-amber-600" />
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <BarChart3 size={16} className="text-[#0057FF]" /> All Activations
+          <Card className="overflow-hidden">
+            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <BarChart3 className="h-4 w-4 text-brand-600" /> All Activations
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">{filteredActivations.length} records</span>
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-1.5 flex-1 sm:flex-none max-w-[220px]">
-                  <Search size={12} className="text-gray-400 flex-shrink-0" />
-                  <input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-transparent border-0 p-0 text-xs focus:outline-none w-full text-gray-700 placeholder:text-gray-400" />
-                </div>
+                <span className="text-xs text-muted-foreground">{filteredActivations.length} records</span>
+                <SearchInput placeholder="Search..." value={searchQuery} onSearch={setSearchQuery} className="max-w-[220px]" />
               </div>
             </div>
-            <div className="md:hidden divide-y divide-gray-50">
+            <div className="divide-y divide-slate-100 md:hidden">
               {filteredActivations.map((a) => (
                 <div key={a.id} className="px-4 py-3">
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-gray-400 text-[10px]">{a.id}</span>
-                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="font-mono text-[10px] text-muted-foreground">{a.id}</span>
+                      <span className={`rounded-lg px-2 py-0.5 text-[10px] font-bold ${getTypeBadge(a.type)}`}>{a.type}</span>
                     </div>
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap ${getStatusBadge(a.status)}`}>{a.status}</span>
+                    <StatusPill label={a.status} tone={toneForStatus(a.status)} />
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-gray-900 text-sm font-medium truncate">{a.customerName}</p>
-                      <p className="text-gray-400 text-[10px] truncate">{a.network} | {a.simNumber}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{a.customerName}</p>
+                      <p className="truncate text-[10px] text-muted-foreground">{a.network} | {a.simNumber}</p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+                    <div className="flex flex-shrink-0 items-center gap-2">
+                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+                        <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-slate-300"}`} style={{ width: `${a.progress}%` }} />
                       </div>
-                      <span className="text-[10px] font-bold text-gray-600 w-7 text-right">{a.progress}%</span>
+                      <span className="w-7 text-right text-[10px] font-bold text-slate-600">{a.progress}%</span>
                     </div>
                   </div>
-                  <p className="text-gray-400 text-[10px] mt-1.5">{formatDateDDMMYYYY(a.createdAt)}</p>
+                  <p className="mt-1.5 text-[10px] text-muted-foreground">{formatDateDDMMYYYY(a.createdAt)}</p>
                 </div>
               ))}
-              {filteredActivations.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No activations found</p>}
+              {filteredActivations.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">No activations found</p>}
             </div>
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">ID</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Type</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Customer</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Network</th>
-                    <th className="px-4 py-3 text-center text-gray-500 text-xs font-medium uppercase">Progress</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Date</th>
+                  <tr className="border-b border-slate-100 bg-slate-50">
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Type</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Customer</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground hidden md:table-cell">Network</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Progress</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground hidden lg:table-cell">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredActivations.map((a) => (
-                    <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-4 py-3 font-mono text-gray-500 text-xs">{a.id}</td>
-                      <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getTypeBadge(a.type)}`}>{a.type}</span></td>
-                      <td className="px-4 py-3 font-medium text-gray-900">{a.customerName}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-sm">{a.network}</td>
+                    <tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{a.id}</td>
+                      <td className="px-4 py-3"><span className={`rounded-lg px-2.5 py-1 text-xs font-bold ${getTypeBadge(a.type)}`}>{a.type}</span></td>
+                      <td className="px-4 py-3 font-medium text-foreground">{a.customerName}</td>
+                      <td className="px-4 py-3 hidden text-sm text-muted-foreground md:table-cell">{a.network}</td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 justify-center">
-                          <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-gray-300"}`} style={{ width: `${a.progress}%` }} />
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="h-2 w-16 overflow-hidden rounded-full bg-slate-100">
+                            <div className={`h-full rounded-full ${a.progress === 100 ? "bg-green-500" : a.progress >= 66 ? "bg-blue-500" : a.progress >= 33 ? "bg-amber-500" : "bg-slate-300"}`} style={{ width: `${a.progress}%` }} />
                           </div>
-                          <span className="text-xs font-bold text-gray-600 w-8 text-right">{a.progress}%</span>
+                          <span className="w-8 text-right text-xs font-bold text-slate-600">{a.progress}%</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getStatusBadge(a.status)}`}>{a.status}</span></td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-gray-400 text-xs">{formatDateDDMMYYYY(a.createdAt)}</td>
+                      <td className="px-4 py-3"><StatusPill label={a.status} tone={toneForStatus(a.status)} /></td>
+                      <td className="px-4 py-3 hidden text-xs text-muted-foreground lg:table-cell">{formatDateDDMMYYYY(a.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         </>
       )}
 
-      {/* â•â•â•â•â•â•â•â•â•â•â• FINANCE TAB â•â•â•â•â•â•â•â•â•â•â• */}
       {activeTab === "finance" && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "Wallet Balance", value: `PKR ${walletInfo.balance.toLocaleString()}`, icon: Wallet, color: "text-green-600", light: "bg-green-50" },
-              { label: "Total Credits", value: `PKR ${walletInfo.totalCredits.toLocaleString()}`, icon: TrendingUp, color: "text-green-600", light: "bg-green-50" },
-              { label: "Total Debits", value: `PKR ${walletInfo.totalDebits.toLocaleString()}`, icon: TrendingDown, color: "text-red-600", light: "bg-red-50" },
-              { label: "Transactions", value: walletInfo.count, icon: CreditCard, color: "text-blue-600", light: "bg-blue-50" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className={`w-10 h-10 rounded-xl ${s.light} flex items-center justify-center mb-3`}>
-                  <s.icon size={20} className={s.color} />
-                </div>
-                <p className="text-lg sm:text-xl font-black text-gray-900 truncate">{s.value}</p>
-                <p className="text-gray-500 text-xs">{s.label}</p>
-              </div>
-            ))}
+            <StatCard label="Wallet Balance" value={`PKR ${walletInfo.balance.toLocaleString()}`} icon={Wallet} iconClass="bg-green-50 text-green-600" />
+            <StatCard label="Total Credits" value={`PKR ${walletInfo.totalCredits.toLocaleString()}`} icon={TrendingUp} iconClass="bg-green-50 text-green-600" />
+            <StatCard label="Total Debits" value={`PKR ${walletInfo.totalDebits.toLocaleString()}`} icon={TrendingDown} iconClass="bg-red-50 text-red-600" />
+            <StatCard label="Transactions" value={walletInfo.count} icon={CreditCard} iconClass="bg-blue-50 text-blue-600" />
           </div>
 
-          {/* Salary Detail Link */}
           <Link href="/dsm/salary-detail"
-            className="block bg-gradient-to-r from-[#0057FF] to-[#003DA5] rounded-2xl p-5 text-white hover:shadow-xl transition-all group">
+            className="group block rounded-xl bg-gradient-to-r from-brand-600 to-[#003DA5] p-5 text-white transition-all hover:shadow-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <DollarSign size={22} className="text-[#C8A951]" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 transition-transform group-hover:scale-110">
+                  <DollarSign className="h-6 w-6 text-[#C8A951]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base">Salary Detail</h3>
-                  <p className="text-white/60 text-xs mt-0.5">View month-wise salary breakdown &amp; download payslips</p>
+                  <h3 className="text-base font-bold">Salary Detail</h3>
+                  <p className="mt-0.5 text-xs text-white/60">View month-wise salary breakdown &amp; download payslips</p>
                 </div>
               </div>
-              <ChevronRight size={20} className="text-white/40 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 text-white/40 transition-transform group-hover:translate-x-1" />
             </div>
           </Link>
 
           {salarySummary && (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                  <DollarSign size={16} className="text-[#0057FF]" /> My Salary Summary
+            <Card className="overflow-hidden">
+              <div className="border-b border-slate-100 px-6 py-4">
+                <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <DollarSign className="h-4 w-4 text-brand-600" /> My Salary Summary
                 </h3>
               </div>
               <div className="p-5">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                   <div>
-                    <h4 className="text-gray-500 text-xs font-bold uppercase mb-3">Earnings</h4>
+                    <h4 className="mb-3 text-xs font-bold uppercase text-muted-foreground">Earnings</h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Basic Salary</span><span className="font-bold text-gray-900">PKR {mySalary.salary.toLocaleString()}</span></div>
-                      {mySalary.fuelAllowance > 0 && <div className="flex justify-between"><span className="text-gray-500">Fuel Allowance</span><span>PKR {mySalary.fuelAllowance.toLocaleString()}</span></div>}
-                      {mySalary.mobileAllowance > 0 && <div className="flex justify-between"><span className="text-gray-500">Mobile Allowance</span><span>PKR {mySalary.mobileAllowance.toLocaleString()}</span></div>}
-                      {mySalary.dailyAllowance > 0 && <div className="flex justify-between"><span className="text-gray-500">Daily Allowance</span><span>PKR {mySalary.dailyAllowance.toLocaleString()}</span></div>}
-                      {mySalary.residenceAllowance > 0 && <div className="flex justify-between"><span className="text-gray-500">Residence Allowance</span><span>PKR {mySalary.residenceAllowance.toLocaleString()}</span></div>}
-                      <div className="border-t border-gray-100 pt-2 mt-2">
-                        <div className="flex justify-between font-bold text-gray-900"><span>Total Allowances</span><span>PKR {salarySummary.totalAllow.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Basic Salary</span><span className="font-bold text-foreground">PKR {mySalary.salary.toLocaleString()}</span></div>
+                      {mySalary.fuelAllowance > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Fuel Allowance</span><span>PKR {mySalary.fuelAllowance.toLocaleString()}</span></div>}
+                      {mySalary.mobileAllowance > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Mobile Allowance</span><span>PKR {mySalary.mobileAllowance.toLocaleString()}</span></div>}
+                      {mySalary.dailyAllowance > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Daily Allowance</span><span>PKR {mySalary.dailyAllowance.toLocaleString()}</span></div>}
+                      {mySalary.residenceAllowance > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Residence Allowance</span><span>PKR {mySalary.residenceAllowance.toLocaleString()}</span></div>}
+                      <div className="mt-2 border-t border-slate-100 pt-2">
+                        <div className="flex justify-between font-bold text-foreground"><span>Total Allowances</span><span>PKR {salarySummary.totalAllow.toLocaleString()}</span></div>
                       </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-gray-500 text-xs font-bold uppercase mb-3">Commission Rates</h4>
+                    <h4 className="mb-3 text-xs font-bold uppercase text-muted-foreground">Commission Rates</h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">New SIM</span><span className="font-medium text-green-600">Rs.{mySalary.newSimCommission}/activation</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">MNP</span><span className="font-medium text-green-600">Rs.{mySalary.mnpCommission}/transfer</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Replacement</span><span className="font-medium text-green-600">Rs.{mySalary.replacementCommission}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">BYN</span><span className="font-medium text-green-600">Rs.{mySalary.bynCommission}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Hike Commission</span><span className="font-medium text-green-600">Rs.{mySalary.hikeCommission}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Other Commission</span><span className="font-medium text-green-600">Rs.{mySalary.otherCommission}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">New SIM</span><span className="font-medium text-green-600">Rs.{mySalary.newSimCommission}/activation</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">MNP</span><span className="font-medium text-green-600">Rs.{mySalary.mnpCommission}/transfer</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Replacement</span><span className="font-medium text-green-600">Rs.{mySalary.replacementCommission}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">BYN</span><span className="font-medium text-green-600">Rs.{mySalary.bynCommission}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Hike Commission</span><span className="font-medium text-green-600">Rs.{mySalary.hikeCommission}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Other Commission</span><span className="font-medium text-green-600">Rs.{mySalary.otherCommission}</span></div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-gray-500 text-xs font-bold uppercase mb-3">Bonuses & Deductions</h4>
+                    <h4 className="mb-3 text-xs font-bold uppercase text-muted-foreground">Bonuses & Deductions</h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Target Bonus</span><span className="font-medium text-blue-600">PKR {mySalary.targetBonus.toLocaleString()}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Performance Bonus</span><span className="font-medium text-blue-600">PKR {mySalary.bonus.toLocaleString()}</span></div>
-                      <div className="border-t border-gray-100 pt-2 mt-2">
+                      <div className="flex justify-between"><span className="text-muted-foreground">Target Bonus</span><span className="font-medium text-blue-600">PKR {mySalary.targetBonus.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Performance Bonus</span><span className="font-medium text-blue-600">PKR {mySalary.bonus.toLocaleString()}</span></div>
+                      <div className="mt-2 border-t border-slate-100 pt-2">
                         <div className="flex justify-between text-red-500"><span>Advance Salary</span><span>-PKR {mySalary.advanceSalary.toLocaleString()}</span></div>
                         <div className="flex justify-between text-red-500"><span>Loan Deduction</span><span>-PKR {mySalary.loanDeduction.toLocaleString()}</span></div>
                         <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {mySalary.otherDeduction.toLocaleString()}</span></div>
                       </div>
                     </div>
-                    <div className="mt-4 p-3 bg-gradient-to-r from-[#0057FF] to-[#003DA5] rounded-xl text-white flex items-center justify-between gap-3">
+                    <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-brand-600 to-[#003DA5] p-3 text-white">
                       <span className="text-sm font-semibold">Net Payable</span>
-                      <span className="text-lg font-black whitespace-nowrap">PKR {salarySummary.netPay.toLocaleString()}</span>
+                      <span className="whitespace-nowrap text-lg font-black">PKR {salarySummary.netPay.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
           )}
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                <Wallet size={16} className="text-[#0057FF]" /> Wallet Transactions
+          <Card className="overflow-hidden">
+            <div className="border-b border-slate-100 px-6 py-4">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Wallet className="h-4 w-4 text-brand-600" /> Wallet Transactions
               </h3>
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-slate-100">
               {wallet.slice(0, 10).map((w) => (
-                <div key={w.id} className="px-6 py-3 flex items-center justify-between">
+                <div key={w.id} className="flex items-center justify-between px-6 py-3">
                   <div>
-                    <p className="text-gray-900 text-sm font-medium">{w.note || w.type}</p>
-                    <p className="text-gray-400 text-xs">{formatDateDDMMYYYY(w.date)}</p>
+                    <p className="text-sm font-medium text-foreground">{w.note || w.type}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateDDMMYYYY(w.date)}</p>
                   </div>
                   <span className={`text-sm font-bold ${w.type === "Credit" ? "text-green-600" : "text-red-600"}`}>
                     {w.type === "Credit" ? "+" : "-"}PKR {w.amount.toLocaleString()}
                   </span>
                 </div>
               ))}
-              {wallet.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No transactions recorded</p>}
+              {wallet.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">No transactions recorded</p>}
             </div>
-          </div>
+          </Card>
         </>
       )}
     </div>

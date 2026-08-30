@@ -1,11 +1,40 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { useState } from "react";
+import { Download, ShieldCheck, Search } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import { formatDateDDMMYYYY } from "@/lib/dateUtils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { StatusPill } from "@/components/ui/Badge";
+import { Pagination } from "@/components/ui/Pagination";
+import { EmptyState } from "@/components/ui/EmptyState";
+
+const PAGE_SIZE = 10;
+
+const typeTone: Record<string, "neutral" | "warning" | "positive" | "brand"> = {
+  auth: "neutral",
+  update: "warning",
+  payment: "positive",
+  system: "brand",
+};
 
 export default function AuditLogsPage() {
   const { auditLogs } = useData();
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+
+  const filtered = auditLogs.filter((l) => {
+    const q = search.toLowerCase();
+    if (!q) return true;
+    return l.user.toLowerCase().includes(q) || l.action.toLowerCase().includes(q) || l.detail.toLowerCase().includes(q) || l.type.toLowerCase().includes(q);
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const exportLogs = () => {
     const headers = ["Timestamp", "User", "Action", "Details", "Type"];
@@ -20,54 +49,64 @@ export default function AuditLogsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const submitSearch = (v: string) => {
+    setSearch(v);
+    setPage(1);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Audit Logs</h1>
-          <p className="text-gray-500 text-sm mt-1">Track all system activities. Logs cannot be deleted.</p>
-        </div>
-        <button onClick={exportLogs} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-100 transition-all">
-          <Download size={14} /> Export Logs
-        </button>
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Audit Logs" }]}
+        title="Audit Logs"
+        description="Track all system activities. Logs cannot be deleted."
+        actions={
+          <Button variant="outline" onClick={exportLogs}>
+            <Download className="h-4 w-4" /> Export Logs
+          </Button>
+        }
+      />
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <Card className="overflow-hidden">
+        <CardHeader className="flex-row flex-wrap items-center justify-between gap-3">
+          <CardTitle>All Events ({auditLogs.length})</CardTitle>
+          <SearchInput placeholder="Search by user, action, or detail..." value={search} onSearch={submitSearch} className="min-w-[200px] flex-1" />
+        </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Timestamp</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">User</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Action</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Details</th>
-                <th className="text-left px-6 py-4 text-gray-500 text-xs font-medium uppercase">Type</th>
+              <tr className="border-b border-slate-100 bg-muted/50">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Timestamp</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">User</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Action</th>
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Details</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Type</th>
               </tr>
             </thead>
             <tbody>
-              {auditLogs.map((l, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-3 text-gray-400 text-sm font-mono">{formatDateDDMMYYYY(l.time)}</td>
-                  <td className="px-6 py-3 text-gray-600 text-sm">{l.user}</td>
-                  <td className="px-6 py-3 text-gray-900 text-sm font-medium">{l.action}</td>
-                  <td className="px-6 py-3 hidden md:table-cell text-gray-400 text-sm">{l.detail}</td>
+              {paginated.map((l, i) => (
+                <tr key={i} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
+                  <td className="px-6 py-3 font-mono text-sm text-muted-foreground">{formatDateDDMMYYYY(l.time)}</td>
+                  <td className="px-6 py-3 text-sm text-slate-600">{l.user}</td>
+                  <td className="px-6 py-3 text-sm font-medium text-foreground">{l.action}</td>
+                  <td className="hidden px-6 py-3 text-sm text-muted-foreground md:table-cell">{l.detail}</td>
                   <td className="px-6 py-3">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-medium ${l.type === "auth" ? "bg-blue-50 text-blue-700" : l.type === "update" ? "bg-[#C8A951]/10 text-amber-700" : l.type === "payment" ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-500"}`}>{l.type}</span>
+                    <StatusPill label={l.type} tone={typeTone[l.type] || "neutral"} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {auditLogs.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <p className="text-gray-400 text-sm">No audit logs yet</p>
-          </div>
+        {paginated.length === 0 ? (
+          <EmptyState icon={Search} title="No audit logs yet" description={search ? "No logs match your search." : "System events will be recorded here."} />
+        ) : (
+          <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
         )}
-      </div>
+      </Card>
 
-      <div className="flex items-center gap-2 text-gray-400 text-xs">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <ShieldCheck className="h-3.5 w-3.5 text-brand-600" />
         <span>Audit logs are immutable and cannot be deleted or modified.</span>
       </div>
     </div>
