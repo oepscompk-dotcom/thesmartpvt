@@ -6,7 +6,7 @@ import {
   Smartphone, ArrowLeftRight, Cpu, Users, Package, Calculator,
   Building, MapPin, CreditCard, Wallet, BarChart3, Monitor,
   ChevronLeft, ChevronRight, ArrowRight, Phone, Mail, MapPinIcon,
-  Zap, Shield, Globe, TrendingUp, Star, CheckCircle
+  Zap, Shield, Globe, ImageIcon, Star, CheckCircle
 } from "lucide-react";
 import { useCompanyLogo } from "@/lib/useCompanyLogo";
 
@@ -147,62 +147,33 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
           </div>
 
           <div key={`dash-${textKey}`} className={`transition-all duration-700 delay-300 ${animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-            {slide.image ? (
-              <div className="relative flex items-center justify-center">
-                <img src={slide.image} alt={slide.title} className="w-full max-h-[560px] object-contain drop-shadow-2xl animate-float" />
-              </div>
-            ) : (
-            <div className="bg-white/10 backdrop-blur-xl border border-white/15 rounded-xl p-6 sm:p-8 relative shadow-2xl">
-              <div className="absolute -top-3 -right-3 w-24 h-24 bg-tele-cyan/10 rounded-full blur-2xl" />
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-white font-semibold text-lg">Dashboard Overview</h3>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-tele-cyan animate-pulse" />
-                  <span className="text-white/60 text-xs">Live</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                {[
-                  { icon: <Zap size={16} className="text-tele-cyan" />, label: "Activations", value: "1,247", change: "+12.5%", color: "text-tele-cyan" },
-                  { icon: <Users size={16} className="text-tele-azure" />, label: "Franchises", value: "120+", change: "+8.2%", color: "text-tele-azure" },
-                  { icon: <BarChart3 size={16} className="text-tele-yellow" />, label: "Attendance", value: "847", change: "94.2%", color: "text-tele-yellow" },
-                  { icon: <TrendingUp size={16} className="text-tele-cyan-light" />, label: "Revenue", value: "PKR 2.4M", change: "+15.3%", color: "text-tele-cyan-light" },
-                ].map((stat) => (
-                  <div key={stat.label} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                    <div className="flex items-center gap-2 mb-2">
-                      {stat.icon}
-                      <span className="text-white/50 text-xs">{stat.label}</span>
+            <div className="relative flex items-center justify-center">
+              <div className="relative w-full max-w-[540px] aspect-square">
+                <div className="absolute inset-0 rounded-xl bg-white/10 backdrop-blur-xl border border-white/15 shadow-2xl" />
+                {slide.image ? (
+                  <img src={slide.image} alt={slide.title} className="relative w-full h-full object-contain drop-shadow-2xl animate-float p-6 sm:p-8" />
+                ) : (
+                  <div className="relative h-full w-full flex flex-col items-center justify-center gap-3">
+                    <div className="w-16 h-16 rounded-full bg-white/10 border border-white/15 flex items-center justify-center">
+                      <ImageIcon size={28} className="text-white/50" />
                     </div>
-                    <p className="text-white font-bold text-xl">{stat.value}</p>
-                    <p className={`text-xs mt-1 ${stat.color}`}>{stat.change}</p>
+                    <span className="text-white/40 text-sm">Banner Image (1:1)</span>
                   </div>
-                ))}
-              </div>
-              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-white/60 text-sm">Revenue Trend</span>
-                  <span className="text-tele-yellow text-xs">This Month</span>
+                )}
+                <div className="absolute -top-4 -left-4 animate-float">
+                  <div className="bg-white/10 backdrop-blur-xl rounded px-3 py-2 flex items-center gap-2 border border-white/15">
+                    <Shield size={14} className="text-tele-yellow" />
+                    <span className="text-white text-xs font-medium">Secure</span>
+                  </div>
                 </div>
-                <div className="flex items-end gap-2 h-32">
-                  {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 88].map((h, i) => (
-                    <div key={i} className="flex-1 rounded-t-md transition-all duration-500" style={{ height: `${h}%`, background: i === 10 ? "linear-gradient(to top, #F1B308, #FFFB63)" : "rgba(0, 200, 255, 0.35)" }} />
-                  ))}
-                </div>
-              </div>
-              <div className="absolute -top-4 -left-4 animate-float">
-                <div className="bg-white/10 backdrop-blur-xl rounded px-3 py-2 flex items-center gap-2 border border-white/15">
-                  <Shield size={14} className="text-tele-yellow" />
-                  <span className="text-white text-xs font-medium">Secure</span>
-                </div>
-              </div>
-              <div className="absolute -bottom-4 -right-4 animate-float delay-1000">
-                <div className="bg-white/10 backdrop-blur-xl rounded px-3 py-2 flex items-center gap-2 border border-white/15">
-                  <Globe size={14} className="text-tele-cyan" />
-                  <span className="text-white text-xs font-medium">Online</span>
+                <div className="absolute -bottom-4 -right-4 animate-float delay-1000">
+                  <div className="bg-white/10 backdrop-blur-xl rounded px-3 py-2 flex items-center gap-2 border border-white/15">
+                    <Globe size={14} className="text-tele-cyan" />
+                    <span className="text-white text-xs font-medium">Online</span>
+                  </div>
                 </div>
               </div>
             </div>
-            )}
           </div>
         </div>
       </div>

@@ -42,6 +42,12 @@ export default function CMSManager() {
   const handleHeroImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const square = await isSquareImage(file);
+    if (!square) {
+      alert("Please upload a 1:1 (square) image for this banner.");
+      if (slideInputRefs.current[index]) slideInputRefs.current[index].value = "";
+      return;
+    }
     setBannerUploading(index);
     try {
       const url = await uploadFile(file, "hero-banners");
@@ -51,6 +57,15 @@ export default function CMSManager() {
       if (slideInputRefs.current[index]) slideInputRefs.current[index].value = "";
     }
   };
+
+  const isSquareImage = (file: File) =>
+    new Promise<boolean>((resolve) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img.width === img.height && img.width > 0); };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(false); };
+      img.src = url;
+    });
 
   const removeHeroImage = async (index: number) => {
     const slide = heroSlides[index];
@@ -160,7 +175,7 @@ export default function CMSManager() {
       <Card>
         <CardHeader>
           <CardTitle>Homepage Hero Banners</CardTitle>
-          <CardDescription>Upload transparent PNG images to replace the hero dashboard chart. Manage all 4 homepage banner slides.</CardDescription>
+          <CardDescription>Upload 1:1 (square) transparent PNG images. They replace the hero image box on all 4 homepage banner slides.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -188,7 +203,7 @@ export default function CMSManager() {
                 <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
                   {/* Banner preview + transparent PNG upload */}
                   <div>
-                    <div className="relative flex h-40 items-center justify-center overflow-hidden rounded-lg border border-slate-200" style={{ background: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)" }}>
+                    <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200" style={{ background: "linear-gradient(118deg, #0C1026 0%, #2D28CD 55%, #00C8FF 135%)" }}>
                       {bannerUploading === i ? (
                         <Loader2 size={24} className="animate-spin text-white/70" />
                       ) : slide.image ? (
@@ -196,7 +211,7 @@ export default function CMSManager() {
                       ) : (
                         <div className="text-center">
                           <ImageIcon size={24} className="mx-auto mb-1 text-white/50" />
-                          <span className="text-[11px] text-white/60">No image &mdash; shows chart</span>
+                          <span className="text-[11px] text-white/60">No image &mdash; 1:1 box</span>
                         </div>
                       )}
                     </div>
@@ -210,7 +225,7 @@ export default function CMSManager() {
                     <div className="mt-3 flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1" onClick={() => slideInputRefs.current[i]?.click()}>
                         {slide.image ? <ImageIcon className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                        {slide.image ? "Replace PNG" : "Upload PNG"}
+                        {slide.image ? "Replace PNG (1:1)" : "Upload PNG (1:1)"}
                       </Button>
                       {slide.image && (
                         <Button
