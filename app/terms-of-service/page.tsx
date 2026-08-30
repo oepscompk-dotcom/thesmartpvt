@@ -32,20 +32,20 @@ export default function TermsOfServicePage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16 relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C8A951]/5 rounded-full blur-3xl -z-10" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#FFFB63]/5 rounded-full blur-3xl -z-10" />
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A2647]/5 rounded-full mb-6">
-            <div className="w-2 h-2 bg-[#C8A951] rounded-full" />
+            <div className="w-2 h-2 bg-[#FFFB63] rounded-full" />
             <span className="text-[#0A2647] text-sm font-medium">Legal Document</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#0A2647] mb-4">Terms of Service</h1>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#C8A951] to-[#B8960E] mx-auto rounded-full mb-6" />
+          <div className="w-24 h-1 bg-gradient-to-r from-[#FFFB63] to-[#F1B308] mx-auto rounded-full mb-6" />
           <p className="text-gray-500 text-lg">THE SMART Pvt. Ltd.</p>
-          <p className="text-[#C8A951] font-medium italic mt-1">A Step Towards a New Horizon</p>
+          <p className="text-[#F1B308] font-medium italic mt-1">A Step Towards a New Horizon</p>
           <p className="text-gray-400 text-sm mt-4">Effective Date: January 1, 2026</p>
         </div>
 
         <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-xl border border-gray-100 relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#0A2647] via-[#C8A951] to-[#0A2647] rounded-t-3xl" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#0A2647] via-[#FFFB63] to-[#0A2647] rounded-t-3xl" />
 
           <Section num="1" title="Acceptance of Terms">
             <p>By accessing or using the THE SMART ERP platform, website, mobile applications, and related services (collectively, &quot;Services&quot;), you agree to be bound by these Terms of Service.</p>
@@ -123,10 +123,10 @@ export default function TermsOfServicePage() {
             <p>For questions about these Terms of Service, contact us:</p>
             <div className="mt-4 p-6 bg-gradient-to-br from-[#0A2647] to-[#144272] rounded-2xl text-white">
               <p className="font-bold text-lg">THE SMART Pvt. Ltd.</p>
-              <p className="text-[#C8A951] text-sm italic mb-3">A Step Towards a New Horizon</p>
+              <p className="text-[#F1B308] text-sm italic mb-3">A Step Towards a New Horizon</p>
               <div className="space-y-1 text-sm text-white/80">
-                <p>Website: <span className="text-[#C8A951] font-medium">www.thesmart.com.pk</span></p>
-                <p>Email: <span className="text-[#C8A951] font-medium">hello@thesmart.com.pk</span></p>
+                <p>Website: <span className="text-[#F1B308] font-medium">www.thesmart.com.pk</span></p>
+                <p>Email: <span className="text-[#F1B308] font-medium">hello@thesmart.com.pk</span></p>
               </div>
             </div>
           </Section>
@@ -144,7 +144,7 @@ function Section({ num, title, children }: { num: string; title: string; childre
   return (
     <div className="mb-10 last:mb-0">
       <div className="flex items-center gap-3 mb-4">
-        <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C8A951] to-[#B8960E] text-[#0A2647] font-black text-sm flex items-center justify-center flex-shrink-0">{num}</span>
+        <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFFB63] to-[#F1B308] text-[#0A2647] font-black text-sm flex items-center justify-center flex-shrink-0">{num}</span>
         <h2 className="text-xl sm:text-2xl font-bold text-[#0A2647]">{title}</h2>
       </div>
       <div className="pl-[52px] text-gray-600 leading-relaxed space-y-3">{children}</div>
@@ -157,7 +157,7 @@ function BulletList({ items }: { items: string[] }) {
     <ul className="space-y-2 my-3">
       {items.map((item, i) => (
         <li key={i} className="flex items-start gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#C8A951] mt-2 flex-shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FFFB63] mt-2 flex-shrink-0" />
           <span>{item}</span>
         </li>
       ))}

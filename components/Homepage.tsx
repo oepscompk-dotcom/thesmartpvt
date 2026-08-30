@@ -429,8 +429,8 @@ function CTASection({ data }: { data: any }) {
 
 function LoginPortalSection() {
   const portals = [
-    { title: "Franchise Admin", desc: "Manage your franchise operations", icon: <Building size={28} />, href: "/franchise-admin", color: "from-[#C8A951] to-[#B8960E]" },
-    { title: "DSO Dashboard", desc: "Field operations & sales", icon: <MapPin size={28} />, href: "/dso-login", color: "from-[#0057FF] to-[#0041CC]" },
+    { title: "Franchise Admin", desc: "Manage your franchise operations", icon: <Building size={28} />, href: "/franchise-admin", color: "from-[#FFFB63] to-[#F1B308]" },
+    { title: "DSO Dashboard", desc: "Field operations & sales", icon: <MapPin size={28} />, href: "/dso-login", color: "from-[#2D28CD] to-[#2B26B0]" },
     { title: "DSM Dashboard", desc: "Team management & performance", icon: <Users size={28} />, href: "/dsm-login", color: "from-green-500 to-green-600" },
   ];
 

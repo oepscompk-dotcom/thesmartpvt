@@ -252,7 +252,7 @@ export default function CompanyDashboardPage() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2"><Zap size={16} className="text-[#C8A951]" /> Quick Actions</h3>
+            <h3 className="text-gray-900 font-bold text-sm mb-4 flex items-center gap-2"><Zap size={16} className="text-[#F1B308]" /> Quick Actions</h3>
             <div className="grid grid-cols-4 lg:grid-cols-8 gap-3">
               {quickActions.map((a) => (
                 <button key={a.label} onClick={() => a.onClick ? a.onClick() : router.push(a.href || "#")}

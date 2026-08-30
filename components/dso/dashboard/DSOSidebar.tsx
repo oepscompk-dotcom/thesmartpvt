@@ -76,15 +76,15 @@ export default function DSOSidebar({ open, onClose }: Props) {
           <div className="flex items-center justify-between">
             <Link href="/dso/dashboard" className="flex items-center gap-3">
               {logo ? (
-                <img src={logo} alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-[#C8A951]/20" />
+                <img src={logo} alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-[#FFFB63]/20" />
               ) : (
-                <div className="w-11 h-11 bg-gradient-to-br from-[#C8A951] to-[#B8960E] rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-black text-lg">S</span>
+                <div className="w-11 h-11 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-[#0A2647] font-black text-lg">S</span>
                 </div>
               )}
               <div>
                 <span className="text-white font-bold text-sm block leading-tight">{companyName || "THE SMART ERP"}</span>
-                <span className="text-[#C8A951] text-[11px] font-semibold tracking-wide">DSO Portal</span>
+                <span className="text-[#FFFB63] text-[11px] font-semibold tracking-wide">DSO Portal</span>
               </div>
             </Link>
             <button onClick={onClose} className="lg:hidden text-white/50 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-all">
@@ -108,17 +108,17 @@ export default function DSOSidebar({ open, onClose }: Props) {
                       onClick={onClose}
                       className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
                         ${isActive
-                          ? "bg-[#C8A951]/15 text-[#C8A951]"
+                          ? "bg-[#FFFB63]/15 text-[#FFFB63]"
                           : "text-white/60 hover:text-white hover:bg-white/5"
                         }`}
                     >
                       {isActive && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#C8A951] rounded-r-full" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#FFFB63] rounded-r-full" />
                       )}
                       <item.icon
                         size={18}
                         className={`transition-colors duration-200 ${
-                          isActive ? "text-[#C8A951]" : "text-white/40 group-hover:text-white/70"
+                          isActive ? "text-[#FFFB63]" : "text-white/40 group-hover:text-white/70"
                         }`}
                       />
                       <span className="flex-1">{item.label}</span>
@@ -137,7 +137,7 @@ export default function DSOSidebar({ open, onClose }: Props) {
 
         <div className="relative px-3 py-4 border-t border-white/10">
           <div className="flex items-center gap-3 px-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C8A951] to-[#B8960E] flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/10">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFFB63] to-[#F1B308] flex items-center justify-center text-[#0A2647] text-sm font-bold shadow-lg ring-2 ring-white/10">
               {auth.dsoName?.charAt(0)?.toUpperCase() || "D"}
             </div>
             <div className="flex-1 min-w-0">

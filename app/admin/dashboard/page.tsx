@@ -103,7 +103,7 @@ export default function DashboardPage() {
                 <div
                   key={i}
                   className="w-full flex-1 rounded-t-lg transition-all duration-500 hover:opacity-80"
-                  style={{ height: `${h}%`, background: i === 11 ? "linear-gradient(to top, #C8A951, #D4BC6A)" : "#2563eb" }}
+                  style={{ height: `${h}%`, background: i === 11 ? "linear-gradient(to top, #FFFB63, #FDE408)" : "#2563eb" }}
                 />
               ))}
             </div>

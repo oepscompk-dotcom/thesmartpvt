@@ -46,7 +46,7 @@ export default function CompanyHeader({ onMenuClick }: CompanyHeaderProps) {
 
           <div className="relative">
             <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#0A2647] to-[#144272] rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">C</span>
               </div>
               <span className="hidden md:block text-sm font-medium text-gray-700">Admin</span>

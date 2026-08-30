@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useDSMData } from "@/lib/DSMDataContext";
@@ -158,23 +158,23 @@ export default function DSMSalaryDetailPage() {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Satoshi', sans-serif; background: #eef1f5; padding: 20px; color: #1e293b; font-size: 11px; line-height: 1.5; }
   .slip { max-width: 190mm; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.06); overflow: hidden; position: relative; }
-  .top-accent { height: 4px; background: linear-gradient(90deg, #0057FF 0%, #3a7cff 50%, #0057FF 100%); }
+  .top-accent { height: 4px; background: linear-gradient(90deg, #2D28CD 0%, #5A54FF 50%, #2D28CD 100%); }
   .header { padding: 24px 32px 16px; text-align: center; position: relative; }
-  .header .company { font-size: 20px; font-weight: 800; color: #0057FF; letter-spacing: 2px; }
+  .header .company { font-size: 20px; font-weight: 800; color: #2D28CD; letter-spacing: 2px; }
   .header .company span { color: #0F172A; }
   .header .tagline { font-size: 8px; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; }
-  .header .divider-line { width: 50px; height: 2px; background: #0057FF; margin: 10px auto; }
+  .header .divider-line { width: 50px; height: 2px; background: #2D28CD; margin: 10px auto; }
   .header .slip-title { font-size: 15px; font-weight: 700; color: #1e293b; }
   .header .slip-period { font-size: 10px; color: #64748b; margin-top: 2px; }
   .header .slip-ref { position: absolute; top: 24px; right: 32px; font-size: 8px; color: #94a3b8; text-align: right; }
   .emp-section { display: flex; align-items: center; padding: 18px 32px; background: #f8fafc; border-top: 1px solid #e8ecf0; border-bottom: 1px solid #e8ecf0; }
-  .emp-avatar { width: 44px; height: 44px; border-radius: 50%; background: #0057FF; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; margin-right: 14px; flex-shrink: 0; }
+  .emp-avatar { width: 44px; height: 44px; border-radius: 50%; background: #2D28CD; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; margin-right: 14px; flex-shrink: 0; }
   .emp-info { flex: 1; }
-  .emp-info .name { font-size: 14px; font-weight: 700; color: #0057FF; }
+  .emp-info .name { font-size: 14px; font-weight: 700; color: #2D28CD; }
   .emp-info .meta { font-size: 10px; color: #64748b; margin-top: 2px; }
   .emp-info .meta span { margin-right: 14px; }
   .emp-badge { text-align: right; flex-shrink: 0; }
-  .emp-badge .role { font-size: 10px; font-weight: 600; color: #fff; background: #0057FF; padding: 3px 12px; border-radius: 20px; display: inline-block; }
+  .emp-badge .role { font-size: 10px; font-weight: 600; color: #fff; background: #2D28CD; padding: 3px 12px; border-radius: 20px; display: inline-block; }
   .content { padding: 0 32px; }
   .section-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: #e8ecf0; }
@@ -190,8 +190,8 @@ export default function DSMSalaryDetailPage() {
   .act-teal { background: #ccfbf1; color: #0f766e; }
   .row-alt { background: #fafbfc; }
   .row-divider td { padding: 0 !important; height: 6px; border-bottom: none; }
-  .row-total td { font-weight: 700; border-top: 2px solid #0057FF; background: #eef5ff !important; }
-  .row-total .row-value { color: #0057FF; }
+  .row-total td { font-weight: 700; border-top: 2px solid #2D28CD; background: #eef5ff !important; }
+  .row-total .row-value { color: #2D28CD; }
   .row-deduction .row-value { color: #dc2626; }
   .row-ded-total td { font-weight: 700; border-top: 2px solid #dc2626; background: #fef2f2 !important; }
   .row-ded-total .row-value { color: #dc2626; }
@@ -199,11 +199,11 @@ export default function DSMSalaryDetailPage() {
   .summary-card { background: #f8fafc; border: 1px solid #e8ecf0; border-radius: 8px; padding: 12px 14px; }
   .summary-card .sc-label { font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
   .summary-card .sc-value { font-size: 13px; font-weight: 700; color: #1e293b; margin-top: 2px; }
-  .net-pay-box { margin: 16px 0; background: linear-gradient(135deg, #0057FF 0%, #003DA5 100%); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .net-pay-box { margin: 16px 0; background: linear-gradient(135deg, #2D28CD 0%, #241F95 100%); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
   .net-pay-box .np-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
   .net-pay-box .np-amount { font-size: 22px; font-weight: 800; color: #fff; }
   .net-pay-box .np-sub { font-size: 8px; color: #94a3b8; }
-  .amt-words { background: #eef5ff; border-left: 3px solid #0057FF; padding: 10px 16px; margin: 12px 0; font-size: 10px; color: #475569; border-radius: 0 6px 6px 0; }
+  .amt-words { background: #eef5ff; border-left: 3px solid #2D28CD; padding: 10px 16px; margin: 12px 0; font-size: 10px; color: #475569; border-radius: 0 6px 6px 0; }
   .barcode-wrap { text-align: center; padding: 8px 0 4px; }
   .barcode-wrap canvas { display: inline-block; background: #fff; }
   .barcode-wrap .bcode-id { font-size: 9px; color: #94a3b8; letter-spacing: 1px; font-family: 'Satoshi', monospace; margin-top: 2px; }
@@ -212,7 +212,7 @@ export default function DSMSalaryDetailPage() {
   .no-print { padding: 14px 32px 0; text-align: right; }
   .no-print button { padding: 8px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; margin-left: 8px; transition: opacity 0.2s; }
   .no-print button:hover { opacity: 0.9; }
-  .btn-print { background: #0057FF; color: #fff; }
+  .btn-print { background: #2D28CD; color: #fff; }
   .btn-close { background: #e2e8f0; color: #475569; }
   @media print { body { background: #fff; padding: 0; } .no-print { display: none; } .slip { box-shadow: none; border-radius: 0; } .top-accent { height: 3px; } }
 </style></head>
@@ -337,7 +337,7 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
   if (!hydrated) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-center"><div className="animate-spin w-8 h-8 border-4 border-[#0057FF] border-t-transparent rounded-full mx-auto mb-4" /><p className="text-gray-500">Loading...</p></div>
+        <div className="text-center"><div className="animate-spin w-8 h-8 border-4 border-[#2D28CD] border-t-transparent rounded-full mx-auto mb-4" /><p className="text-gray-500">Loading...</p></div>
       </div>
     );
   }
@@ -350,7 +350,7 @@ return (
         description="Month-wise salary breakdown &amp; payslips"
         actions={
           <button onClick={downloadSlip}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#C8A951] px-4 py-2 text-sm font-bold text-[#0A2647] shadow-sm transition-colors hover:bg-[#d4b560]">
+            className="inline-flex items-center gap-2 rounded-lg bg-[#FFFB63] px-4 py-2 text-sm font-bold text-[#0A2647] shadow-sm transition-colors hover:bg-[#F1B308]">
             <Download className="h-4 w-4" /> Download Slip
           </button>
         }
@@ -463,7 +463,7 @@ return (
 
         <Card className="p-5">
           <h3 className="flex items-center gap-2 text-sm font-bold mb-4 text-foreground">
-            <Wallet className="h-4 w-4 text-[#C8A951]" /> Bonuses &amp; Deductions
+            <Wallet className="h-4 w-4 text-[#F1B308]" /> Bonuses &amp; Deductions
           </h3>
           <div className="space-y-3 text-sm">
             <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Bonuses</div>
@@ -493,7 +493,7 @@ return (
               <span>-PKR {currentPayroll.totalDeductions.toLocaleString()}</span>
             </div>
           </div>
-          <div className="mt-5 rounded-xl bg-gradient-to-r from-brand-600 to-[#003DA5] p-4 text-white">
+          <div className="mt-5 rounded-xl bg-gradient-to-r from-brand-600 to-[#241F95] p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-white/70">Gross Pay</p>
@@ -501,7 +501,7 @@ return (
               </div>
               <div className="text-right">
                 <p className="text-xs text-white/70">Net Payable</p>
-                <p className="text-xl font-black text-[#C8A951]">PKR {currentPayroll.netPay.toLocaleString()}</p>
+                <p className="text-xl font-black text-[#F1B308]">PKR {currentPayroll.netPay.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -532,7 +532,7 @@ return (
                   <tr key={d.id} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white ${i === 0 ? "bg-[#C8A951]" : i === 1 ? "bg-slate-400" : i === 2 ? "bg-orange-400" : "bg-brand-600"}`}>{i + 1}</div>
+                        <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? "bg-[#FFFB63] text-[#0A2647]" : i === 1 ? "bg-slate-400 text-white" : i === 2 ? "bg-orange-400 text-white" : "bg-brand-600 text-white"}`}>{i + 1}</div>
                         <span className="font-medium text-foreground">{d.name}</span>
                       </div>
                     </td>

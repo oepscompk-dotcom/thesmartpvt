@@ -128,7 +128,7 @@ export default function DashboardPreview() {
                           i === 10
                             ? "linear-gradient(to top, #0A2647, #205295)"
                             : i === 11
-                            ? "linear-gradient(to top, #C8A951, #D4BC6A)"
+                            ? "linear-gradient(to top, #FFFB63, #FDE408)"
                             : "linear-gradient(to top, #144272, #205295)",
                       }}
                     />
@@ -182,7 +182,7 @@ export default function DashboardPreview() {
                     cy="50"
                     r="40"
                     fill="none"
-                    stroke="#C8A951"
+                    stroke="#FFFB63"
                     strokeWidth="12"
                     strokeDasharray="62.83 188.5"
                     strokeDashoffset="-100.53"

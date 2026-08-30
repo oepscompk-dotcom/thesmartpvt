@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo } from "react";
 import {
@@ -438,7 +438,7 @@ export default function PayrollPage() {
               </Button>
             )}
             {tab === "list" && filteredPayroll.length > 0 && (
-              <Button className="bg-[#C8A951] text-[#0A2647] hover:bg-[#d4b560]" onClick={handlePrintPayroll}>
+              <Button className="bg-[#FFFB63] text-[#0A2647] hover:bg-[#F1B308]" onClick={handlePrintPayroll}>
                 <Printer size={16} /> Print / Export
               </Button>
             )}
@@ -505,7 +505,7 @@ export default function PayrollPage() {
                 </button>
                 <button onClick={handleGenerate}
                   disabled={selectedEmps.length === 0 && !filteredEmployees.length}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#C8A951] px-6 py-2 text-xs font-black text-[#0A2647] transition-all hover:bg-[#d4b560] disabled:opacity-50">
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#FFFB63] px-6 py-2 text-xs font-black text-[#0A2647] transition-all hover:bg-[#F1B308] disabled:opacity-50">
                   <Zap size={14} /> Generate Payroll
                   {selectedEmps.length > 0 ? ` (${selectedEmps.length} selected)` : ` (${filteredEmployees.length} employees)`}
                 </button>
@@ -728,7 +728,7 @@ export default function PayrollPage() {
                                 <Card>
                                   <CardContent className="pt-4">
                                     <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                                      <DollarSign size={14} className="text-[#C8A951]" /> Bonuses & Deductions
+                                      <DollarSign size={14} className="text-[#F1B308]" /> Bonuses & Deductions
                                     </h4>
                                     <div className="space-y-2 text-xs">
                                       <div className="flex justify-between"><span className="text-muted-foreground">Target Bonus</span><span className="font-medium text-blue-600">PKR {(p.targetBonus || 0).toLocaleString()}</span></div>

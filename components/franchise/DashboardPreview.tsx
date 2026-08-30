@@ -18,14 +18,14 @@ export default function DashboardPreview() {
 
   const data = [
     { icon: Users, label: "Staff", value: String(totalStaff), color: "text-brand-gold" },
-    { icon: UserCheck, label: "DSM", value: String(dsmCount), color: "text-[#0EA5E9]" },
+    { icon: UserCheck, label: "DSM", value: String(dsmCount), color: "text-[#00C8FF]" },
     { icon: Smartphone, label: "DSO", value: String(dsoCount), color: "text-green-400" },
   ];
 
   const metrics = [
     { icon: Activity, label: "Payroll Records", value: String(payroll.length), color: "text-green-400" },
     { icon: CheckCircle, label: "Attendance", value: `${attendancePct}%`, color: "text-brand-gold" },
-    { icon: Package, label: "Inventory", value: totalInventory.toLocaleString(), color: "text-[#0EA5E9]" },
+    { icon: Package, label: "Inventory", value: totalInventory.toLocaleString(), color: "text-[#00C8FF]" },
   ];
 
   return (

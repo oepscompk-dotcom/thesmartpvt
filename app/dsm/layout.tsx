@@ -25,7 +25,7 @@ export default function DSMLayout({ children }: { children: React.ReactNode }) {
           <DSMHeader onMenuClick={() => setSidebarOpen(true)} />
           <main className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">{children}</main>
         </div>
-        <BottomNav items={bottomNavItems} color="#0057FF" />
+        <BottomNav items={bottomNavItems} color="#0A2647" />
       </div>
     </DSMAuthGuard>
   );

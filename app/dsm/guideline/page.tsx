@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import {
@@ -158,7 +158,7 @@ function PhoneMockup({ children, title }: { children: React.ReactNode; title: st
       <div className="relative w-[280px] bg-gray-900 rounded-[2.5rem] p-3 shadow-2xl">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-b-2xl z-10" />
         <div className="bg-white rounded-[2rem] overflow-hidden min-h-[500px]">
-          <div className="bg-[#0057FF] text-white px-4 py-3 pt-8">
+          <div className="bg-[#2D28CD] text-white px-4 py-3 pt-8">
             <p className="text-[10px] text-white/60">THE SMART ERP</p>
             <p className="text-sm font-bold">{title}</p>
           </div>
@@ -226,7 +226,7 @@ return (
               onClick={() => { setActiveSection(item.key); setExpandedStep(null); setExpandedVerification(null); setExpandedDsoMgmt(null); }}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
                 activeSection === item.key
-                  ? "bg-[#0057FF] text-white shadow-md"
+                  ? "bg-[#2D28CD] text-white shadow-md"
                   : "text-slate-500 hover:bg-slate-100"
               }`}
             >
@@ -266,13 +266,13 @@ return (
           <Card>
             <div className="p-6">
               <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
-                <Target size={16} className="text-[#C8A951]" /> Activation Flow Overview
+                <Target size={16} className="text-[#F1B308]" /> Activation Flow Overview
               </h3>
               <div className="flex flex-wrap items-center gap-2">
                 {["Dashboard", "Select DSO", "Fill Form", "Select SIM", "Submit", "Track Status", "Verification"].map((step, i, arr) => (
                   <div key={step} className="flex items-center gap-2">
                     <div className="flex flex-col items-center gap-1">
-                      <div className="w-10 h-10 rounded-xl bg-[#0057FF] text-white flex items-center justify-center text-xs font-bold">
+                      <div className="w-10 h-10 rounded-xl bg-[#2D28CD] text-white flex items-center justify-center text-xs font-bold">
                         {i + 1}
                       </div>
                       <span className="text-[10px] font-medium text-gray-600 text-center w-16">{step}</span>
@@ -361,7 +361,7 @@ return (
                 <Card>
                   <div className="p-6">
                     <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
-                      <Zap size={16} className="text-[#C8A951]" /> Process Flow
+                      <Zap size={16} className="text-[#F1B308]" /> Process Flow
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
                       {data.flowDiagram.map((step, i, arr) => (

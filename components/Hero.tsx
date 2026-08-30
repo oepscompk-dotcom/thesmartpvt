@@ -196,7 +196,7 @@ export default function Hero() {
                           height: `${h}%`,
                           background:
                             i === 10
-                              ? "linear-gradient(to top, #C8A951, #D4BC6A)"
+                              ? "linear-gradient(to top, #FFFB63, #FDE408)"
                               : "rgba(77, 168, 218, 0.3)",
                         }}
                       />

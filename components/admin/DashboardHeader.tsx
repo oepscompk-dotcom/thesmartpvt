@@ -37,7 +37,7 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
           {settings.logo ? (
             <img src={settings.logo} alt="Logo" className="w-9 h-9 rounded-xl object-cover" />
           ) : (
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#C8A951] to-[#B8960E] flex items-center justify-center text-[#0A2647] font-bold text-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FFFB63] to-[#F1B308] flex items-center justify-center text-[#0A2647] font-bold text-sm">
               SA
             </div>
           )}

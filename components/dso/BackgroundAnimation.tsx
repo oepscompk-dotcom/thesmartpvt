@@ -49,7 +49,7 @@ export default function BackgroundAnimation() {
 
       // Glow orbs
       const orbs = [
-        { x: canvas.width * 0.2, y: canvas.height * 0.25, r: 300, c: "rgba(0, 87, 255, 0.07)" },
+        { x: canvas.width * 0.2, y: canvas.height * 0.25, r: 300, c: "rgba(45, 40, 205, 0.07)" },
         { x: canvas.width * 0.8, y: canvas.height * 0.75, r: 250, c: "rgba(0, 194, 255, 0.05)" },
         { x: canvas.width * 0.5, y: canvas.height * 0.5, r: 350, c: "rgba(14, 165, 233, 0.04)" },
       ];
@@ -113,8 +113,8 @@ export default function BackgroundAnimation() {
       <div className="absolute inset-0 overflow-hidden opacity-[0.03]">
         <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(0,194,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,194,255,0.4) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
       </div>
-      <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-[#0057FF]/8 rounded-full blur-[100px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[#00C2FF]/6 rounded-full blur-[100px] animate-pulse delay-1000" />
+      <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-[#2D28CD]/8 rounded-full blur-[100px] animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[#00C8FF]/6 rounded-full blur-[100px] animate-pulse delay-1000" />
     </div>
   );
 }

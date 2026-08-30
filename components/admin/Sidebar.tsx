@@ -87,13 +87,13 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
               {settings.logo ? (
                 <img src={settings.logo} alt="Logo" className="w-8 h-8 rounded-xl object-cover shadow-lg" />
               ) : (
-                <div className="w-8 h-8 bg-gradient-to-br from-[#C8A951] to-[#B8960E] rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-[#0A2647] font-black text-sm">S</span>
                 </div>
               )}
               <div>
                 <span className="text-[#0A2647] font-bold text-sm block leading-tight">{settings.companyName || "THE SMART ERP"}</span>
-                <span className="text-[#C8A951] text-xs font-medium">Super Admin</span>
+                <span className="text-[#F1B308] text-xs font-semibold">Super Admin</span>
               </div>
             </Link>
           )}
@@ -102,7 +102,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
               {settings.logo ? (
                 <img src={settings.logo} alt="Logo" className="w-7 h-7 rounded-xl object-cover shadow-lg" />
               ) : (
-                <div className="w-7 h-7 bg-gradient-to-br from-[#C8A951] to-[#B8960E] rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-7 h-7 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-[#0A2647] font-black text-xs">S</span>
                 </div>
               )}
@@ -159,7 +159,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
                         </>
                       )}
                       {collapsed && isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-[#C8A951] rounded-r-full" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-[#FFFB63] rounded-r-full" />
                       )}
                     </Link>
                   );

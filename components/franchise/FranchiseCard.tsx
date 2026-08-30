@@ -107,7 +107,7 @@ export default function FranchiseCard({ onVerified }: FranchiseCardProps) {
             <button
               onClick={handleSubmit}
               disabled={!franchiseId.trim() || loading}
-              className="w-full py-3.5 bg-gradient-to-r from-brand-gold to-brand-gold-dark text-brand-navy font-bold rounded-xl hover:shadow-[0_0_25px_rgba(200,169,81,0.3)] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-gradient-to-r from-brand-gold to-brand-gold-dark text-brand-navy font-bold rounded-xl hover:shadow-[0_0_25px_rgba(255,251,99,0.35)] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Verifying..." : "Continue"}
             </button>
@@ -178,7 +178,7 @@ export default function FranchiseCard({ onVerified }: FranchiseCardProps) {
               </button>
               <button
                 onClick={handleContinue}
-                className="flex-1 py-3 bg-gradient-to-r from-brand-gold to-brand-gold-dark text-brand-navy text-sm font-bold rounded-xl hover:shadow-[0_0_25px_rgba(200,169,81,0.3)] transition-all hover:scale-[1.02]"
+                className="flex-1 py-3 bg-gradient-to-r from-brand-gold to-brand-gold-dark text-brand-navy text-sm font-bold rounded-xl hover:shadow-[0_0_25px_rgba(255,251,99,0.35)] transition-all hover:scale-[1.02]"
               >
                 Continue
               </button>

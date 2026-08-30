@@ -34,7 +34,7 @@ export default function BackgroundAnimation() {
     let particles: Particle[] = [];
     let networkLines: NetworkLine[] = [];
     let glowCircles = [
-      { x: 0, y: 0, radius: 300, color: "rgba(0, 87, 255, 0.08)" },
+      { x: 0, y: 0, radius: 300, color: "rgba(45, 40, 205, 0.08)" },
       { x: 0, y: 0, radius: 200, color: "rgba(14, 165, 233, 0.06)" },
       { x: 0, y: 0, radius: 250, color: "rgba(30, 58, 138, 0.07)" },
     ];
@@ -171,15 +171,15 @@ export default function BackgroundAnimation() {
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(200,169,81,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(200,169,81,0.3) 1px, transparent 1px)",
+              "linear-gradient(rgba(255,251,99,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255,251,99,0.35) 1px, transparent 1px)",
             backgroundSize: "80px 80px",
           }}
         />
       </div>
 
       {/* Floating glow orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0057FF]/10 rounded-full blur-[128px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#0EA5E9]/8 rounded-full blur-[128px] animate-pulse delay-1000" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#2D28CD]/10 rounded-full blur-[128px] animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#00C8FF]/8 rounded-full blur-[128px] animate-pulse delay-1000" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#1E3A8A]/5 rounded-full blur-[150px]" />
     </div>
   );

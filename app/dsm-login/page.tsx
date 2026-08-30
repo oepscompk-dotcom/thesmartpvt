@@ -31,13 +31,13 @@ export default function DSMLoginPage() {
             {logo ? (
               <img src={logo} alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-lg" />
             ) : (
-              <div className="w-10 h-10 bg-gradient-to-br from-[#0057FF] to-[#0EA5E9] rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#2D28CD] to-[#00C8FF] rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-black text-lg">S</span>
               </div>
             )}
             <div className="hidden sm:block">
               <span className="text-white font-bold text-sm block leading-tight">{companyName || "THE SMART ERP"}</span>
-              <span className="text-[#0EA5E9]/60 text-[10px] font-medium">Direct Sales Management System</span>
+              <span className="text-[#00C8FF]/60 text-[10px] font-medium">Direct Sales Management System</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export default function DSMLoginPage() {
             <div className={`hidden lg:block transition-all duration-1000 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
               <div className="mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 glass-card rounded-full mb-5">
-                  <div className="w-2 h-2 bg-[#0EA5E9] rounded-full animate-pulse" />
+                  <div className="w-2 h-2 bg-[#00C8FF] rounded-full animate-pulse" />
                   <span className="text-white/80 text-sm font-medium">Team Management Portal</span>
                 </div>
 
@@ -76,7 +76,7 @@ export default function DSMLoginPage() {
                   {loginFlow.map((step, i) => (
                     <div key={step} className="flex items-center gap-2">
                       <div className="glass-card rounded-lg px-3 py-2 flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-[#0EA5E9]/20 text-[#0EA5E9] text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                        <span className="w-5 h-5 rounded-full bg-[#00C8FF]/20 text-[#00C8FF] text-xs font-bold flex items-center justify-center">{i + 1}</span>
                         <span className="text-white/80 text-xs font-medium whitespace-nowrap">{step}</span>
                       </div>
                       {i < loginFlow.length - 1 && (
@@ -107,7 +107,7 @@ export default function DSMLoginPage() {
               {/* Mobile Header */}
               <div className="lg:hidden text-center mb-4">
                 <h1 className="text-2xl font-black text-white">THE SMART ERP</h1>
-                <p className="text-[#0EA5E9] text-xs font-medium">DSM PORTAL</p>
+                <p className="text-[#00C8FF] text-xs font-medium">DSM PORTAL</p>
                 <p className="text-white/30 text-[10px] mt-1">Lead Teams &bull; Achieve Targets &bull; Drive Growth</p>
               </div>
 

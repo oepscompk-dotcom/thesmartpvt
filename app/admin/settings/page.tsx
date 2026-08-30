@@ -468,7 +468,7 @@ function SectionFields({ section, onChange }: { section: HomepageSection; onChan
 const gradientOptions = [
   { value: "from-[#0A2647] via-[#1E3A8A] to-[#2563EB]", label: "Deep Navy Blue" },
   { value: "from-[#4F46E5] via-[#7C3AED] to-[#EC4899]", label: "Purple Violet" },
-  { value: "from-[#0EA5E9] via-[#2563EB] to-[#6366F1]", label: "Sky Blue" },
+  { value: "from-[#00C8FF] via-[#2563EB] to-[#6366F1]", label: "Sky Blue" },
   { value: "from-[#059669] via-[#10B981] to-[#84CC16]", label: "Emerald Green" },
   { value: "from-[#F59E0B] via-[#F97316] to-[#EF4444]", label: "Sunset Orange" },
   { value: "from-[#0F172A] via-[#334155] to-[#475569]", label: "Slate Dark" },

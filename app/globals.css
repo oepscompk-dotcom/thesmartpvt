@@ -76,14 +76,14 @@ textarea {
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, #C8A951, #D4BC6A);
+    background: linear-gradient(135deg, #FFFB63, #F1B308);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .text-gradient-blue {
-    background: linear-gradient(135deg, #4DA8DA, #7BC0F5);
+    background: linear-gradient(135deg, #00C8FF, #18AAF8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -213,7 +213,7 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C8A951;
+  background: #FFFB63;
   border-radius: 4px;
 }
 

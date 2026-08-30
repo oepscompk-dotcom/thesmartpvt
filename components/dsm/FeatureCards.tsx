@@ -18,7 +18,7 @@ export default function FeatureCards() {
       <div className="space-y-2">
         {features.map((f) => (
           <div key={f.label} className="flex items-center gap-3 text-white/60 text-xs py-2 px-3 rounded-lg hover:bg-white/5 transition-colors group">
-            <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/10 flex items-center justify-center text-[#0EA5E9] flex-shrink-0 group-hover:bg-[#0EA5E9]/20 transition-colors">
+            <div className="w-8 h-8 rounded-lg bg-[#00C8FF]/10 flex items-center justify-center text-[#00C8FF] flex-shrink-0 group-hover:bg-[#00C8FF]/20 transition-colors">
               <f.icon size={14} />
             </div>
             <div>

@@ -38,24 +38,24 @@ export default function DSMLoginForm({ franchiseId }: DSMLoginFormProps) {
 
   return (
     <div className="glass-login-card rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-20 h-20 bg-[#0EA5E9]/5 rounded-full blur-2xl" />
-      <div className="absolute bottom-0 left-0 w-16 h-16 bg-[#0057FF]/5 rounded-full blur-2xl" />
+      <div className="absolute top-0 right-0 w-20 h-20 bg-[#00C8FF]/5 rounded-full blur-2xl" />
+      <div className="absolute bottom-0 left-0 w-16 h-16 bg-[#2D28CD]/5 rounded-full blur-2xl" />
 
       <div className="relative">
         {/* Header */}
         <div className="mb-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 bg-gradient-to-br from-[#0057FF] to-[#0EA5E9] rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-11 h-11 bg-gradient-to-br from-[#2D28CD] to-[#00C8FF] rounded-xl flex items-center justify-center shadow-lg">
               <Users size={18} className="text-white" />
             </div>
             <div>
               <h2 className="text-white font-bold text-lg leading-tight">DSM Login</h2>
-              <span className="text-[#0EA5E9] text-xs font-medium tracking-wider">TEAM MANAGEMENT PORTAL</span>
+              <span className="text-[#00C8FF] text-xs font-medium tracking-wider">TEAM MANAGEMENT PORTAL</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-[#0057FF]/10 border border-[#0057FF]/20 rounded-full text-[#0EA5E9] text-xs font-semibold flex items-center gap-1.5">
+            <span className="px-3 py-1 bg-[#2D28CD]/10 border border-[#2D28CD]/20 rounded-full text-[#00C8FF] text-xs font-semibold flex items-center gap-1.5">
               <Users size={12} />
               {franchiseId}
             </span>
@@ -75,7 +75,7 @@ export default function DSMLoginForm({ franchiseId }: DSMLoginFormProps) {
             </div>
             <div>
               <p className="text-white/40 text-[10px] uppercase tracking-wider">Role</p>
-              <p className="text-[#0EA5E9] text-sm font-medium">DSM</p>
+              <p className="text-[#00C8FF] text-sm font-medium">DSM</p>
             </div>
             <div>
               <p className="text-white/40 text-[10px] uppercase tracking-wider">Department</p>
@@ -99,7 +99,7 @@ export default function DSMLoginForm({ franchiseId }: DSMLoginFormProps) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
-                className="w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:border-[#0EA5E9]/50 focus:ring-2 focus:ring-[#0EA5E9]/10 transition-all text-sm"
+                className="w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:border-[#00C8FF]/50 focus:ring-2 focus:ring-[#00C8FF]/10 transition-all text-sm"
               />
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function DSMLoginForm({ franchiseId }: DSMLoginFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full pl-11 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:border-[#0EA5E9]/50 focus:ring-2 focus:ring-[#0EA5E9]/10 transition-all text-sm"
+                className="w-full pl-11 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:border-[#00C8FF]/50 focus:ring-2 focus:ring-[#00C8FF]/10 transition-all text-sm"
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -124,7 +124,7 @@ export default function DSMLoginForm({ franchiseId }: DSMLoginFormProps) {
           <button
             type="submit"
             disabled={isLoading || !username || !password}
-            className="w-full py-3.5 bg-gradient-to-r from-[#0057FF] to-[#0EA5E9] text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(0,87,255,0.3)] transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-gradient-to-r from-[#2D28CD] to-[#00C8FF] text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(45,40,205,0.3)] transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo } from "react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
@@ -385,7 +385,7 @@ export default function FranchiseDashboardPage() {
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { label: "SIM Target", achieved: targetsData.simAchieved, target: targetsData.simTargetVal, color: "#0A2647" },
-                      { label: "Device Target", achieved: targetsData.deviceAchieved, target: targetsData.deviceTargetVal, color: "#C8A951" },
+                      { label: "Device Target", achieved: targetsData.deviceAchieved, target: targetsData.deviceTargetVal, color: "#FFFB63" },
                       { label: "Overall", achieved: targetsData.totalAchieved, target: targetsData.totalTargetVal, color: "#4DA8DA" },
                       { label: "Attendance", achieved: attendanceToday.present, target: attendanceToday.total, color: "#22C55E" },
                     ].map((g) => {

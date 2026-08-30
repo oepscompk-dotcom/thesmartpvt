@@ -59,19 +59,19 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         <div className={`border-b border-gray-100 flex items-center ${collapsed ? "px-2 py-3 justify-center" : "px-4 py-3 justify-between"}`}>
           {!collapsed && (
             <Link href="/company/dashboard" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-black text-sm">S</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-[#0A2647] font-black text-sm">S</span>
               </div>
               <div>
                 <span className="text-[#0A2647] font-bold text-sm block leading-tight">THE SMART ERP</span>
-                <span className="text-blue-500 text-xs font-medium">Company Portal</span>
+                <span className="text-[#F1B308] text-xs font-semibold">Company Portal</span>
               </div>
             </Link>
           )}
           {collapsed && (
             <Link href="/company/dashboard">
-              <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-black text-xs">S</span>
+              <div className="w-7 h-7 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-[#0A2647] font-black text-xs">S</span>
               </div>
             </Link>
           )}
@@ -110,14 +110,14 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
                         collapsed ? "justify-center px-2 py-2" : "gap-2.5 px-3 py-2"
                       } ${
                         isActive
-                          ? "bg-blue-600 text-white shadow-md"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          ? "bg-[#0A2647] text-white shadow-md"
+                          : "text-gray-600 hover:text-gray-900 hover:bg-[#FFFB63]/10"
                       }`}
                     >
                       <item.icon size={16} className={isActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"} />
                       {!collapsed && <span className="flex-1">{item.label}</span>}
                       {collapsed && isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-blue-400 rounded-r-full" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-[#FFFB63] rounded-r-full" />
                       )}
                     </Link>
                   );

@@ -46,7 +46,7 @@ function StatItem({ value, suffix, label, color }: { value: number; suffix: stri
   );
 }
 
-export default function LiveMetrics({ color = "#C8A951" }: { color?: string }) {
+export default function LiveMetrics({ color = "#FFFB63" }: { color?: string }) {
   const { dsms, dso, attendance, sims, devices } = useFranchiseData();
 
   const today = new Date().toISOString().split("T")[0];

@@ -33,7 +33,7 @@ export default function DSMHeader({ onMenuClick }: Props) {
           <Menu size={20} />
         </button>
         {/* Search Bar */}
-        <div className="hidden sm:flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 w-80 border border-gray-200 focus-within:border-[#0057FF]/30 focus-within:ring-2 focus-within:ring-[#0057FF]/10 transition-all">
+        <div className="hidden sm:flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 w-80 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
           <Search size={16} className="text-gray-400" />
           <input type="text" placeholder="Search DSOs, activations..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
         </div>
@@ -69,14 +69,14 @@ export default function DSMHeader({ onMenuClick }: Props) {
         <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
           <div className="hidden sm:block text-right">
             <p className="text-gray-900 text-sm font-bold leading-tight">{settings.dsmName || auth.dsmName || "DSM"}</p>
-            <p className="text-[#0057FF] text-[10px] font-semibold">{auth.dsmId}</p>
+            <p className="text-[#F1B308] text-[10px] font-semibold">{auth.dsmId}</p>
           </div>
           {logo ? (
-            <div className="w-9 h-9 rounded-xl overflow-hidden ring-2 ring-[#0057FF]/20 shadow-sm">
+            <div className="w-9 h-9 rounded-xl overflow-hidden ring-2 ring-[#FFFB63]/20 shadow-sm">
               <img src={logo} alt="Logo" className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0057FF] to-[#003DA5] flex items-center justify-center text-white font-bold text-xs shadow-md">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0A2647] to-[#144272] flex items-center justify-center text-white font-bold text-xs shadow-md">
               {(settings.dsmName || auth.dsmName || "D").charAt(0).toUpperCase()}
             </div>
           )}

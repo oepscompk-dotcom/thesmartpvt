@@ -24,7 +24,7 @@ export default function FranchiseAuthGuard({ children }: { children: React.React
   if (!hydrated) return (
     <div className="min-h-screen bg-[#061B30] flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-[#C8A951]/20 border-t-[#C8A951] rounded-full animate-spin mx-auto mb-4" />
+        <div className="w-16 h-16 border-4 border-[#FFFB63]/20 border-t-[#FFFB63] rounded-full animate-spin mx-auto mb-4" />
         <p className="text-white/40 text-sm">Loading...</p>
       </div>
     </div>

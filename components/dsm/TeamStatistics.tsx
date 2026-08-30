@@ -44,13 +44,13 @@ function Stat({ value, suffix, label, icon }: StatProps) {
   return (
     <div ref={ref} className="glass-stat rounded-xl p-3 group hover:scale-105 transition-transform duration-300">
       <div className="flex items-center gap-2">
-        <div className="w-9 h-9 rounded-lg bg-[#0EA5E9]/10 flex items-center justify-center text-[#0EA5E9] group-hover:bg-[#0EA5E9]/20 transition-colors">
+        <div className="w-9 h-9 rounded-lg bg-[#00C8FF]/10 flex items-center justify-center text-[#00C8FF] group-hover:bg-[#00C8FF]/20 transition-colors">
           {icon}
         </div>
         <div>
           <p className="text-xl font-black text-white">
             {count.toLocaleString()}
-            <span className="text-[#0EA5E9] text-sm">{suffix}</span>
+            <span className="text-[#00C8FF] text-sm">{suffix}</span>
           </p>
           <p className="text-white/50 text-[10px] font-medium">{label}</p>
         </div>

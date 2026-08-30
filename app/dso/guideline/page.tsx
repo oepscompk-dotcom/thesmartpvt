@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import {
@@ -253,7 +253,7 @@ export default function DSOGuidelinePage() {
             {/* Activation Flow Overview */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
               <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
-                <Target size={16} className="text-[#C8A951]" /> Activation Flow Overview
+                <Target size={16} className="text-[#F1B308]" /> Activation Flow Overview
               </h3>
               <div className="flex flex-wrap items-center gap-2">
                 {["Dashboard", "Select Type", "Fill Form", "Select SIM", "Submit", "Track Status", "Verification"].map((step, i, arr) => (
@@ -340,7 +340,7 @@ export default function DSOGuidelinePage() {
                   {/* Flow Diagram */}
                   <div className="bg-white rounded-2xl border border-gray-200 p-6">
                     <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
-                      <Zap size={16} className="text-[#C8A951]" /> Process Flow
+                      <Zap size={16} className="text-[#F1B308]" /> Process Flow
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
                       {data.flowDiagram.map((step, i, arr) => (

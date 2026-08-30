@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -210,7 +210,7 @@ export default function DSMDashboardPage() {
         actions={
           <>
             <button onClick={() => setShowActivatePopup(true)}
-              className="flex items-center gap-2 rounded-lg bg-[#C8A951] px-4 py-2 text-sm font-bold text-[#0A2647] shadow-sm transition-colors hover:bg-[#d4b55e]">
+              className="flex items-center gap-2 rounded-lg bg-[#FFFB63] px-4 py-2 text-sm font-bold text-[#0A2647] shadow-sm transition-colors hover:bg-[#F1B308]">
               <Plus className="h-4 w-4" /> Activate
             </button>
             <Button variant="outline" onClick={() => router.push("/dsm/guideline")}>
@@ -264,7 +264,7 @@ export default function DSMDashboardPage() {
           <Card>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5">
               <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Zap className="h-4 w-4 text-[#C8A951]" /> Quick Actions
+                <Zap className="h-4 w-4 text-[#F1B308]" /> Quick Actions
               </h3>
               <SearchInput placeholder="Search activations..." value={searchQuery} onSearch={setSearchQuery} className="max-w-xs" />
             </div>
@@ -429,7 +429,7 @@ export default function DSMDashboardPage() {
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { label: "Monthly", achieved: totalMonthlyAchieved, target: totalMonthlyTarget, color: "#0057FF" },
+                      { label: "Monthly", achieved: totalMonthlyAchieved, target: totalMonthlyTarget, color: "#2D28CD" },
                       { label: "New SIMs", achieved: totalNewSimAchieved, target: totalNewSimTarget, color: "#22C55E" },
                       { label: "Team Sales", achieved: totalSales, target: dsos.length * 300 || 1, color: "#F59E0B" },
                       { label: "Active DSOs", achieved: activeDsoCount, target: dsos.length || 1, color: "#8B5CF6" },
@@ -691,11 +691,11 @@ export default function DSMDashboardPage() {
           </div>
 
           <Link href="/dsm/salary-detail"
-            className="group block rounded-xl bg-gradient-to-r from-brand-600 to-[#003DA5] p-5 text-white transition-all hover:shadow-xl">
+            className="group block rounded-xl bg-gradient-to-r from-brand-600 to-[#241F95] p-5 text-white transition-all hover:shadow-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 transition-transform group-hover:scale-110">
-                  <DollarSign className="h-6 w-6 text-[#C8A951]" />
+                  <DollarSign className="h-6 w-6 text-[#F1B308]" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold">Salary Detail</h3>
@@ -750,7 +750,7 @@ export default function DSMDashboardPage() {
                         <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {mySalary.otherDeduction.toLocaleString()}</span></div>
                       </div>
                     </div>
-                    <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-brand-600 to-[#003DA5] p-3 text-white">
+                    <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-brand-600 to-[#241F95] p-3 text-white">
                       <span className="text-sm font-semibold">Net Payable</span>
                       <span className="whitespace-nowrap text-lg font-black">PKR {salarySummary.netPay.toLocaleString()}</span>
                     </div>

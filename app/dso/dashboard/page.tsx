@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -450,7 +450,7 @@ export default function DSODashboardPage() {
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { label: "New SIM", achieved: targets.newSIMAchieved, target: targets.newSIM, color: "#0A2647" },
-                      { label: "MNP", achieved: targets.mnpAchieved, target: targets.mnp, color: "#C8A951" },
+                      { label: "MNP", achieved: targets.mnpAchieved, target: targets.mnp, color: "#FFFB63" },
                       { label: "Replacement", achieved: targets.replacementAchieved, target: targets.replacement, color: "#4DA8DA" },
                       { label: "BYN", achieved: targets.bynAchieved, target: targets.byn, color: "#22C55E" },
                     ].map((g) => {

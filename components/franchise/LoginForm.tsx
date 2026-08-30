@@ -38,7 +38,7 @@ export default function LoginForm({ franchiseId }: LoginFormProps) {
   return (
     <div className="glass-login-card rounded-3xl p-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-24 h-24 bg-brand-gold/5 rounded-full blur-2xl" />
-      <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#0EA5E9]/5 rounded-full blur-2xl" />
+      <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#00C8FF]/5 rounded-full blur-2xl" />
 
       <div className="relative">
         {/* Header */}
@@ -152,7 +152,7 @@ export default function LoginForm({ franchiseId }: LoginFormProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 bg-gradient-to-r from-brand-gold to-brand-gold-dark text-brand-navy font-bold rounded-xl hover:shadow-[0_0_30px_rgba(200,169,81,0.3)] transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-gradient-to-r from-brand-gold to-brand-gold-dark text-brand-navy font-bold rounded-xl hover:shadow-[0_0_30px_rgba(255,251,99,0.35)] transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-brand-navy/30 border-t-brand-navy rounded-full animate-spin" />

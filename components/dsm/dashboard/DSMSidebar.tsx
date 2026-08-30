@@ -67,23 +67,24 @@ export default function DSMSidebar({ open, onClose }: Props) {
       )}
       <aside
         className={`fixed top-0 left-0 h-full w-[280px] z-50 flex flex-col
-          bg-gradient-to-b from-[#0057FF] via-[#0047CC] to-[#003DA5]
+          bg-gradient-to-b from-[#0A2647] via-[#0D2F56] to-[#0A2647]
           shadow-2xl transition-transform duration-300 ease-in-out
           lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="px-5 py-5 border-b border-white/10">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvc3ZnPg==')] pointer-events-none" />
+        <div className="relative px-5 py-5 border-b border-white/10">
           <div className="flex items-center justify-between">
             <Link href="/dsm/dashboard" className="flex items-center gap-3">
               {logo ? (
-                <img src={logo} alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-white/20" />
+                <img src={logo} alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-[#FFFB63]/20" />
               ) : (
-                <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg ring-2 ring-white/20">
-                  <span className="text-white font-black text-lg">S</span>
+                <div className="w-11 h-11 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-[#0A2647] font-black text-lg">S</span>
                 </div>
               )}
               <div>
                 <span className="text-white font-bold text-sm block leading-tight">{companyName || "THE SMART ERP"}</span>
-                <span className="text-white/50 text-[11px] font-semibold tracking-wide">DSM Portal</span>
+                <span className="text-[#FFFB63] text-[11px] font-semibold tracking-wide">DSM Portal</span>
               </div>
             </Link>
             <button onClick={onClose} className="lg:hidden text-white/50 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-all">
@@ -107,17 +108,17 @@ export default function DSMSidebar({ open, onClose }: Props) {
                       onClick={onClose}
                       className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
                         ${isActive
-                          ? "bg-white/15 text-white shadow-sm"
-                          : "text-white/60 hover:text-white hover:bg-white/10"
+                          ? "bg-[#FFFB63]/15 text-[#FFFB63]"
+                          : "text-white/60 hover:text-white hover:bg-white/5"
                         }`}
                     >
                       {isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-white rounded-r-full" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#FFFB63] rounded-r-full" />
                       )}
                       <item.icon
                         size={18}
                         className={`flex-shrink-0 transition-colors duration-200 ${
-                          isActive ? "text-white" : "text-white/40 group-hover:text-white/70"
+                          isActive ? "text-[#FFFB63]" : "text-white/40 group-hover:text-white/70"
                         }`}
                       />
                       <span className="flex-1">{item.label}</span>
@@ -136,7 +137,7 @@ export default function DSMSidebar({ open, onClose }: Props) {
 
         <div className="px-3 py-4 border-t border-white/10 bg-black/10">
           <div className="flex items-center gap-3 px-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white/10">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFFB63] to-[#F1B308] flex items-center justify-center text-[#0A2647] font-bold text-sm shadow-lg ring-2 ring-white/10">
               {auth.dsmName?.charAt(0)?.toUpperCase() || "D"}
             </div>
             <div className="flex-1 min-w-0">

@@ -284,8 +284,8 @@ const defaultEmployees: Employee[] = [];
 const defaultPayments: Payment[] = [];
 
 const defaultSubscriptions: Subscription[] = [
-  { name: "Monthly Package", price: "3000", period: "/month", features: ["Up to 5 DSOs", "Basic Reports", "SMS Alerts", "Email Support"], franchises: 0, color: "from-[#0EA5E9] to-[#0057FF]" },
-  { name: "Six Month Package", price: "15000", period: "/6 months", features: ["Up to 15 DSOs", "Advanced Reports", "SMS + WhatsApp", "Priority Support", "API Access"], franchises: 0, color: "from-[#C8A951] to-[#B8960E]", popular: true },
+  { name: "Monthly Package", price: "3000", period: "/month", features: ["Up to 5 DSOs", "Basic Reports", "SMS Alerts", "Email Support"], franchises: 0, color: "from-[#00C8FF] to-[#2D28CD]" },
+  { name: "Six Month Package", price: "15000", period: "/6 months", features: ["Up to 15 DSOs", "Advanced Reports", "SMS + WhatsApp", "Priority Support", "API Access"], franchises: 0, color: "from-[#FFFB63] to-[#F1B308]", popular: true },
   { name: "Annual Package", price: "25000", period: "/year", features: ["Unlimited DSOs", "Full Analytics", "All Channels", "24/7 Support", "Full API", "Custom Branding"], franchises: 0, color: "from-green-500 to-green-600" },
 ];
 

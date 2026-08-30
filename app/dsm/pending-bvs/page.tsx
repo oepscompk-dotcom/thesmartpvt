@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useMemo } from "react";
 import { useDSMData } from "@/lib/DSMDataContext";
@@ -442,7 +442,7 @@ export default function DSMPendingBVSPage() {
                     checked={checklist[item.key]}
                     onChange={() => toggleCheck(item.key)}
                     className="h-5 w-5 rounded border-slate-300"
-                    style={{ accentColor: "#0057FF" }}
+                    style={{ accentColor: "#2D28CD" }}
                   />
                   <span className="text-sm font-medium text-foreground">{item.label}</span>
                   {checklist[item.key] && (

@@ -55,7 +55,7 @@ export default function BackgroundAnimation() {
 
       // Glow orbs
       const orbs = [
-        { x: canvas.width * 0.15, y: canvas.height * 0.3, r: 350, c: "rgba(0, 87, 255, 0.06)" },
+        { x: canvas.width * 0.15, y: canvas.height * 0.3, r: 350, c: "rgba(45, 40, 205, 0.06)" },
         { x: canvas.width * 0.85, y: canvas.height * 0.7, r: 280, c: "rgba(14, 165, 233, 0.05)" },
         { x: canvas.width * 0.5, y: canvas.height * 0.5, r: 400, c: "rgba(30, 58, 138, 0.04)" },
       ];
@@ -128,8 +128,8 @@ export default function BackgroundAnimation() {
           }}
         />
       </div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0057FF]/8 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#0EA5E9]/6 rounded-full blur-[120px] animate-pulse delay-1000" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#2D28CD]/8 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#00C8FF]/6 rounded-full blur-[120px] animate-pulse delay-1000" />
     </div>
   );
 }

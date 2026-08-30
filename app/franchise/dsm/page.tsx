@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo, Fragment } from "react";
 import {
@@ -229,12 +229,12 @@ export default function DSMPage() {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Satoshi', sans-serif; background: #eef1f5; padding: 20px; color: #1e293b; font-size: 11px; line-height: 1.5; }
   .slip { max-width: 190mm; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.06); overflow: hidden; position: relative; }
-  .top-accent { height: 4px; background: linear-gradient(90deg, #C8A951 0%, #e0c46a 50%, #C8A951 100%); }
+  .top-accent { height: 4px; background: linear-gradient(90deg, #FFFB63 0%, #F1B308 50%, #FFFB63 100%); }
   .header { padding: 24px 32px 16px; text-align: center; position: relative; }
   .header .company { font-size: 20px; font-weight: 800; color: #0A2647; letter-spacing: 2px; }
-  .header .company span { color: #C8A951; }
+  .header .company span { color: #F1B308; }
   .header .tagline { font-size: 8px; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; }
-  .header .divider-line { width: 50px; height: 2px; background: #C8A951; margin: 10px auto; }
+  .header .divider-line { width: 50px; height: 2px; background: #F1B308; margin: 10px auto; }
   .header .slip-title { font-size: 15px; font-weight: 700; color: #1e293b; }
   .header .slip-period { font-size: 10px; color: #64748b; margin-top: 2px; }
   .header .slip-ref { position: absolute; top: 24px; right: 32px; font-size: 8px; color: #94a3b8; text-align: right; }
@@ -274,9 +274,9 @@ export default function DSMPage() {
   .summary-card .sc-value { font-size: 13px; font-weight: 700; color: #1e293b; margin-top: 2px; }
   .net-pay-box { margin: 16px 0; background: linear-gradient(135deg, #0A2647 0%, #1a4a7a 100%); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
   .net-pay-box .np-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-  .net-pay-box .np-amount { font-size: 22px; font-weight: 800; color: #C8A951; }
+  .net-pay-box .np-amount { font-size: 22px; font-weight: 800; color: #F1B308; }
   .net-pay-box .np-sub { font-size: 8px; color: #64748b; }
-  .amt-words { background: #f0f4ff; border-left: 3px solid #C8A951; padding: 10px 16px; margin: 12px 0; font-size: 10px; color: #475569; border-radius: 0 6px 6px 0; }
+  .amt-words { background: #f0f4ff; border-left: 3px solid #F1B308; padding: 10px 16px; margin: 12px 0; font-size: 10px; color: #475569; border-radius: 0 6px 6px 0; }
   .barcode-wrap { text-align: center; padding: 8px 0 4px; }
   .barcode-wrap canvas { display: inline-block; background: #fff; }
   .barcode-wrap .bcode-id { font-size: 9px; color: #94a3b8; letter-spacing: 1px; font-family: 'Satoshi', monospace; margin-top: 2px; }
@@ -1034,7 +1034,7 @@ function SalaryTab({
                             {/* Commission Rates */}
                             <div className="rounded-lg border border-slate-200 p-4">
                               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                                <DollarSign className="h-4 w-4 text-[#C8A951]" /> Commission Rates
+                                <DollarSign className="h-4 w-4 text-[#F1B308]" /> Commission Rates
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
                                 {[
@@ -1133,7 +1133,7 @@ function SalaryTab({
                                 </div>
                                 <div className="border-t border-white/10 pt-2 flex justify-between text-sm">
                                   <span className="font-bold">Net Salary</span>
-                                  <span className="font-black text-[#C8A951]">PKR {e.netSalary.toLocaleString()}</span>
+                                  <span className="font-black text-[#F1B308]">PKR {e.netSalary.toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>

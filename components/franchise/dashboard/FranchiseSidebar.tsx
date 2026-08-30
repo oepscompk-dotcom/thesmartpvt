@@ -73,28 +73,28 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
           {!collapsed && (
             <Link href="/franchise/dashboard" className="flex items-center gap-2.5" onClick={onClose}>
               {logo ? (
-                <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg ring-2 ring-[#C8A951]/20">
+                <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg ring-2 ring-[#FFFB63]/20">
                   <img src={logo} alt="Logo" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-9 h-9 bg-gradient-to-br from-[#C8A951] to-[#B8960E] rounded-xl flex items-center justify-center shadow-lg ring-2 ring-[#C8A951]/20">
+                <div className="w-9 h-9 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg ring-2 ring-[#FFFB63]/20">
                   <span className="text-[#0A2647] font-black text-sm">S</span>
                 </div>
               )}
               <div>
                 <span className="text-[#0A2647] font-bold text-sm block leading-tight">{settings.franchiseName || auth.franchiseName || "THE SMART ERP"}</span>
-                <span className="text-[#C8A951] text-xs font-semibold">{auth.franchiseId}</span>
+                <span className="text-[#F1B308] text-xs font-semibold">{auth.franchiseId}</span>
               </div>
             </Link>
           )}
           {collapsed && (
             <Link href="/franchise/dashboard" onClick={onClose}>
               {logo ? (
-                <div className="w-8 h-8 rounded-xl overflow-hidden shadow-lg ring-2 ring-[#C8A951]/20">
+                <div className="w-8 h-8 rounded-xl overflow-hidden shadow-lg ring-2 ring-[#FFFB63]/20">
                   <img src={logo} alt="Logo" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-8 h-8 bg-gradient-to-br from-[#C8A951] to-[#B8960E] rounded-xl flex items-center justify-center shadow-lg ring-2 ring-[#C8A951]/20">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg ring-2 ring-[#FFFB63]/20">
                   <span className="text-[#0A2647] font-black text-xs">S</span>
                 </div>
               )}
@@ -132,10 +132,10 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
                       } ${
                         isActive
                           ? "bg-[#0A2647] text-white shadow-md shadow-[#0A2647]/20"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                          : "text-gray-600 hover:text-gray-900 hover:bg-[#FFFB63]/10"
                       }`}>
                       {isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-[#C8A951] rounded-r-full" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-[#FFFB63] rounded-r-full" />
                       )}
                       <item.icon size={16} className={isActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"} />
                       {!collapsed && <span className="flex-1">{item.label}</span>}

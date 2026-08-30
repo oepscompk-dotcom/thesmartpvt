@@ -18,7 +18,7 @@ export default function FeaturesCard() {
       <div className="grid grid-cols-2 gap-2">
         {features.map((f) => (
           <div key={f.label} className="flex items-center gap-2 text-white/60 text-xs py-1.5">
-            <div className="w-7 h-7 rounded-lg bg-[#0057FF]/10 flex items-center justify-center text-[#00C2FF] flex-shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-[#2D28CD]/10 flex items-center justify-center text-[#00C8FF] flex-shrink-0">
               <f.icon size={12} />
             </div>
             <span>{f.label}</span>
