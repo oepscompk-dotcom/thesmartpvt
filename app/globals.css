@@ -89,6 +89,89 @@ textarea {
     background-clip: text;
   }
 
+  .text-highlight {
+    background-color: #FFFB63;
+    color: #0C1026;
+    padding: 0 6px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .telenor-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: #FFFB63;
+    color: #0C1026;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+    padding: 12px 26px;
+    border-radius: 3px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .telenor-btn:hover {
+    background-color: #6D707D;
+    color: #FFFB63;
+  }
+
+  .telenor-btn-blue {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: #2D28CD;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+    padding: 12px 26px;
+    border-radius: 3px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .telenor-btn-blue:hover {
+    background-color: #0C1026;
+  }
+
+  .telenor-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+    padding: 12px 26px;
+    border-radius: 3px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .telenor-btn-outline:hover {
+    border-color: #00C8FF;
+    background-color: rgba(0, 200, 255, 0.12);
+  }
+
+  .telenor-link {
+    color: #2D28CD;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 0.2s ease;
+  }
+
+  .telenor-link:hover {
+    color: #18AAF8;
+  }
+
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   }

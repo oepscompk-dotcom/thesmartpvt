@@ -13,96 +13,111 @@ export default function Header() {
   const { header } = settings;
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const visibleLinks = header?.navLinks?.filter((l) => l.visible) ?? [];
 
-  return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-brand-navy/95 backdrop-blur-xl shadow-lg shadow-black/20 py-3"
-          : "bg-transparent py-5"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          <a href="#home" className="flex items-center gap-3 group">
-            {headerLogo ? (
-              <img src={headerLogo} alt="Logo" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover shadow-lg group-hover:shadow-glow transition-shadow duration-300" />
-            ) : (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gold-gradient rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-glow transition-shadow duration-300">
-                <span className="text-brand-navy font-black text-lg sm:text-xl">S</span>
-              </div>
-            )}
-            <div className="flex flex-col">
-              <span className="text-white font-bold text-sm sm:text-lg leading-tight tracking-wide">
-                {companyName || "THE SMART"}
-              </span>
-              <span className="text-brand-gold text-[10px] sm:text-xs font-medium tracking-wider">
-                {header?.tagline || "A Step Towards a New Horizon"}
-              </span>
-            </div>
-          </a>
+  const portals = [
+    { label: "Franchise Admin", href: "/franchise-admin" },
+    { label: "DSO Portal", href: "/dso-login" },
+    { label: "DSM Portal", href: "/dsm-login" },
+  ];
 
-          <nav className="hidden lg:flex items-center gap-1">
-            {visibleLinks.map((link) => (
+  return (
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${scrolled ? "shadow-md shadow-black/5" : ""}`}>
+      <div className="bg-tele-ink text-white/75">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-4">
+          <span className="hidden sm:block text-[11px] sm:text-xs tracking-wide">
+            {header?.tagline || "A Step Towards a New Horizon"}
+          </span>
+          <div className="flex items-center gap-4 ml-auto">
+            {portals.map((p) => (
               <a
-                key={link.name}
-                href={link.href}
-                className="px-4 py-2 text-sm font-medium text-white/80 hover:text-brand-gold rounded-lg hover:bg-white/5 transition-all duration-300"
+                key={p.label}
+                href={p.href}
+                className="text-[11px] sm:text-xs font-medium hover:text-tele-azure transition-colors"
               >
-                {link.name}
+                {p.label}
               </a>
             ))}
-          </nav>
-
-          <div className="hidden lg:flex items-center gap-3">
-            {header?.ctaVisible !== false && (
-              <a
-                href={header?.ctaLink || "#login"}
-                className="px-6 py-2.5 bg-gold-gradient text-brand-navy font-semibold text-sm rounded-xl hover:shadow-glow transition-all duration-300 hover:scale-105"
-              >
-                {header?.ctaText || "Franchise Login"}
-              </a>
-            )}
           </div>
-
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
+      </div>
 
-        {mobileOpen && (
-          <div className="lg:hidden mt-4 pb-4 border-t border-white/10 animate-slide-down">
-            <nav className="flex flex-col gap-1 pt-4">
+      <div className="bg-white border-b border-tele-line">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <a href="#home" className="flex items-center gap-3 group">
+              {headerLogo ? (
+                <img src={headerLogo} alt="Logo" className="w-10 h-10 sm:w-11 sm:h-11 object-contain" />
+              ) : (
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <span className="text-white font-black text-lg sm:text-xl">S</span>
+                </div>
+              )}
+              <div className="flex flex-col leading-tight">
+                <span className="text-tele-ink font-bold text-base sm:text-lg tracking-tight">
+                  {companyName || "THE SMART"}
+                </span>
+                <span className="text-tele-gray-light text-[11px] sm:text-xs font-medium tracking-wide">
+                  {header?.tagline || "A Step Towards a New Horizon"}
+                </span>
+              </div>
+            </a>
+
+            <nav className="hidden lg:flex items-center gap-1">
               {visibleLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 text-white/80 hover:text-brand-gold hover:bg-white/5 rounded-lg transition-all text-sm font-medium"
+                  className="px-4 py-2 text-sm font-medium text-tele-ink/80 hover:text-tele-blue rounded transition-colors"
                 >
                   {link.name}
                 </a>
               ))}
+            </nav>
+
+            <div className="hidden lg:flex items-center gap-3">
               {header?.ctaVisible !== false && (
-                <a
-                  href={header?.ctaLink || "#login"}
-                  className="mt-3 mx-4 px-6 py-3 bg-gold-gradient text-brand-navy font-semibold text-sm rounded-xl text-center hover:shadow-glow transition-all"
-                >
+                <a href={header?.ctaLink || "#login"} className="telenor-btn">
                   {header?.ctaText || "Franchise Login"}
                 </a>
               )}
-            </nav>
+            </div>
+
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="lg:hidden text-tele-ink p-2 rounded hover:bg-tele-smoke transition-colors"
+            >
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
-        )}
+
+          {mobileOpen && (
+            <div className="lg:hidden mt-3 pb-4 border-t border-tele-line animate-slide-down">
+              <nav className="flex flex-col gap-1 pt-3">
+                {visibleLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="px-4 py-3 text-tele-ink/80 hover:text-tele-blue hover:bg-tele-smoke rounded text-sm font-medium transition-colors"
+                  >
+                    {link.name}
+                  </a>
+                ))}
+                {header?.ctaVisible !== false && (
+                  <a href={header?.ctaLink || "#login"} className="telenor-btn mt-3 self-start">
+                    {header?.ctaText || "Franchise Login"}
+                  </a>
+                )}
+              </nav>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
