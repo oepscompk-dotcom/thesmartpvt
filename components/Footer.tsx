@@ -15,22 +15,14 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center mb-5">
               {footerLogo ? (
-                <img src={footerLogo} alt="Logo" className="w-12 h-12 object-contain" />
+                <img src={footerLogo} alt="Logo" className="w-16 h-16 object-contain" />
               ) : (
-                <div className="w-12 h-12 rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm">
-                  <span className="text-white font-black text-xl">S</span>
+                <div className="w-16 h-16 rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm">
+                  <span className="text-white font-black text-2xl">S</span>
                 </div>
               )}
-              <div>
-                <span className="text-white font-bold text-lg block leading-tight">
-                  {companyName || "THE SMART"}
-                </span>
-                <span className="text-tele-azure/80 text-xs font-medium">
-                  Pvt. Ltd.
-                </span>
-              </div>
             </div>
             <p className="text-tele-gray-light text-sm leading-relaxed mb-6 max-w-sm">
               {footer?.description || "A Step Towards a New Horizon. Enterprise SaaS platform for multi-franchise telecom distribution management."}

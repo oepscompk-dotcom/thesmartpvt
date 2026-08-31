@@ -49,10 +49,10 @@ export default function Header() {
           <div className="flex items-center justify-between">
             <a href="#home" className="flex items-center gap-3 group">
               {headerLogo ? (
-                <img src={headerLogo} alt="Logo" className="w-10 h-10 sm:w-11 sm:h-11 object-contain" />
+                <img src={headerLogo} alt="Logo" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
               ) : (
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <span className="text-white font-black text-lg sm:text-xl">S</span>
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <span className="text-white font-black text-xl sm:text-2xl">S</span>
                 </div>
               )}
             </a>
