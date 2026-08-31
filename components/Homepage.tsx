@@ -116,20 +116,58 @@ function HeroSlider({ slides, autoPlay, interval }: { slides: any[]; autoPlay: b
         </div>
       ))}
 
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 min-h-screen flex items-center justify-center">
-        <div key={`dash-${textKey}`} className={`w-full max-w-[760px] transition-all duration-700 ${animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <div className="relative flex items-center justify-center">
-            {slide.image ? (
-              <img src={slide.image} alt={slide.title} className="w-full max-w-[680px] h-auto max-h-[680px] object-contain drop-shadow-2xl animate-float sm:-mx-6 lg:-mx-10" />
-            ) : (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/15 rounded-full">
-                <ImageIcon size={16} className="text-white/50" />
-                <span className="text-white/50 text-sm">Upload transparent banner image</span>
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 min-h-screen flex items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+          <div key={textKey} className={`transition-all duration-700 ${animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/15 rounded-[3px] mb-6">
+              <div className="w-2 h-2 bg-tele-cyan rounded-full animate-pulse" />
+              <span className="text-white/85 text-sm font-medium">{slide.badge}</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-6">
+              {slide.title}
+              <span className="text-highlight block mt-2 w-fit">{slide.titleHighlight}</span>
+            </h1>
+
+            <h2 className="text-xl sm:text-2xl text-white/90 font-semibold mb-4">{slide.subtitle}</h2>
+            <p className="text-white/70 text-base mb-8 max-w-lg">{slide.description}</p>
+
+            <div className="mb-8">
+              <p className="text-white/60 text-sm font-medium mb-3 uppercase tracking-wider">Manage:</p>
+              <div className="flex flex-wrap gap-2">
+                {slide.features.map((f: string) => (
+                  <span key={f} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/15 rounded text-white/85 text-sm">
+                    <CheckCircle size={14} className="text-tele-cyan flex-shrink-0" />
+                    {f}
+                  </span>
+                ))}
               </div>
-            )}
-            {slide.symbol && (
-              <img src={slide.symbol} alt="" className="pointer-events-none animate-fly absolute -top-6 right-8 w-24 h-24 sm:w-32 sm:h-32 opacity-90" style={{ animationDuration: "10s", filter: "drop-shadow(0 0 20px rgba(255,251,99,0.55)) drop-shadow(0 8px 24px rgba(0,0,0,0.5))" }} />
-            )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href={slide.ctaLink} className="telenor-btn text-center">
+                {slide.ctaText}
+              </a>
+              <a href={slide.ctaSecondaryLink} className="telenor-btn-outline text-center">
+                {slide.ctaSecondaryText}
+              </a>
+            </div>
+          </div>
+
+          <div key={`dash-${textKey}`} className={`transition-all duration-700 delay-300 ${animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+            <div className="relative flex items-center justify-center">
+              {slide.image ? (
+                <img src={slide.image} alt={slide.title} className="w-full max-w-[680px] h-auto max-h-[680px] object-contain drop-shadow-2xl animate-float sm:-mx-6 lg:-mx-10" />
+              ) : (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/15 rounded-full">
+                  <ImageIcon size={16} className="text-white/50" />
+                  <span className="text-white/50 text-sm">Upload transparent banner image</span>
+                </div>
+              )}
+              {slide.symbol && (
+                <img src={slide.symbol} alt="" className="pointer-events-none animate-fly absolute -top-6 right-8 w-24 h-24 sm:w-32 sm:h-32 opacity-90" style={{ animationDuration: "10s", filter: "drop-shadow(0 0 20px rgba(255,251,99,0.55)) drop-shadow(0 8px 24px rgba(0,0,0,0.5))" }} />
+              )}
+            </div>
           </div>
         </div>
       </div>
