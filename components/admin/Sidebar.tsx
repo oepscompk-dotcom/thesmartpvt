@@ -83,7 +83,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         {/* Logo Header */}
         <div className={`border-b border-gray-100 flex items-center ${collapsed ? "px-2 py-3 justify-center" : "px-4 py-3 justify-between"}`}>
           {!collapsed && (
-            <Link href="/admin/dashboard" className="flex items-center gap-2.5">
+            <Link href="/admin/dashboard">
               {settings.logo ? (
                 <img src={settings.logo} alt="Logo" className="w-8 h-8 rounded-xl object-cover shadow-lg" />
               ) : (
@@ -91,10 +91,6 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
                   <span className="text-[#0A2647] font-black text-sm">S</span>
                 </div>
               )}
-              <div>
-                <span className="text-[#0A2647] font-bold text-sm block leading-tight">{settings.companyName || "THE SMART ERP"}</span>
-                <span className="text-[#F1B308] text-xs font-semibold">Super Admin</span>
-              </div>
             </Link>
           )}
           {collapsed && (

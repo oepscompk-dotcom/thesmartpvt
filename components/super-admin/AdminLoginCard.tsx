@@ -52,14 +52,6 @@ export default function AdminLoginCard() {
                 <span className="text-brand-navy font-black text-xl">S</span>
               </div>
             )}
-            <div>
-              <h2 className="text-white font-bold text-lg leading-tight">
-                {settings.companyName || "THE SMART ERP"}
-              </h2>
-              <span className="text-brand-gold text-xs font-medium tracking-wider">
-                HEAD OFFICE ACCESS
-              </span>
-            </div>
           </div>
 
           <div className="flex items-center gap-2 mt-3">

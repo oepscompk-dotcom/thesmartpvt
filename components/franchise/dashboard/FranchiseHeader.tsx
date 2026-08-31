@@ -67,10 +67,6 @@ export default function FranchiseHeader({ onMenuClick }: Props) {
 
         {/* Profile */}
         <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
-          <div className="hidden sm:block text-right">
-            <p className="text-gray-900 text-sm font-bold leading-tight">{settings.ownerName || auth.franchiseName}</p>
-            <p className="text-[#F1B308] text-[10px] font-semibold">{auth.franchiseId}</p>
-          </div>
           {logo ? (
             <div className="w-9 h-9 rounded-xl overflow-hidden ring-2 ring-[#FFFB63]/20 shadow-sm">
               <img src={logo} alt="Logo" className="w-full h-full object-cover" />

@@ -2,7 +2,6 @@
 
 import { Menu, Bell, Search, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
-import { useCompanyData } from "@/lib/CompanyDataContext";
 
 interface CompanyHeaderProps {
   onMenuClick: () => void;
@@ -10,7 +9,6 @@ interface CompanyHeaderProps {
 
 export default function CompanyHeader({ onMenuClick }: CompanyHeaderProps) {
   const { logout } = useAuth();
-  const { auth } = useCompanyData();
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
@@ -23,10 +21,6 @@ export default function CompanyHeader({ onMenuClick }: CompanyHeaderProps) {
           >
             <Menu size={24} />
           </button>
-          <div className="hidden sm:block text-left">
-            <h1 className="text-lg font-bold text-gray-900">Company Dashboard</h1>
-            <p className="text-gray-500 text-xs">{auth.companyName}</p>
-          </div>
         </div>
 
         <div className="flex items-center gap-3">

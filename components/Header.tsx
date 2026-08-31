@@ -8,7 +8,7 @@ import { useData } from "@/lib/DataContext";
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { headerLogo, companyName } = useCompanyLogo();
+  const { headerLogo } = useCompanyLogo();
   const { settings } = useData();
   const { header } = settings;
 
@@ -29,11 +29,8 @@ export default function Header() {
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${scrolled ? "shadow-md shadow-black/5" : ""}`}>
       <div className="bg-tele-ink text-white/75">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-4">
-          <span className="hidden sm:block text-[11px] sm:text-xs tracking-wide">
-            {header?.tagline || "A Step Towards a New Horizon"}
-          </span>
-          <div className="flex items-center gap-4 ml-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-end gap-4">
+          <div className="flex items-center gap-4">
             {portals.map((p) => (
               <a
                 key={p.label}
@@ -58,14 +55,6 @@ export default function Header() {
                   <span className="text-white font-black text-lg sm:text-xl">S</span>
                 </div>
               )}
-              <div className="flex flex-col leading-tight">
-                <span className="text-tele-ink font-bold text-base sm:text-lg tracking-tight">
-                  {companyName || "THE SMART"}
-                </span>
-                <span className="text-tele-gray-light text-[11px] sm:text-xs font-medium tracking-wide">
-                  {header?.tagline || "A Step Towards a New Horizon"}
-                </span>
-              </div>
             </a>
 
             <nav className="hidden lg:flex items-center gap-1">

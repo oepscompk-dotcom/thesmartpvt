@@ -49,7 +49,7 @@ interface Props { open: boolean; onClose: () => void; }
 export default function DSMSidebar({ open, onClose }: Props) {
   const pathname = usePathname();
   const { dsmLogout, auth, activations } = useDSMData();
-  const { logo, companyName } = useCompanyLogo();
+  const { logo } = useCompanyLogo();
 
   const badges = useMemo(() => ({
     bvs: activations.filter((a) => a.bvsStatus === "Pending").length,
@@ -74,19 +74,15 @@ export default function DSMSidebar({ open, onClose }: Props) {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvc3ZnPg==')] pointer-events-none" />
         <div className="relative px-5 py-5 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <Link href="/dsm/dashboard" className="flex items-center gap-3">
-              {logo ? (
-                <img src={logo} alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-[#FFFB63]/20" />
-              ) : (
-                <div className="w-11 h-11 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-[#0A2647] font-black text-lg">S</span>
-                </div>
-              )}
-              <div>
-                <span className="text-white font-bold text-sm block leading-tight">{companyName || "THE SMART ERP"}</span>
-                <span className="text-[#FFFB63] text-[11px] font-semibold tracking-wide">DSM Portal</span>
+<Link href="/dsm/dashboard" className="flex items-center gap-3">
+            {logo ? (
+              <img src={logo} alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-[#FFFB63]/20" />
+            ) : (
+              <div className="w-11 h-11 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-[#0A2647] font-black text-lg">S</span>
               </div>
-            </Link>
+            )}
+          </Link>
             <button onClick={onClose} className="lg:hidden text-white/50 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-all">
               <X size={18} />
             </button>

@@ -48,10 +48,6 @@ export default function DSMLoginForm({ franchiseId }: DSMLoginFormProps) {
             <div className="w-11 h-11 bg-gradient-to-br from-[#2D28CD] to-[#00C8FF] rounded-xl flex items-center justify-center shadow-lg">
               <Users size={18} className="text-white" />
             </div>
-            <div>
-              <h2 className="text-white font-bold text-lg leading-tight">DSM Login</h2>
-              <span className="text-[#00C8FF] text-xs font-medium tracking-wider">TEAM MANAGEMENT PORTAL</span>
-            </div>
           </div>
 
           <div className="flex items-center gap-2">

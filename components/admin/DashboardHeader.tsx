@@ -41,10 +41,6 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
               SA
             </div>
           )}
-          <div className="hidden sm:block">
-            <p className="text-gray-900 text-sm font-medium leading-tight">{settings.adminName || "Super Admin"}</p>
-            <p className="text-gray-400 text-[10px]">{settings.companyName || "Head Office"}</p>
-          </div>
           <ChevronDown size={14} className="text-gray-400 hidden sm:block" />
         </div>
       </div>

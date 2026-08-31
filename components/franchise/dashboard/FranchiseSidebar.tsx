@@ -57,7 +57,7 @@ interface Props {
 export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCollapse }: Props) {
   const pathname = usePathname();
   const { logout, settings, auth, notifications } = useFranchiseData();
-  const { logo, companyName } = useCompanyLogo();
+  const { logo } = useCompanyLogo();
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -71,7 +71,7 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
           collapsed ? "px-2 py-3 justify-center" : "px-4 py-2.5 justify-between"
         }`}>
           {!collapsed && (
-            <Link href="/franchise/dashboard" className="flex items-center gap-2.5" onClick={onClose}>
+            <Link href="/franchise/dashboard" onClick={onClose}>
               {logo ? (
                 <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg ring-2 ring-[#FFFB63]/20">
                   <img src={logo} alt="Logo" className="w-full h-full object-cover" />
@@ -81,10 +81,6 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
                   <span className="text-[#0A2647] font-black text-sm">S</span>
                 </div>
               )}
-              <div>
-                <span className="text-[#0A2647] font-bold text-sm block leading-tight">{settings.franchiseName || auth.franchiseName || "THE SMART ERP"}</span>
-                <span className="text-[#F1B308] text-xs font-semibold">{auth.franchiseId}</span>
-              </div>
             </Link>
           )}
           {collapsed && (
