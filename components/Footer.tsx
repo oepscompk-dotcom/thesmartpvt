@@ -4,7 +4,7 @@ import { useCompanyLogo } from "@/lib/useCompanyLogo";
 import { useData } from "@/lib/DataContext";
 
 export default function Footer() {
-  const { footerLogo, companyName } = useCompanyLogo();
+  const { headerLogo, footerLogo, companyName } = useCompanyLogo();
   const { settings } = useData();
   const { footer } = settings;
 
@@ -16,11 +16,13 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
           <div className="lg:col-span-2">
             <div className="flex items-center mb-5">
-              {footerLogo ? (
+              {headerLogo ? (
+                <img src={headerLogo} alt="Logo" className="w-32 h-[36px] sm:w-40 sm:h-[44px] object-contain" />
+              ) : footerLogo ? (
                 <img src={footerLogo} alt="Logo" className="w-16 h-16 object-contain" />
               ) : (
-                <div className="w-16 h-16 rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm">
-                  <span className="text-white font-black text-2xl">S</span>
+                <div className="w-32 h-[36px] sm:w-40 sm:h-[44px] rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm">
+                  <span className="text-white font-black text-xl sm:text-2xl">S</span>
                 </div>
               )}
             </div>

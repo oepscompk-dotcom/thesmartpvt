@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import { useCompanyLogo } from "@/lib/useCompanyLogo";
 import {
   LayoutDashboard, Building2, Users, FileText, Settings, BarChart3,
   Shield, Bell, CreditCard, Receipt, Globe, Image, PanelLeftClose, PanelLeftOpen,
@@ -43,6 +44,7 @@ interface SidebarProps {
 export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { headerLogo } = useCompanyLogo();
 
   return (
     <>
@@ -59,9 +61,13 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         <div className={`border-b border-gray-100 flex items-center ${collapsed ? "px-2 py-3 justify-center" : "px-4 py-3 justify-between"}`}>
           {!collapsed && (
             <Link href="/company/dashboard">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-[#0A2647] font-black text-sm">S</span>
-              </div>
+              {headerLogo ? (
+                <img src={headerLogo} alt="Logo" className="w-32 h-[36px] sm:w-40 sm:h-[44px] object-contain" />
+              ) : (
+                <div className="w-32 h-[36px] sm:w-40 sm:h-[44px] bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-[4px] flex items-center justify-center shadow-lg">
+                  <span className="text-[#0A2647] font-black text-xl">S</span>
+                </div>
+              )}
             </Link>
           )}
           {collapsed && (

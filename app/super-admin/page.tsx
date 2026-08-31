@@ -22,11 +22,11 @@ export default function SuperAdminPage() {
         {/* Top Bar */}
         <header className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {settings.logo ? (
-              <img src={settings.logo} alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-lg" />
+            {(settings.headerLogo || settings.logo) ? (
+              <img src={settings.headerLogo || settings.logo} alt="Logo" className="w-32 h-[36px] sm:w-40 sm:h-[44px] object-contain" />
             ) : (
-              <div className="w-10 h-10 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-[#0C1026] font-black text-lg">S</span>
+              <div className="w-32 h-[36px] sm:w-40 sm:h-[44px] bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-[#0C1026] font-black text-xl">S</span>
               </div>
             )}
           </div>

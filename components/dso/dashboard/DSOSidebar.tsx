@@ -47,7 +47,7 @@ interface Props { open: boolean; onClose: () => void; }
 export default function DSOSidebar({ open, onClose }: Props) {
   const pathname = usePathname();
   const { dsoLogout, auth, activations } = useDSOData();
-  const { logo } = useCompanyLogo();
+  const { headerLogo } = useCompanyLogo();
 
   const badges = useMemo(() => ({
     bvs: activations.filter((a: any) => a.bvsStatus === "Pending").length,
@@ -75,11 +75,11 @@ export default function DSOSidebar({ open, onClose }: Props) {
         <div className="relative px-5 py-5 border-b border-white/10">
           <div className="flex items-center justify-between">
             <Link href="/dso/dashboard" className="flex items-center">
-              {logo ? (
-                <img src={logo} alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-[#FFFB63]/20" />
+              {headerLogo ? (
+                <img src={headerLogo} alt="Logo" className="w-32 h-[36px] sm:w-40 sm:h-[44px] object-contain" />
               ) : (
-                <div className="w-11 h-11 bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-[#0A2647] font-black text-lg">S</span>
+                <div className="w-32 h-[36px] sm:w-40 sm:h-[44px] bg-gradient-to-br from-[#FFFB63] to-[#F1B308] rounded-[4px] flex items-center justify-center shadow-lg">
+                  <span className="text-[#0A2647] font-black text-xl">S</span>
                 </div>
               )}
             </Link>
