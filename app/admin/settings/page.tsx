@@ -136,13 +136,14 @@ function GeneralTab({ form, setField }: { form: Settings; setField: (field: stri
   );
 }
 
-function LogoTab({ form, setLogoField }: { form: Settings; setLogoField: (field: "logo" | "headerLogo" | "footerLogo" | "favicon", value: string) => void }) {
+function LogoTab({ form, setLogoField, setFooterRightLogo }: { form: Settings; setLogoField: (field: "logo" | "headerLogo" | "footerLogo" | "favicon", value: string) => void; setFooterRightLogo: (value: string) => void }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-3">
         <LogoUploader label="Main Logo" sublabel="Used in admin dashboard sidebar & login pages" preview={form.logo} onChange={(v) => setLogoField("logo", v)} onRemove={() => setLogoField("logo", "")} />
         <LogoUploader label="Header Logo" sublabel="Used in website header navigation bar" preview={form.headerLogo} onChange={(v) => setLogoField("headerLogo", v)} onRemove={() => setLogoField("headerLogo", "")} />
         <LogoUploader label="Footer Logo" sublabel="Used in website footer before copyright" preview={form.footerLogo} onChange={(v) => setLogoField("footerLogo", v)} onRemove={() => setLogoField("footerLogo", "")} />
+        <LogoUploader label="Footer Right Logo" sublabel="Used in website footer bottom line after Cookie Policy, 220px × 31px" preview={form.footer.footerRightLogo} onChange={setFooterRightLogo} onRemove={() => setFooterRightLogo("")} />
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <LogoUploader label="Favicon" sublabel="Browser tab icon, 32x32px recommended. SVG, PNG, JPG supported." preview={form.favicon} onChange={(v) => setLogoField("favicon", v)} onRemove={() => setLogoField("favicon", "")} />
@@ -894,6 +895,9 @@ export default function SettingsPage() {
   const setLogoField = (field: "logo" | "headerLogo" | "footerLogo" | "favicon", value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
+  const setFooterRightLogo = (value: string) =>
+    setForm((f) => ({ ...f, footer: { ...f.footer, footerRightLogo: value } }));
+
   const handleSave = async () => {
     await updateSettings(form);
     setSaved(true);
@@ -928,7 +932,7 @@ export default function SettingsPage() {
       </div>
 
       {activeTab === "General" && <GeneralTab form={form} setField={setField} />}
-      {activeTab === "Logo" && <LogoTab form={form} setLogoField={setLogoField} />}
+      {activeTab === "Logo" && <LogoTab form={form} setLogoField={setLogoField} setFooterRightLogo={setFooterRightLogo} />}
       {activeTab === "Header" && <HeaderTab header={form.header} onChange={(h) => setForm((f) => ({ ...f, header: h }))} />}
       {activeTab === "Footer" && <FooterTab footer={form.footer} onChange={(f) => setForm((prev) => ({ ...prev, footer: f }))} />}
       {activeTab === "Homepage" && <HomepageTab homepage={form.homepage} onChange={(h) => setForm((f) => ({ ...f, homepage: h }))} />}

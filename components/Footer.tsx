@@ -88,6 +88,9 @@ export default function Footer() {
                   </a>
                 );
               })}
+              {footer?.footerRightLogo && (
+                <img src={footer.footerRightLogo} alt="Footer Right Logo" className="w-[220px] h-[31px] object-contain" />
+              )}
             </div>
           </div>
         </div>

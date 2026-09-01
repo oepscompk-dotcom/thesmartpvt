@@ -127,6 +127,7 @@ export interface FooterSettings {
   showCenterLogo: boolean;
   centerLogo: string;
   centerLogoSize: string;
+  footerRightLogo: string;
   bottomLinks: FooterBottomLink[];
   copyrightText: string;
 }
@@ -357,6 +358,7 @@ const defaultSettings: Settings = {
     showCenterLogo: true,
     centerLogo: "",
     centerLogoSize: "48",
+    footerRightLogo: "",
     bottomLinks: [
       { text: "Privacy Policy", href: "/privacy-policy" },
       { text: "Terms of Service", href: "/terms-of-service" },
