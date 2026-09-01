@@ -111,48 +111,62 @@ export default function CompaniesPage() {
 
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[800px] text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-muted/50">
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Company</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Owner</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Location</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Franchises</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+              <tr className="border-b bg-slate-50 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left">Sr.No</th>
+                <th className="px-4 py-3 text-left">Company</th>
+                <th className="hidden px-4 py-3 text-left md:table-cell">Owner</th>
+                <th className="hidden px-4 py-3 text-left lg:table-cell">Location</th>
+                <th className="hidden px-4 py-3 text-left lg:table-cell">Franchises</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {paginated.map((c) => (
+            <tbody className="divide-y divide-slate-100">
+              {paginated.map((c, idx) => (
                 <tr key={c.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-[10px] font-bold text-brand-700">
+                      {idx + 1}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-50 text-xs font-bold text-brand-700">{c.id.split("-")[1]}</div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{c.name}</p>
-                        <p className="font-mono text-xs text-muted-foreground">{c.id}</p>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-50 text-xs font-bold text-blue-600">
+                        {c.name.split(" ").map((n) => n[0]).join("")}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
+                        <p className="truncate font-mono text-xs text-muted-foreground">{c.id}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="hidden px-6 py-4 md:table-cell">
+                  <td className="hidden px-4 py-3 md:table-cell">
                     <p className="text-sm text-foreground">{c.owner}</p>
                     <p className="font-mono text-xs text-muted-foreground">{c.mobile}</p>
                   </td>
-                  <td className="hidden px-6 py-4 lg:table-cell">
+                  <td className="hidden px-4 py-3 lg:table-cell">
                     <p className="text-sm text-foreground">{c.city}</p>
                     <p className="text-xs text-muted-foreground">{c.province}</p>
                   </td>
-                  <td className="hidden px-6 py-4 lg:table-cell">
+                  <td className="hidden px-4 py-3 lg:table-cell">
                     <span className="text-sm font-medium text-foreground">{c.franchiseCount}</span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <StatusPill label={c.status} tone={toneForStatus(c.status)} />
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openView(c)} title="View"><Eye className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(c)} title="Edit"><Edit className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => setShowDeleteConfirm(c.id)} title="Delete"><Trash2 className="h-4 w-4" /></Button>
+                      <button onClick={() => openView(c)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-blue-50 hover:text-blue-600" title="View">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => openEdit(c)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-amber-50 hover:text-amber-600" title="Edit">
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => setShowDeleteConfirm(c.id)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600" title="Delete">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>

@@ -112,60 +112,70 @@ export default function FranchisesPage() {
 
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[800px] text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-muted/50">
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Franchise</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Owner</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Location</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground lg:table-cell">Package</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground xl:table-cell">Company</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground xl:table-cell">Team</th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+              <tr className="border-b bg-slate-50 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-left">Sr.No</th>
+                <th className="px-4 py-3 text-left">Franchise</th>
+                <th className="hidden px-4 py-3 text-left md:table-cell">Owner</th>
+                <th className="hidden px-4 py-3 text-left lg:table-cell">Location</th>
+                <th className="hidden px-4 py-3 text-left lg:table-cell">Package</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="hidden px-4 py-3 text-left xl:table-cell">Company</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {paginated.map((f) => (
+            <tbody className="divide-y divide-slate-100">
+              {paginated.map((f, idx) => (
                 <tr key={f.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-[10px] font-bold text-brand-700">
+                      {idx + 1}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-50 text-xs font-bold text-brand-700">{f.id.split("-")[0]}</div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{f.name}</p>
-                        <p className="font-mono text-xs text-muted-foreground">{f.id}</p>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-50 text-xs font-bold text-blue-600">
+                        {f.name.split(" ").map((n) => n[0]).join("")}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">{f.name}</p>
+                        <p className="truncate font-mono text-xs text-muted-foreground">{f.id}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="hidden px-6 py-4 md:table-cell">
+                  <td className="hidden px-4 py-3 md:table-cell">
                     <p className="text-sm text-foreground">{f.owner}</p>
                     <p className="font-mono text-xs text-muted-foreground">{f.mobile}</p>
                   </td>
-                  <td className="hidden px-6 py-4 lg:table-cell">
+                  <td className="hidden px-4 py-3 lg:table-cell">
                     <p className="text-sm text-foreground">{f.city}</p>
                     <p className="text-xs text-muted-foreground">{f.province}</p>
                   </td>
-                  <td className="hidden px-6 py-4 lg:table-cell">
+                  <td className="hidden px-4 py-3 lg:table-cell">
                     <StatusPill label={f.package} tone="brand" />
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <StatusPill label={f.status} tone={toneForStatus(f.status)} />
                   </td>
-                  <td className="hidden px-6 py-4 xl:table-cell">
+                  <td className="hidden px-4 py-3 xl:table-cell">
                     {f.companyId ? (
-                      <span className="inline-flex items-center gap-1">
-                        <StatusPill label={getCompanyName(f.companyId)} tone="brand" />
-                      </span>
+                      <StatusPill label={getCompanyName(f.companyId)} tone="brand" />
                     ) : (
                       <span className="text-xs text-muted-foreground">Self Work</span>
                     )}
                   </td>
-                  <td className="hidden px-6 py-4 text-sm text-muted-foreground xl:table-cell">DSM: {f.dsm} | DSO: {f.dso}</td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openView(f)} title="View"><Eye className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(f)} title="Edit"><Edit className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => setShowDeleteConfirm(f.id)} title="Delete"><Trash2 className="h-4 w-4" /></Button>
+                      <button onClick={() => openView(f)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-blue-50 hover:text-blue-600" title="View">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => openEdit(f)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-amber-50 hover:text-amber-600" title="Edit">
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => setShowDeleteConfirm(f.id)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600" title="Delete">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
