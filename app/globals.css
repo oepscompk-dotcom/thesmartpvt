@@ -234,3 +234,35 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: #D4BC6A;
 }
+
+.sidebar-scroll {
+  --sb-thumb-color: rgba(10, 38, 71, 0.25);
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.sidebar-scroll-dark {
+  --sb-thumb-color: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.sidebar-scroll.is-scrolling {
+  scrollbar-color: var(--sb-thumb-color) transparent;
+}
+
+.sidebar-scroll.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+}

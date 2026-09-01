@@ -10,6 +10,7 @@ import {
   User, LogOut, X, UserCheck, CreditCard, Package, ArrowRightLeft,
   ChevronLeft, Layers, PanelLeftClose, PanelLeftOpen, DollarSign
 } from "lucide-react";
+import { SidebarScroll } from "@/components/ui/SidebarScroll";
 
 const navSections = [
   { title: "Main", items: [
@@ -107,7 +108,7 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-2 px-2 scrollbar-thin">
+        <SidebarScroll className="flex-1 overflow-y-auto py-2 px-2">
           {navSections.map((section) => (
             <div key={section.title} className="mb-2.5">
               {!collapsed && (
@@ -145,7 +146,7 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
               </div>
             </div>
           ))}
-        </nav>
+        </SidebarScroll>
 
         {/* User Footer */}
         <div className={`border-t border-gray-100 ${collapsed ? "p-1.5" : "p-2.5"}`}>

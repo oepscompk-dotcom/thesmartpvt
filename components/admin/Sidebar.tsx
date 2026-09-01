@@ -10,6 +10,7 @@ import {
   FileText, Settings, Bell, Shield, LogOut, ChevronDown, ChevronRight,
   Menu, X, Globe, Image, PanelLeftClose, PanelLeftOpen
 } from "lucide-react";
+import { SidebarScroll } from "@/components/ui/SidebarScroll";
 
 const navSections = [
   {
@@ -117,7 +118,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-2 px-2 scrollbar-thin">
+        <SidebarScroll className="flex-1 overflow-y-auto py-2 px-2">
           {navSections.map((section) => (
             <div key={section.title} className="mb-3">
               {!collapsed && (
@@ -163,7 +164,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
               </div>
             </div>
           ))}
-        </nav>
+        </SidebarScroll>
 
         {/* Footer */}
         <div className={`border-t border-gray-100 py-2.5 ${collapsed ? "px-2" : "px-3"}`}>

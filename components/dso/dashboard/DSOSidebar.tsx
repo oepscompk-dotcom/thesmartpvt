@@ -10,6 +10,7 @@ import {
   Fingerprint, PhoneCall, Wifi, Wallet, Target, BarChart3, Bell, User,
   LogOut, X, Smartphone, Wrench
 } from "lucide-react";
+import { SidebarScroll } from "@/components/ui/SidebarScroll";
 
 type NavItem = { label: string; href: string; icon: any; badgeKey?: "bvs" | "fca" | "ifca" };
 
@@ -89,7 +90,7 @@ export default function DSOSidebar({ open, onClose }: Props) {
           </div>
         </div>
 
-        <nav className="relative flex-1 overflow-y-auto py-4 px-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <SidebarScroll className="sidebar-scroll-dark relative flex-1 overflow-y-auto py-4 px-3">
           {navSections.map((section) => (
             <div key={section.title} className="mb-5">
               <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/30">{section.title}</p>
@@ -129,7 +130,7 @@ export default function DSOSidebar({ open, onClose }: Props) {
               </div>
             </div>
           ))}
-        </nav>
+        </SidebarScroll>
 
         <div className="relative px-3 py-4 border-t border-white/10">
           <div className="flex items-center gap-3 px-3 mb-3">
