@@ -12,9 +12,9 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-xs gap-1.5",
-  md: "h-9 px-4 text-sm gap-2",
-  lg: "h-10 px-6 text-sm gap-2",
+  sm: "h-10 px-4 text-sm gap-2",
+  md: "h-11 px-5 text-sm gap-2",
+  lg: "h-12 px-7 text-base gap-2.5",
 };
 
 export function Button({
