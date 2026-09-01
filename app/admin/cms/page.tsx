@@ -222,7 +222,7 @@ export default function CMSManager() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
                   <FileText size={18} />
                 </div>
-                <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex gap-1">
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setViewPage(p)} title="Preview"><Globe className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(p)} title="Edit"><Edit className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => setShowDeleteConfirm(p.title)} title="Delete"><Trash2 className="h-4 w-4" /></Button>
