@@ -66,7 +66,7 @@ export default function DSMSidebar({ open, onClose }: Props) {
         />
       )}
       <aside
-        className={`fixed top-0 left-0 h-full w-[280px] z-50 flex flex-col
+        className={`fixed top-0 left-0 h-full w-[240px] z-50 flex flex-col
           bg-gradient-to-b from-[#0A2647] via-[#0D2F56] to-[#0A2647]
           shadow-2xl transition-transform duration-300 ease-in-out
           lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}

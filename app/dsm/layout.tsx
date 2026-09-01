@@ -21,7 +21,7 @@ export default function DSMLayout({ children }: { children: React.ReactNode }) {
     <DSMAuthGuard>
       <div className="min-h-screen bg-gray-50">
         <DSMSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="lg:ml-[280px]">
+        <div className="lg:ml-[240px]">
           <DSMHeader onMenuClick={() => setSidebarOpen(true)} />
           <main className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">{children}</main>
         </div>

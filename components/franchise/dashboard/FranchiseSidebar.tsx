@@ -64,7 +64,7 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
     <>
       {open && <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden transition-opacity" onClick={onClose} />}
       <aside className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transform transition-all duration-300 lg:translate-x-0 flex flex-col ${
-        collapsed ? "w-[72px]" : "w-[280px]"
+        collapsed ? "w-[72px]" : "w-[240px]"
       } ${open ? "translate-x-0 shadow-2xl" : "-translate-x-full"}`}>
         {/* Logo Header */}
         <div className={`border-b border-gray-100 bg-gradient-to-r from-[#0A2647]/5 to-transparent flex items-center ${

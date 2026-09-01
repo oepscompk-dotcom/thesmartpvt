@@ -54,7 +54,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
 
       <aside
         className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transform transition-all duration-300 lg:translate-x-0 flex flex-col ${
-          collapsed ? "w-[72px]" : "w-[280px]"
+          collapsed ? "w-[72px]" : "w-[240px]"
         } ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Logo Header */}
