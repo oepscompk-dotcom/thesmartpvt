@@ -223,9 +223,9 @@ export default function CMSManager() {
                   <FileText size={18} />
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setViewPage(p)} title="Preview"><Globe className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(p)} title="Edit"><Edit className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => setShowDeleteConfirm(p.title)} title="Delete"><Trash2 className="h-4 w-4" /></Button>
+                  <button onClick={() => setViewPage(p)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-blue-50 hover:text-blue-600" title="Preview"><Globe className="h-4 w-4" /></button>
+                  <button onClick={() => openEdit(p)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-amber-50 hover:text-amber-600" title="Edit"><Edit className="h-4 w-4" /></button>
+                  <button onClick={() => setShowDeleteConfirm(p.title)} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600" title="Delete"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
               <h3 className="mb-1 text-base font-semibold text-foreground">{p.title}</h3>
