@@ -142,7 +142,7 @@ function LogoTab({ form, setLogoField, setFooterRightLogo }: { form: Settings; s
       <div className="grid gap-6 lg:grid-cols-3">
         <LogoUploader label="Main Logo" sublabel="Used in admin dashboard sidebar & login pages" preview={form.logo} onChange={(v) => setLogoField("logo", v)} onRemove={() => setLogoField("logo", "")} />
         <LogoUploader label="Header Logo" sublabel="Used in website header navigation bar" preview={form.headerLogo} onChange={(v) => setLogoField("headerLogo", v)} onRemove={() => setLogoField("headerLogo", "")} />
-        <LogoUploader label="Footer Logo" sublabel="Used in website footer before copyright" preview={form.footerLogo} onChange={(v) => setLogoField("footerLogo", v)} onRemove={() => setLogoField("footerLogo", "")} />
+        <LogoUploader label="Footer Logo" sublabel="Used in website footer top-left brand" preview={form.footerLogo} onChange={(v) => setLogoField("footerLogo", v)} onRemove={() => setLogoField("footerLogo", "")} />
         <LogoUploader label="Footer Right Logo" sublabel="Used in website footer bottom line after Cookie Policy, 220px × 31px" preview={form.footer.footerRightLogo} onChange={setFooterRightLogo} onRemove={() => setFooterRightLogo("")} />
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
@@ -358,7 +358,7 @@ function FooterTab({ footer, onChange }: { footer: Settings["footer"]; onChange:
       <Card>
         <CardHeader>
           <CardTitle>Center Logo Box</CardTitle>
-          <p className="text-xs text-muted-foreground">Upload a custom image for the footer center logo box. Supports JPG, PNG, SVG formats. Max 5MB.</p>
+          <p className="text-xs text-muted-foreground">Separate from the Footer Logo. Upload a custom image for the centered logo box in the middle of the footer. Supports JPG, PNG, SVG formats. Max 5MB.</p>
         </CardHeader>
         <CardContent>
           <input ref={centerLogoRef} type="file" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg" className="hidden" onChange={handleCenterLogoUpload} />

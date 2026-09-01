@@ -4,7 +4,7 @@ import { useCompanyLogo } from "@/lib/useCompanyLogo";
 import { useData } from "@/lib/DataContext";
 
 export default function Footer() {
-  const { headerLogo, footerLogo, companyName } = useCompanyLogo();
+  const { footerLogo, companyName } = useCompanyLogo();
   const { settings } = useData();
   const { footer } = settings;
 
@@ -16,10 +16,8 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
           <div className="lg:col-span-2">
             <div className="flex items-center mb-5">
-              {headerLogo ? (
-                <img src={headerLogo} alt="Logo" className="w-32 h-[36px] sm:w-40 sm:h-[44px] object-contain" />
-              ) : footerLogo ? (
-                <img src={footerLogo} alt="Logo" className="w-16 h-16 object-contain" />
+              {footerLogo ? (
+                <img src={footerLogo} alt="Logo" className="w-32 h-[36px] sm:w-40 sm:h-[44px] object-contain" />
               ) : (
                 <div className="w-32 h-[36px] sm:w-40 sm:h-[44px] rounded-[4px] bg-tele-blue flex items-center justify-center shadow-sm">
                   <span className="text-white font-black text-xl sm:text-2xl">S</span>
@@ -59,8 +57,6 @@ export default function Footer() {
           <div className="flex items-center justify-center bg-white/5 rounded-md px-6 py-4 border border-white/10 mb-8 mt-2">
             {footer?.centerLogo ? (
               <img src={footer.centerLogo} alt="Center Logo" style={{ maxHeight: `${footer?.centerLogoSize || 48}px` }} className="max-w-full object-contain" />
-            ) : footerLogo ? (
-              <img src={footerLogo} alt="Logo" style={{ maxHeight: `${footer?.centerLogoSize || 48}px` }} className="max-w-full object-contain" />
             ) : (
               <div className="w-24 h-24 rounded-md bg-tele-blue flex items-center justify-center">
                 <span className="text-white font-black text-3xl">S</span>
