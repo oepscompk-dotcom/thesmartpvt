@@ -4,8 +4,8 @@ type Variant = "primary" | "outline" | "ghost" | "destructive" | "secondary";
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand-600 text-white hover:bg-brand-700 shadow-sm",
-  outline: "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+  primary: "bg-brand-blue text-white hover:bg-brand-navy shadow-sm",
+  outline: "border border-brand-blue bg-white text-brand-blue hover:bg-brand-blue hover:text-white",
   ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
   destructive: "bg-red-600 text-white hover:bg-red-700",
   secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200",
