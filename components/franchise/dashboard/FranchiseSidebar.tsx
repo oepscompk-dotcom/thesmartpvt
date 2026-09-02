@@ -68,8 +68,8 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
         collapsed ? "w-[72px]" : "w-[240px]"
       } ${open ? "translate-x-0 shadow-2xl" : "-translate-x-full"}`}>
         {/* Logo Header */}
-        <div className={`border-b border-gray-100 bg-gradient-to-r from-[#0A2647]/5 to-transparent flex items-center ${
-          collapsed ? "px-2 py-3 justify-center" : "px-4 py-2.5 justify-between"
+        <div className={`border-b border-gray-100 bg-gradient-to-r from-[#0A2647]/5 to-transparent h-16 flex items-center ${
+          collapsed ? "px-2 justify-center" : "px-4 justify-between"
         }`}>
           {!collapsed && (
             <Link href="/franchise/dashboard" onClick={onClose}>

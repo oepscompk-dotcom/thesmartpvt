@@ -73,8 +73,8 @@ export default function DSOSidebar({ open, onClose }: Props) {
       >
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvc3ZnPg==')] pointer-events-none" />
 
-        <div className="relative px-5 py-5 border-b border-white/10">
-          <div className="flex items-center justify-between">
+        <div className="relative px-5 h-16 border-b border-white/10">
+          <div className="flex h-full items-center justify-between">
             <Link href="/dso/dashboard" className="flex items-center">
               {headerLogo ? (
                 <img src={headerLogo} alt="Logo" className="w-32 h-[36px] sm:w-40 sm:h-[44px] object-contain" />

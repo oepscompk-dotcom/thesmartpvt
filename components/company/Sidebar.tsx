@@ -59,7 +59,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         } ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Logo Header */}
-        <div className={`border-b border-gray-100 flex items-center ${collapsed ? "px-2 py-3 justify-center" : "px-4 py-3 justify-between"}`}>
+        <div className={`border-b border-gray-100 h-16 flex items-center ${collapsed ? "px-2 justify-center" : "px-4 justify-between"}`}>
           {!collapsed && (
             <Link href="/company/dashboard">
               {headerLogo ? (
