@@ -214,14 +214,14 @@ export default function FranchiseDashboardPage() {
         }
       />
 
-      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+      <div className="flex gap-0 border-b border-slate-200 w-fit">
         {[
           { key: "overview" as const, label: "Overview", icon: Home },
           { key: "performance" as const, label: "Performance", icon: Target },
           { key: "finance" as const, label: "Finance", icon: DollarSign },
         ].map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab.key ? "bg-white text-brand-600 shadow-sm" : "text-muted-foreground hover:text-slate-700"}`}>
+            className={`flex items-center gap-2 px-5 py-3 text-xs font-bold transition-all border-b-2 -mb-px ${activeTab === tab.key ? "border-brand-600 text-brand-600" : "border-transparent text-muted-foreground hover:text-slate-700"}`}>
             <tab.icon size={14} /> {tab.label}
           </button>
         ))}
@@ -237,7 +237,7 @@ export default function FranchiseDashboardPage() {
             <StatCard label="New SIM Stock" value={metrics.newSIMStock} icon={Package} iconClass="text-cyan-600 bg-cyan-50" progress={metrics.newSIMTotal > 0 ? safePct(metrics.newSIMStock, metrics.newSIMTotal) : 0} />
             <StatCard label="HLR SIM Stock" value={metrics.hlrStock} icon={Layers} iconClass="text-orange-600 bg-orange-50" progress={metrics.hlrSIMTotal > 0 ? safePct(metrics.hlrStock, metrics.hlrSIMTotal) : 0} />
             <StatCard label="Today Present" value={attendanceToday.present} sub={attendanceToday.total > 0 ? `${safePct(attendanceToday.present, attendanceToday.total)}%` : "—"} icon={CheckCircle2} iconClass="text-green-600 bg-green-50" progress={safePct(attendanceToday.present, attendanceToday.total || 1)} progressClass="bg-green-500" />
-            <StatCard label="Unread Alerts" value={notifStats.unread} icon={Bell} iconClass={notifStats.unread > 0 ? "text-red-600 bg-red-50" : "text-gray-400 bg-gray-50"} />
+            <StatCard label="Unread Alerts" value={notifStats.unread} icon={Bell} iconClass={notifStats.unread > 0 ? "text-red-600 bg-red-50" : "text-slate-400 bg-slate-50"} />
           </div>
 
           <Card>
@@ -384,8 +384,8 @@ export default function FranchiseDashboardPage() {
                 <CardContent className="p-6 pt-0">
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { label: "SIM Target", achieved: targetsData.simAchieved, target: targetsData.simTargetVal, color: "#0A2647" },
-                      { label: "Device Target", achieved: targetsData.deviceAchieved, target: targetsData.deviceTargetVal, color: "#FFFB63" },
+                      { label: "SIM Target", achieved: targetsData.simAchieved, target: targetsData.simTargetVal, color: "#2D28CD" },
+                      { label: "Device Target", achieved: targetsData.deviceAchieved, target: targetsData.deviceTargetVal, color: "#6366f1" },
                       { label: "Overall", achieved: targetsData.totalAchieved, target: targetsData.totalTargetVal, color: "#4DA8DA" },
                       { label: "Attendance", achieved: attendanceToday.present, target: attendanceToday.total, color: "#22C55E" },
                     ].map((g) => {
@@ -572,12 +572,12 @@ export default function FranchiseDashboardPage() {
               <CardContent className="overflow-x-auto p-0">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-muted/50">
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Rank</th>
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">DSO</th>
-                      <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Target</th>
-                      <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Achieved</th>
-                      <th className="px-4 py-3 text-center text-muted-foreground text-xs font-medium uppercase">Progress</th>
+                    <tr className="border-b border-slate-100 bg-slate-50">
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Rank</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">DSO</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Target</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Achieved</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">Progress</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -656,18 +656,18 @@ export default function FranchiseDashboardPage() {
                 <div className="space-y-3">
                   {expenseByCategory.categories.map(([cat, amt]) => {
                     const pct = safePct(amt, expenseByCategory.total);
-                    const catColors: Record<string, string> = { Payroll: "bg-red-500", Salary: "bg-red-400", Rent: "bg-blue-500", Utilities: "bg-yellow-500", "Office Supplies": "bg-purple-500", Marketing: "bg-pink-500", Travel: "bg-cyan-500", Other: "bg-gray-400" };
+                    const catColors: Record<string, string> = { Payroll: "bg-red-500", Salary: "bg-red-400", Rent: "bg-blue-500", Utilities: "bg-yellow-500", "Office Supplies": "bg-purple-500", Marketing: "bg-pink-500", Travel: "bg-cyan-500", Other: "bg-slate-400" };
                     return (
                       <div key={cat}>
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded ${catColors[cat] || "bg-gray-400"}`} />
+                            <div className={`w-3 h-3 rounded ${catColors[cat] || "bg-slate-400"}`} />
                             <span className="text-slate-700 text-sm font-medium">{cat}</span>
                           </div>
                           <span className="text-muted-foreground text-xs">PKR {amt.toLocaleString()} ({pct}%)</span>
                         </div>
                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${catColors[cat] || "bg-gray-400"} transition-all`} style={{ width: `${pct}%` }} />
+                          <div className={`h-full rounded-full ${catColors[cat] || "bg-slate-400"} transition-all`} style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
@@ -759,11 +759,11 @@ export default function FranchiseDashboardPage() {
               <CardContent className="p-5 pt-0 space-y-2">
                 {expenseByCategory.categories.length > 0 ? expenseByCategory.categories.slice(0, 6).map(([cat, amt]) => {
                   const pct = safePct(amt, expenseByCategory.total);
-                  const catColors: Record<string, string> = { Payroll: "bg-red-500", Salary: "bg-red-400", Rent: "bg-blue-500", Utilities: "bg-yellow-500", "Office Supplies": "bg-purple-500", Marketing: "bg-pink-500", Travel: "bg-cyan-500", Other: "bg-gray-400" };
+                  const catColors: Record<string, string> = { Payroll: "bg-red-500", Salary: "bg-red-400", Rent: "bg-blue-500", Utilities: "bg-yellow-500", "Office Supplies": "bg-purple-500", Marketing: "bg-pink-500", Travel: "bg-cyan-500", Other: "bg-slate-400" };
                   return (
                     <div key={cat} className="flex items-center justify-between p-2">
                       <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded ${catColors[cat] || "bg-gray-400"}`} />
+                        <div className={`w-3 h-3 rounded ${catColors[cat] || "bg-slate-400"}`} />
                         <span className="text-slate-700 text-xs">{cat}</span>
                       </div>
                       <span className="text-slate-900 text-xs font-medium">PKR {amt.toLocaleString()} ({pct}%)</span>
@@ -789,14 +789,14 @@ export default function FranchiseDashboardPage() {
             <CardContent className="overflow-x-auto p-0">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-muted/50">
-                    <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Employee</th>
-                    <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Role</th>
-                    <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Month</th>
-                    <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Basic</th>
-                    <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Commission</th>
-                    <th className="px-4 py-3 text-right text-muted-foreground text-xs font-medium uppercase">Net Pay</th>
-                    <th className="px-4 py-3 text-center text-muted-foreground text-xs font-medium uppercase">Status</th>
+                  <tr className="border-b border-slate-100 bg-slate-50">
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Employee</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Role</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Month</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Basic</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Commission</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Net Pay</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -212,7 +212,7 @@ export default function EquipmentPage() {
             <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-muted/50">
+                  <tr className="border-b border-slate-100 bg-slate-50">
                     <th className="w-14 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Sr.No</th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Item Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Equipment ID</th>
@@ -275,7 +275,7 @@ export default function EquipmentPage() {
             <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-muted/50">
+                  <tr className="border-b border-slate-100 bg-slate-50">
                     <th className="w-14 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Sr.No</th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Equipment</th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Person</th>
@@ -335,7 +335,7 @@ export default function EquipmentPage() {
             <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-muted/50">
+                  <tr className="border-b border-slate-100 bg-slate-50">
                     <th className="w-14 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">Sr.No</th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Item Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Category</th>
@@ -375,10 +375,10 @@ export default function EquipmentPage() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setShowForm(false); setShowAssignedDropdown(false); setAssignedToSearch(""); }}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Wrench size={18} /> {editing ? "Edit Equipment" : "Add Equipment"}</h3>
-              <button onClick={() => { setShowForm(false); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+          <div className="bg-white rounded-2xl border border-slate-200 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+              <h3 className="text-slate-900 font-bold flex items-center gap-2"><Wrench size={18} /> {editing ? "Edit Equipment" : "Add Equipment"}</h3>
+              <button onClick={() => { setShowForm(false); setShowAssignedDropdown(false); setAssignedToSearch(""); }} className="text-slate-400 hover:text-slate-600 p-1"><X size={18} /></button>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -428,10 +428,10 @@ export default function EquipmentPage() {
 
       {showIssueForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setShowIssueForm(false); setShowPersonDropdown(false); setPersonSearch(""); }}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><ArrowRightLeft size={18} /> Issue Equipment</h3>
-              <button onClick={() => { setShowIssueForm(false); setShowPersonDropdown(false); setPersonSearch(""); }} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+          <div className="bg-white rounded-2xl border border-slate-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-slate-900 font-bold flex items-center gap-2"><ArrowRightLeft size={18} /> Issue Equipment</h3>
+              <button onClick={() => { setShowIssueForm(false); setShowPersonDropdown(false); setPersonSearch(""); }} className="text-slate-400 hover:text-slate-600 p-1"><X size={18} /></button>
             </div>
             <div className="space-y-4 p-6">
               <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Equipment *</label><Select value={issueForm.equipmentId} onChange={(e) => setIssueForm((p) => ({ ...p, equipmentId: e.target.value }))}><option value="">Select equipment...</option>{equipment.filter((e) => e.status === "Available").map((e) => <option key={e.id} value={e.id}>{e.id} - {e.name}</option>)}</Select></div>
@@ -475,10 +475,10 @@ export default function EquipmentPage() {
 
       {showItemForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowItemForm(false)}>
-          <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Tag size={18} /> Add Item Name</h3>
-              <button onClick={() => setShowItemForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+          <div className="bg-white rounded-2xl border border-slate-200 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-slate-900 font-bold flex items-center gap-2"><Tag size={18} /> Add Item Name</h3>
+              <button onClick={() => setShowItemForm(false)} className="text-slate-400 hover:text-slate-600 p-1"><X size={18} /></button>
             </div>
             <div className="space-y-4 p-6">
               <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">Item Name *</label><Input type="text" value={itemForm.name} onChange={(e) => setItemForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Umbrella, Table, Banner..." /></div>

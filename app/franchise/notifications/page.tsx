@@ -51,7 +51,7 @@ export default function NotificationsPage() {
         <CardContent className="overflow-x-auto p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-muted/50">
+               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase">Type</th>
                 <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase">Message</th>
                 <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase hidden md:table-cell">Recipient</th>

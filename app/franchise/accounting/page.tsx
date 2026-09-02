@@ -113,7 +113,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent className="overflow-x-auto p-0">
             <table className="w-full">
-              <thead><tr className="border-b border-slate-100 bg-muted/50">
+              <thead><tr className="border-b border-slate-100 bg-slate-50">
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Date</th>
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Category</th>
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Description</th>
@@ -145,7 +145,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent className="overflow-x-auto p-0">
             <table className="w-full">
-              <thead><tr className="border-b border-slate-100 bg-muted/50">
+              <thead><tr className="border-b border-slate-100 bg-slate-50">
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Date</th>
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Category</th>
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Description</th>
@@ -180,7 +180,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent className="overflow-x-auto p-0">
             <table className="w-full">
-              <thead><tr className="border-b border-slate-100 bg-muted/50">
+              <thead><tr className="border-b border-slate-100 bg-slate-50">
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Supplier</th>
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">SIM Type</th>
                 <th className="px-5 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Customer Rate (PKR)</th>
@@ -383,7 +383,7 @@ function SalesTab({ sales, onMarkReceived }: { sales: SIMSale[]; onMarkReceived:
         <CardContent className="overflow-x-auto p-0">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 bg-muted/50">
+              <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Date</th>
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">SIM</th>
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Type / Stage</th>

@@ -438,7 +438,7 @@ export default function PayrollPage() {
               </Button>
             )}
             {tab === "list" && filteredPayroll.length > 0 && (
-              <Button className="bg-[#FFFB63] text-[#0A2647] hover:bg-[#F1B308]" onClick={handlePrintPayroll}>
+              <Button className="bg-brand-600 text-white hover:bg-brand-700" onClick={handlePrintPayroll}>
                 <Printer size={16} /> Print / Export
               </Button>
             )}
@@ -464,10 +464,10 @@ export default function PayrollPage() {
               <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
                 className="h-9 px-3 rounded-lg border border-slate-200 bg-white text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
             </div>
-            <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+            <div className="flex gap-0 border-b border-slate-200">
               {(["All", "DSM", "DSO"] as const).map((r) => (
                 <button key={r} onClick={() => setRoleFilter(r)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${roleFilter === r ? "bg-brand-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}>
+                  className={`px-4 py-2 text-xs font-medium transition-all border-b-2 -mb-px ${roleFilter === r ? "border-brand-600 text-brand-600" : "border-transparent text-slate-600 hover:text-slate-800"}`}>
                   {r}
                 </button>
               ))}
@@ -505,7 +505,7 @@ export default function PayrollPage() {
                 </button>
                 <button onClick={handleGenerate}
                   disabled={selectedEmps.length === 0 && !filteredEmployees.length}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#FFFB63] px-6 py-2 text-xs font-black text-[#0A2647] transition-all hover:bg-[#F1B308] disabled:opacity-50">
+                   className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-2 text-xs font-black text-white transition-all hover:bg-brand-700 disabled:opacity-50">
                   <Zap size={14} /> Generate Payroll
                   {selectedEmps.length > 0 ? ` (${selectedEmps.length} selected)` : ` (${filteredEmployees.length} employees)`}
                 </button>
@@ -728,7 +728,7 @@ export default function PayrollPage() {
                                 <Card>
                                   <CardContent className="pt-4">
                                     <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                                      <DollarSign size={14} className="text-[#F1B308]" /> Bonuses & Deductions
+                                       <DollarSign size={14} className="text-brand-600" /> Bonuses & Deductions
                                     </h4>
                                     <div className="space-y-2 text-xs">
                                       <div className="flex justify-between"><span className="text-muted-foreground">Target Bonus</span><span className="font-medium text-blue-600">PKR {(p.targetBonus || 0).toLocaleString()}</span></div>

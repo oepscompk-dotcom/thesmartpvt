@@ -103,7 +103,7 @@ export default function DashboardPage() {
                 <div
                   key={i}
                   className="w-full flex-1 rounded-t-lg transition-all duration-500 hover:opacity-80"
-                  style={{ height: `${h}%`, background: i === 11 ? "linear-gradient(to top, #FFFB63, #FDE408)" : "#2563eb" }}
+                  style={{ height: `${h}%`, background: i === 11 ? "linear-gradient(to top, #2D28CD, #4F46E5)" : "#2563eb" }}
                 />
               ))}
             </div>
@@ -178,11 +178,11 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-100 bg-muted/50">
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Franchise</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Owner</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Team</th>
+                <tr className="border-b border-slate-100 bg-slate-50">
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Franchise</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Owner</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Team</th>
                 </tr>
               </thead>
               <tbody>

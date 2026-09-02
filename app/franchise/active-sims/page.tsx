@@ -786,11 +786,11 @@ export default function ActiveSIMsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Device ID</label>
-                  <input type="text" value={editForm.deviceId} onChange={(e) => setEditForm((p) => ({ ...p, deviceId: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
+                  <input type="text" value={editForm.deviceId} onChange={(e) => setEditForm((p) => ({ ...p, deviceId: e.target.value }))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:border-brand-600/50" />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-muted-foreground">ICCID</label>
-                  <input type="text" value={editForm.iccid} onChange={(e) => setEditForm((p) => ({ ...p, iccid: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm font-mono focus:outline-none focus:border-[#0A2647]/50" />
+                  <input type="text" value={editForm.iccid} onChange={(e) => setEditForm((p) => ({ ...p, iccid: e.target.value }))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:border-brand-600/50" />
                 </div>
               </div>
               <div className="border-t border-slate-100 pt-4">

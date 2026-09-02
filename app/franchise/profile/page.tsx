@@ -143,7 +143,7 @@ export default function ProfilePage() {
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile icon={Users} iconClass="bg-[#FFFB63] text-[#0A2647]" label="Team Members" value={staffCount} sub={`${dsms.length} DSM · ${dso.length} DSO`} />
+        <StatTile icon={Users} iconClass="bg-brand-50 text-brand-600" label="Team Members" value={staffCount} sub={`${dsms.length} DSM · ${dso.length} DSO`} />
         <StatTile icon={Smartphone} iconClass="bg-[#00C8FF]/10 text-[#0E91B4]" label="Field Devices" value={devices.length} />
         <StatTile icon={Wallet} iconClass="bg-green-50 text-green-600" label="Wallet Balance" value={`PKR ${walletBalance.toLocaleString()}`} />
         <StatTile icon={Package} iconClass="bg-brand-50 text-brand-700" label="SIM Stock" value={sims.length} />
@@ -233,7 +233,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button onClick={handleSave} size="lg" className="bg-[#FFFB63] text-[#0A2647] hover:bg-[#F1B308] hover:text-[#0A2647] border-0 shadow-sm">
+                <Button onClick={handleSave} size="lg" className="bg-brand-600 text-white hover:bg-brand-700 border-0 shadow-sm">
                   {saved ? <><CheckCircle2 size={14} /> Saved!</> : <><Save size={14} /> Save Changes</>}
                 </Button>
               </div>
@@ -277,10 +277,10 @@ export default function ProfilePage() {
               <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Agreement Progress</span>
-                  <span className="text-xs font-bold text-[#F1B308]">{agreementPct}%</span>
+                  <span className="text-xs font-bold text-brand-600">{agreementPct}%</span>
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#FFFB63] to-[#F1B308]" style={{ width: `${agreementPct}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600" style={{ width: `${agreementPct}%` }} />
                 </div>
                 <p className="mt-2 text-xs font-semibold text-slate-600">
                   {daysRemaining !== null ? `${daysRemaining} days remaining` : "—"}
@@ -303,7 +303,7 @@ export default function ProfilePage() {
             icon={Bell}
             title="Notifications"
             action={
-              <Link href="/franchise/notifications" className="inline-flex items-center gap-0.5 text-xs font-semibold text-[#2D28CD] hover:text-[#1C16C5]">
+              <Link href="/franchise/notifications" className="inline-flex items-center gap-0.5 text-xs font-semibold text-brand-600 hover:text-brand-700">
                 View all <ChevronRight size={12} />
               </Link>
             }
@@ -314,7 +314,7 @@ export default function ProfilePage() {
               )}
               {notifications.slice(0, 3).map((n) => (
                 <div key={n.id} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3">
-                  <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-slate-300" : "bg-[#FFFB63] ring-2 ring-[#FFFB63]/30"}`} />
+                  <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-slate-300" : "bg-brand-600 ring-2 ring-brand-600/30"}`} />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-slate-800">{n.message || n.title}</p>
                     <p className="text-[11px] text-slate-400">{n.time}</p>
@@ -322,7 +322,7 @@ export default function ProfilePage() {
                 </div>
               ))}
               {notifications.length > 0 && unreadCount > 0 && (
-                <p className="text-right text-[11px] font-semibold text-[#F1B308]">{unreadCount} unread</p>
+                <p className="text-right text-[11px] font-semibold text-brand-600">{unreadCount} unread</p>
               )}
             </div>
           </SectionCard>

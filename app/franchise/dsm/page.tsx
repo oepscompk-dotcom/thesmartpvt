@@ -885,7 +885,7 @@ function SalaryTab({
   return (
     <div className="space-y-4">
       {/* Formula Info Banner */}
-      <div className="bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-2xl p-5 text-white">
+      <div className="bg-gradient-to-r from-brand-700 to-brand-800 rounded-2xl p-5 text-white">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
@@ -1034,7 +1034,7 @@ function SalaryTab({
                             {/* Commission Rates */}
                             <div className="rounded-lg border border-slate-200 p-4">
                               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                                <DollarSign className="h-4 w-4 text-[#F1B308]" /> Commission Rates
+                                <DollarSign className="h-4 w-4 text-brand-600" /> Commission Rates
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
                                 {[
@@ -1109,7 +1109,7 @@ function SalaryTab({
                             </div>
 
                             {/* Earnings Breakdown */}
-                            <div className="bg-gradient-to-br from-[#0A2647] to-[#144272] rounded-xl p-4 text-white">
+                            <div className="bg-gradient-to-br from-brand-700 to-brand-800 rounded-xl p-4 text-white">
                               <h4 className="font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4" /> Earnings Breakdown â€” {calcMonth}
                               </h4>
@@ -1133,7 +1133,7 @@ function SalaryTab({
                                 </div>
                                 <div className="border-t border-white/10 pt-2 flex justify-between text-sm">
                                   <span className="font-bold">Net Salary</span>
-                                  <span className="font-black text-[#F1B308]">PKR {e.netSalary.toLocaleString()}</span>
+                                  <span className="font-black text-brand-600">PKR {e.netSalary.toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>

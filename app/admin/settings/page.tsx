@@ -590,9 +590,19 @@ function HomepageTab({ homepage, onChange }: { homepage: HomepageContent; onChan
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap items-center gap-6 border-b border-slate-200">
         {sectionTabs.map((t) => (
-          <Button key={t.id} variant={activeSection === t.id ? "primary" : "outline"} size="sm" onClick={() => setActiveSection(t.id)}>{t.label}</Button>
+          <button
+            key={t.id}
+            className={`-mb-px inline-flex items-center gap-1.5 border-b-2 pb-3 text-sm ${
+              activeSection === t.id
+                ? "border-brand-600 font-semibold text-brand-700"
+                : "border-transparent font-medium text-muted-foreground hover:border-slate-300 hover:text-foreground"
+            }`}
+            onClick={() => setActiveSection(t.id)}
+          >
+            {t.label}
+          </button>
         ))}
       </div>
 
@@ -923,11 +933,19 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 flex items-center gap-6 border-b border-slate-200">
         {tabs.map((t) => (
-          <Button key={t} variant={activeTab === t ? "primary" : "outline"} onClick={() => setActiveTab(t)}>
+          <button
+            key={t}
+            className={`-mb-px inline-flex items-center gap-1.5 border-b-2 pb-3 text-sm ${
+              activeTab === t
+                ? "border-brand-600 font-semibold text-brand-700"
+                : "border-transparent font-medium text-muted-foreground hover:border-slate-300 hover:text-foreground"
+            }`}
+            onClick={() => setActiveTab(t)}
+          >
             {t}
-          </Button>
+          </button>
         ))}
       </div>
 

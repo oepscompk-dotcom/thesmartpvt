@@ -694,9 +694,9 @@ function DocumentsTab({
   return (
     <div className="space-y-3">
       {data.length === 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 px-6 py-12 text-center">
-          <FileText size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No DSOs found</p>
+        <div className="bg-white rounded-2xl border border-slate-200 px-6 py-12 text-center">
+          <FileText size={32} className="text-slate-300 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm">No DSOs found</p>
         </div>
       )}
       {data.map((d) => {
@@ -704,10 +704,10 @@ function DocumentsTab({
         const missing = total - uploaded;
         const complete = uploaded === total;
         return (
-          <div key={d.id} className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-5">
+          <div key={d.id} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0A2647] flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
                   {d.photo ? (
                     <img src={d.photo} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -718,8 +718,8 @@ function DocumentsTab({
                   )}
                 </div>
                 <div>
-                  <p className="text-gray-900 text-sm font-bold">{d.name}</p>
-                  <p className="text-gray-400 text-xs font-mono">{d.id}</p>
+                  <p className="text-slate-900 text-sm font-bold">{d.name}</p>
+                  <p className="text-slate-400 text-xs font-mono">{d.id}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -733,7 +733,7 @@ function DocumentsTab({
                 )}
                 <button
                   onClick={() => onView(d)}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                 >
                   <Eye size={14} />
                 </button>
@@ -889,7 +889,7 @@ function SalaryTab({
   return (
     <div className="space-y-4">
       {/* Formula Info Banner */}
-      <div className="bg-gradient-to-r from-[#0A2647] to-[#144272] rounded-2xl p-5 text-white">
+      <div className="bg-gradient-to-r from-brand-700 to-brand-800 rounded-2xl p-5 text-white">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
@@ -921,24 +921,24 @@ function SalaryTab({
       </div>
 
       {/* Month Selector + Summary Stats */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
-            <label className="text-gray-500 text-xs font-medium">Calculation Month:</label>
+            <label className="text-slate-500 text-xs font-medium">Calculation Month:</label>
             <input type="month" value={calcMonth} onChange={(e) => setCalcMonth(e.target.value)}
-              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-brand-600/50" />
           </div>
-          <p className="text-gray-400 text-xs">{filtered.length} DSOs</p>
+          <p className="text-slate-400 text-xs">{filtered.length} DSOs</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Total Basic", value: totalStats.totalBasic, color: "text-[#0A2647]" },
+            { label: "Total Basic", value: totalStats.totalBasic, color: "text-brand-700" },
             { label: "Total Commissions", value: totalStats.totalCommission, color: "text-green-600" },
             { label: "Total Gross", value: totalStats.totalGross, color: "text-blue-600" },
-            { label: "Total Net Pay", value: totalStats.totalNet, color: "text-[#F1B308]" },
+            { label: "Total Net Pay", value: totalStats.totalNet, color: "text-brand-600" },
           ].map((s) => (
-            <div key={s.label} className="bg-gray-50 rounded-xl p-3">
-              <p className="text-gray-400 text-[10px] font-medium uppercase">{s.label}</p>
+            <div key={s.label} className="bg-slate-50 rounded-xl p-3">
+              <p className="text-slate-400 text-[10px] font-medium uppercase">{s.label}</p>
               <p className={`${s.color} text-lg font-black mt-0.5`}>PKR {s.value.toLocaleString()}</p>
             </div>
           ))}
@@ -946,26 +946,26 @@ function SalaryTab({
       </div>
 
       {/* Salary Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">DSO</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Basic</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Allow.</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase">DSO</th>
+                <th className="text-right px-3 py-3 text-slate-500 text-xs font-medium uppercase hidden lg:table-cell">Basic</th>
+                <th className="text-right px-3 py-3 text-slate-500 text-xs font-medium uppercase hidden xl:table-cell">Allow.</th>
+                <th className="text-center px-3 py-3 text-slate-500 text-xs font-medium uppercase hidden xl:table-cell">
                   <div className="flex flex-col items-center">
                     <span>Activations</span>
-                    <span className="text-[9px] text-gray-400 font-normal">Tot|BVS|FCA|IFCA</span>
+                    <span className="text-[9px] text-slate-400 font-normal">Tot|BVS|FCA|IFCA</span>
                   </div>
                 </th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Commission</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Bonuses</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase hidden 2xl:table-cell">Deductions</th>
-                <th className="text-right px-3 py-3 text-gray-500 text-xs font-medium uppercase font-bold">Net Pay</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Slip</th>
-                <th className="text-center px-3 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+                <th className="text-right px-3 py-3 text-slate-500 text-xs font-medium uppercase hidden 2xl:table-cell">Commission</th>
+                <th className="text-right px-3 py-3 text-slate-500 text-xs font-medium uppercase hidden 2xl:table-cell">Bonuses</th>
+                <th className="text-right px-3 py-3 text-slate-500 text-xs font-medium uppercase hidden 2xl:table-cell">Deductions</th>
+                <th className="text-right px-3 py-3 text-slate-500 text-xs font-medium uppercase font-bold">Net Pay</th>
+                <th className="text-center px-3 py-3 text-slate-500 text-xs font-medium uppercase">Slip</th>
+                <th className="text-center px-3 py-3 text-slate-500 text-xs font-medium uppercase">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -976,28 +976,28 @@ function SalaryTab({
                 const e = calcEarnings(d, acts);
                 return (
                   <Fragment key={d.id}>
-                    <tr className={`border-b border-gray-50 transition-colors ${isEditing ? "bg-blue-50/30" : "hover:bg-gray-50"}`}>
+                    <tr className={`border-b border-slate-50 transition-colors ${isEditing ? "bg-blue-50/30" : "hover:bg-slate-50"}`}>
                       <td className="px-4 py-3">
                         <div>
-                          <p className="text-gray-900 text-sm font-medium">{d.name}</p>
-                          <p className="text-gray-400 text-xs font-mono">{d.id}</p>
+                          <p className="text-slate-900 text-sm font-medium">{d.name}</p>
+                          <p className="text-slate-400 text-xs font-mono">{d.id}</p>
                         </div>
                       </td>
                       <td className="px-3 py-2 text-right hidden lg:table-cell">
                         {isEditing ? (
                           <input type="number" value={getSalaryValue(d, "salary")}
                             onChange={(ev) => updateSalaryField(d.id, "salary", Number(ev.target.value))}
-                            className="w-24 text-right px-2 py-1.5 rounded-lg text-xs font-medium border border-[#0A2647]/30 text-gray-900 focus:outline-none focus:border-[#0A2647] focus:ring-1 focus:ring-[#0A2647]/10" />
+                            className="w-24 text-right px-2 py-1.5 rounded-lg text-xs font-medium border border-brand-600/30 text-slate-900 focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600/10" />
                         ) : (
-                          <span className="text-gray-700 text-xs font-medium">PKR {(e.basic).toLocaleString()}</span>
+                          <span className="text-slate-700 text-xs font-medium">PKR {(e.basic).toLocaleString()}</span>
                         )}
                       </td>
                       <td className="px-3 py-2 text-right hidden xl:table-cell">
-                        <span className="text-gray-600 text-xs">{e.totalAllowances.toLocaleString()}</span>
+                        <span className="text-slate-600 text-xs">{e.totalAllowances.toLocaleString()}</span>
                       </td>
                       <td className="px-3 py-2 text-center hidden xl:table-cell">
                         <div className="flex items-center justify-center gap-1 text-[10px]">
-                          <span className="px-1.5 py-0.5 bg-gray-900 text-white rounded font-bold" title="Total">{acts.total}</span>
+                          <span className="px-1.5 py-0.5 bg-slate-900 text-white rounded font-bold" title="Total">{acts.total}</span>
                           <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded font-bold" title="BVS">{acts.bvs}</span>
                           <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-bold" title="FCA">{acts.fca}</span>
                           <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold" title="IFCA">{acts.ifca}</span>
@@ -1013,10 +1013,10 @@ function SalaryTab({
                         <span className="text-red-500 text-xs font-medium">PKR {e.totalDeductions.toLocaleString()}</span>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className="text-gray-900 text-sm font-black">PKR {e.netSalary.toLocaleString()}</span>
+                        <span className="text-slate-900 text-sm font-black">PKR {e.netSalary.toLocaleString()}</span>
                       </td>
                       <td className="px-3 py-2 text-center">
-                        <button onClick={() => onDownloadSlip?.(d, calcMonth)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Download Salary Slip">
+                        <button onClick={() => onDownloadSlip?.(d, calcMonth)} className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Download Salary Slip">
                           <Download size={14} />
                         </button>
                       </td>
@@ -1027,11 +1027,11 @@ function SalaryTab({
                               <Save size={14} />
                             </button>
                           ) : (
-                            <button onClick={() => { updateSalaryField(d.id, "salary", d.salary || 0); }} className="p-2 text-gray-400 hover:text-[#0A2647] hover:bg-gray-100 rounded-lg transition-all" title="Edit Salary">
+                            <button onClick={() => { updateSalaryField(d.id, "salary", d.salary || 0); }} className="p-2 text-slate-400 hover:text-brand-700 hover:bg-slate-100 rounded-lg transition-all" title="Edit Salary">
                               <Edit size={14} />
                             </button>
                           )}
-                          <button onClick={() => setExpandedRow(isExpanded ? null : d.id)} className="p-2 text-gray-400 hover:text-[#0A2647] hover:bg-gray-100 rounded-lg transition-all" title="Commission Settings">
+                          <button onClick={() => setExpandedRow(isExpanded ? null : d.id)} className="p-2 text-slate-400 hover:text-brand-700 hover:bg-slate-100 rounded-lg transition-all" title="Commission Settings">
                             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                           </button>
                         </div>
@@ -1039,13 +1039,13 @@ function SalaryTab({
                     </tr>
 
                     {isExpanded && (
-                      <tr className="bg-gray-50/80">
+                      <tr className="bg-slate-50/80">
                         <td colSpan={10} className="px-4 py-4">
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {/* Commission Rates */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <DollarSign size={14} className="text-[#F1B308]" /> Commission Rates
+                            <div className="bg-white rounded-xl border border-slate-200 p-4">
+                              <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <DollarSign size={14} className="text-brand-600" /> Commission Rates
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
                                 {[
@@ -1065,18 +1065,18 @@ function SalaryTab({
                                   { label: "Other Commission (Rs.)", field: "otherCommission", color: "gray" },
                                 ].map((f) => (
                                   <div key={f.field}>
-                                    <label className="block text-gray-500 text-[10px] font-medium mb-1">{f.label}</label>
+                                    <label className="block text-slate-500 text-[10px] font-medium mb-1">{f.label}</label>
                                     <input type="number" value={getSalaryValue(d, f.field)}
                                       onChange={(ev) => updateSalaryField(d.id, f.field, Number(ev.target.value))}
-                                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+                                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:border-brand-600/50" />
                                   </div>
                                 ))}
                               </div>
                             </div>
 
                             {/* Allowances & Bonuses */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <div className="bg-white rounded-xl border border-slate-200 p-4">
+                              <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <Wallet size={14} className="text-green-500" /> Allowances & Bonuses
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
@@ -1089,18 +1089,18 @@ function SalaryTab({
                                   { label: "Performance Bonus (Rs.)", field: "bonus" },
                                 ].map((f) => (
                                   <div key={f.field}>
-                                    <label className="block text-gray-500 text-[10px] font-medium mb-1">{f.label}</label>
+                                    <label className="block text-slate-500 text-[10px] font-medium mb-1">{f.label}</label>
                                     <input type="number" value={getSalaryValue(d, f.field)}
                                       onChange={(ev) => updateSalaryField(d.id, f.field, Number(ev.target.value))}
-                                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+                                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:border-brand-600/50" />
                                   </div>
                                 ))}
                               </div>
                             </div>
 
                             {/* Deductions */}
-                            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                              <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <div className="bg-white rounded-xl border border-slate-200 p-4">
+                              <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <AlertTriangle size={14} className="text-red-500" /> Deductions
                               </h4>
                               <div className="grid grid-cols-3 gap-3">
@@ -1110,17 +1110,17 @@ function SalaryTab({
                                   { label: "Other Deduction (Rs.)", field: "otherDeduction" },
                                 ].map((f) => (
                                   <div key={f.field}>
-                                    <label className="block text-gray-500 text-[10px] font-medium mb-1">{f.label}</label>
+                                    <label className="block text-slate-500 text-[10px] font-medium mb-1">{f.label}</label>
                                     <input type="number" value={getSalaryValue(d, f.field)}
                                       onChange={(ev) => updateSalaryField(d.id, f.field, Number(ev.target.value))}
-                                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+                                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:border-brand-600/50" />
                                   </div>
                                 ))}
                               </div>
                             </div>
 
                             {/* Earnings Breakdown */}
-                            <div className="bg-gradient-to-br from-[#0A2647] to-[#144272] rounded-xl p-4 text-white">
+                             <div className="bg-gradient-to-br from-brand-700 to-brand-800 rounded-xl p-4 text-white">
                               <h4 className="font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <TrendingUp size={14} /> Earnings Breakdown â€” {calcMonth}
                               </h4>
@@ -1144,7 +1144,7 @@ function SalaryTab({
                                 </div>
                                 <div className="border-t border-white/10 pt-2 flex justify-between text-sm">
                                   <span className="font-bold">Net Salary</span>
-                                  <span className="font-black text-[#F1B308]">PKR {e.netSalary.toLocaleString()}</span>
+                                  <span className="font-black text-brand-600">PKR {e.netSalary.toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>
@@ -1160,8 +1160,8 @@ function SalaryTab({
         </div>
         {filtered.length === 0 && (
           <div className="px-6 py-12 text-center">
-            <DollarSign size={32} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">No DSOs found</p>
+            <DollarSign size={32} className="text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-400 text-sm">No DSOs found</p>
           </div>
         )}
       </div>
@@ -1183,7 +1183,7 @@ function InactiveTab({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
       <div className="px-4 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
         <AlertTriangle size={16} className="text-amber-600" />
         <p className="text-amber-800 text-sm font-bold">Inactive / Resigned DSOs â€” {data.length} found</p>
@@ -1191,27 +1191,27 @@ function InactiveTab({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Sr.No</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden md:table-cell">Mobile</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Assigned DSM</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase hidden xl:table-cell">Salary</th>
-              <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
-              <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase">Actions</th>
+            <tr className="border-b border-slate-100 bg-slate-50">
+              <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase">Sr.No</th>
+              <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase">Employee</th>
+              <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase hidden md:table-cell">Mobile</th>
+              <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase hidden lg:table-cell">Assigned DSM</th>
+              <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase hidden xl:table-cell">Salary</th>
+              <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase">Status</th>
+              <th className="text-right px-4 py-3 text-slate-500 text-xs font-medium uppercase">Actions</th>
             </tr>
           </thead>
           <tbody>
             {data.map((d, idx) => (
-              <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#0A2647]/10 text-[#0A2647] text-[10px] font-black">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-brand-600/10 text-brand-700 text-[10px] font-black">
                     {idx + 1}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold overflow-hidden flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold overflow-hidden flex-shrink-0">
                       {d.photo ? (
                         <img src={d.photo} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -1222,17 +1222,17 @@ function InactiveTab({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-gray-900 text-sm font-medium truncate">{d.name}</p>
-                      <p className="text-gray-400 text-xs font-mono truncate">
+                      <p className="text-slate-900 text-sm font-medium truncate">{d.name}</p>
+                      <p className="text-slate-400 text-xs font-mono truncate">
                         {d.id}
                         {d.employeeCode ? ` Â· ${d.employeeCode}` : ""}
                       </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-gray-600 text-xs">{d.mobile || "â€”"}</td>
-                <td className="px-4 py-3 hidden lg:table-cell text-gray-600 text-sm font-mono">{d.assignedDSM || "â€”"}</td>
-                <td className="px-4 py-3 hidden xl:table-cell text-gray-600 text-sm">
+                <td className="px-4 py-3 hidden md:table-cell text-slate-600 text-xs">{d.mobile || "â€”"}</td>
+                <td className="px-4 py-3 hidden lg:table-cell text-slate-600 text-sm font-mono">{d.assignedDSM || "â€”"}</td>
+                <td className="px-4 py-3 hidden xl:table-cell text-slate-600 text-sm">
                   PKR {(d.salary || 0).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
@@ -1240,13 +1240,13 @@ function InactiveTab({
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => onView(d)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View">
+                    <button onClick={() => onView(d)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View">
                       <Eye size={14} />
                     </button>
-                    <button onClick={() => onEdit(d)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
+                    <button onClick={() => onEdit(d)} className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
                       <Edit size={14} />
                     </button>
-                    <button onClick={() => onDelete(d.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
+                    <button onClick={() => onDelete(d.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -1259,7 +1259,7 @@ function InactiveTab({
       {data.length === 0 && (
         <div className="px-6 py-12 text-center">
           <CheckCircle2 size={32} className="text-green-300 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No inactive or resigned DSOs</p>
+          <p className="text-slate-400 text-sm">No inactive or resigned DSOs</p>
         </div>
       )}
     </div>
@@ -1270,18 +1270,18 @@ function ViewModal({ dso, onClose }: { dso: DSO; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-t-2xl sm:rounded-2xl border border-gray-200 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-white rounded-t-2xl sm:rounded-2xl border border-slate-200 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-          <h3 className="text-gray-900 font-bold">DSO Details</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+          <h3 className="text-slate-900 font-bold">DSO Details</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
             <X size={18} />
           </button>
         </div>
         <div className="p-6 space-y-5">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-[#0A2647] flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0">
+            <div className="w-16 h-16 rounded-xl bg-brand-700 flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0">
               {dso.photo ? (
                 <img src={dso.photo} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -1289,8 +1289,8 @@ function ViewModal({ dso, onClose }: { dso: DSO; onClose: () => void }) {
               )}
             </div>
             <div>
-              <p className="text-gray-900 font-bold text-lg">{dso.name}</p>
-              <p className="text-gray-500 text-xs font-mono">
+              <p className="text-slate-900 font-bold text-lg">{dso.name}</p>
+              <p className="text-slate-500 text-xs font-mono">
                 {dso.id}
                 {dso.employeeCode ? ` Â· ${dso.employeeCode}` : ""}
               </p>
@@ -1393,16 +1393,16 @@ function DeleteModal({
 }) {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onCancel}>
-      <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
         <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-4">
           <Trash2 size={20} className="text-red-600" />
         </div>
-        <h3 className="text-gray-900 font-bold mb-2">Delete DSO?</h3>
-        <p className="text-gray-500 text-sm mb-6">
+        <h3 className="text-slate-900 font-bold mb-2">Delete DSO?</h3>
+        <p className="text-slate-500 text-sm mb-6">
           DSO <span className="font-mono font-medium">{id}</span> will be permanently removed.
         </p>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">
+          <button onClick={onCancel} className="flex-1 py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-200">
             Cancel
           </button>
           <button onClick={onConfirm} className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700">
@@ -1417,8 +1417,8 @@ function DeleteModal({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="text-gray-900 font-bold text-xs uppercase tracking-wider mb-2">{title}</h4>
-      <div className="bg-gray-50 rounded-xl p-4 space-y-2">{children}</div>
+      <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-2">{title}</h4>
+      <div className="bg-slate-50 rounded-xl p-4 space-y-2">{children}</div>
     </div>
   );
 }
@@ -1427,8 +1427,8 @@ function InfoRow({ label, value }: { label: string; value: string | undefined })
   if (!value) return null;
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-medium text-gray-900">{value}</span>
+      <span className="text-slate-500">{label}</span>
+      <span className="font-medium text-slate-900">{value}</span>
     </div>
   );
 }

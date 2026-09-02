@@ -75,12 +75,12 @@ export default function AuditLogsPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 bg-muted/50">
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Timestamp</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Action</th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground md:table-cell">Details</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Type</th>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Timestamp</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">User</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Action</th>
+                <th className="hidden px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 md:table-cell">Details</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Type</th>
               </tr>
             </thead>
             <tbody>

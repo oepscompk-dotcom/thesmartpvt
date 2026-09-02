@@ -233,7 +233,7 @@ export default function FranchiseAttendancePage() {
             <CardContent className="overflow-x-auto p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-muted/50">
+                  <tr className="border-b border-slate-100 bg-slate-50">
                     <th className="w-10 px-3 py-3 text-center text-xs font-medium uppercase text-muted-foreground">
                       <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 cursor-pointer accent-brand-600" />
                     </th>
@@ -336,10 +336,10 @@ export default function FranchiseAttendancePage() {
 
       {viewRecord && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4" onClick={() => setViewRecord(null)}>
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl border border-gray-200 w-full sm:max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Eye size={18} /> Attendance Details</h3>
-              <button onClick={() => setViewRecord(null)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl border border-slate-200 w-full sm:max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-slate-900 font-bold flex items-center gap-2"><Eye size={18} /> Attendance Details</h3>
+              <button onClick={() => setViewRecord(null)} className="text-slate-400 hover:text-slate-600 p-1"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-3">
@@ -355,11 +355,11 @@ export default function FranchiseAttendancePage() {
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Check Out</span><span className="font-mono font-bold text-slate-900">{viewRecord.checkOut || "\u2014"}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Working Hours</span><span className={`font-bold ${calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut) >= settings.requiredHours ? "text-green-600" : "text-red-600"}`}>{calcWorkingHours(viewRecord.checkIn, viewRecord.checkOut).toFixed(1)}h / {settings.requiredHours}h</span></div>
                 <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Status</span><StatusPill label={viewRecord.status} tone={toneForStatus(viewRecord.status)} /></div>
-                {viewRecord.gps ? <div className="flex justify-between text-sm"><span className="text-gray-500">GPS</span><span className="text-gray-700 text-xs flex items-center gap-1"><MapPin size={10} /> {viewRecord.gps}</span></div> : null}
+                {viewRecord.gps ? <div className="flex justify-between text-sm"><span className="text-slate-500">GPS</span><span className="text-slate-700 text-xs flex items-center gap-1"><MapPin size={10} /> {viewRecord.gps}</span></div> : null}
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-100">
-              <button onClick={() => setViewRecord(null)} className="w-full py-3 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200">Close</button>
+            <div className="px-6 py-4 border-t border-slate-100">
+              <button onClick={() => setViewRecord(null)} className="w-full py-3 bg-slate-100 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-200">Close</button>
             </div>
           </div>
         </div>
@@ -367,10 +367,10 @@ export default function FranchiseAttendancePage() {
 
       {showMarkForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4" onClick={() => setShowMarkForm(false)}>
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl border border-gray-200 w-full sm:max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-gray-900 font-bold flex items-center gap-2"><Plus size={18} /> Mark Attendance</h3>
-              <button onClick={() => setShowMarkForm(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={18} /></button>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl border border-slate-200 w-full sm:max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-slate-900 font-bold flex items-center gap-2"><Plus size={18} /> Mark Attendance</h3>
+              <button onClick={() => setShowMarkForm(false)} className="text-slate-400 hover:text-slate-600 p-1"><X size={18} /></button>
             </div>
             <div className="space-y-4 p-6">
               <div>

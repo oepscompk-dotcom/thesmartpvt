@@ -96,17 +96,17 @@ export default function TargetsPage() {
     return (
       <div className="min-w-0">
         <div className="flex justify-between items-center gap-2 text-xs mb-1">
-          <span className="text-gray-500 shrink-0">{label}</span>
+          <span className="text-slate-500 shrink-0">{label}</span>
           <span className={`font-medium whitespace-nowrap ${p >= settings.warnHigh ? "text-green-600" : p >= settings.warnLow ? "text-yellow-600" : "text-red-600"}`}>
             {achieved}/{target} ({p}%)
           </span>
         </div>
-        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
           <div className={`h-full rounded-full transition-all duration-500 ${barColor(p)}`} style={{ width: `${Math.max(p, target > 0 ? 2 : 0)}%` }} />
         </div>
         <div className="grid grid-cols-2 gap-2 mt-1.5">
-          <input type="number" value={target} onChange={(e) => onTarget(Number(e.target.value))} placeholder="Target" className={`w-full min-w-0 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#0A2647]/50 ${accent}`} />
-          <input type="number" value={achieved} onChange={(e) => onAchieved(Number(e.target.value))} placeholder="Done" className="w-full min-w-0 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#0A2647]/50" />
+          <input type="number" value={target} onChange={(e) => onTarget(Number(e.target.value))} placeholder="Target" className={`w-full min-w-0 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-brand-600/50 ${accent}`} />
+          <input type="number" value={achieved} onChange={(e) => onAchieved(Number(e.target.value))} placeholder="Done" className="w-full min-w-0 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-brand-600/50" />
         </div>
       </div>
     );
@@ -192,13 +192,13 @@ export default function TargetsPage() {
             const st = statusOf(w);
             const pts = (r.target.deviceAchieved ?? 0) * settings.deviceWeight + (r.target.simAchieved ?? 0) * settings.simWeight;
             return (
-              <div key={r.id} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden min-w-0">
+              <div key={r.id} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center text-white font-bold ${r.role === "DSM" ? "bg-blue-600" : "bg-green-600"}`}>{r.name.charAt(0)}</div>
                     <div className="min-w-0">
-                      <p className="text-gray-900 font-bold text-sm truncate">{r.name}</p>
-                      <p className="text-gray-400 text-xs font-mono truncate">{r.id} · {r.role}</p>
+                      <p className="text-slate-900 font-bold text-sm truncate">{r.name}</p>
+                      <p className="text-slate-400 text-xs font-mono truncate">{r.id} · {r.role}</p>
                     </div>
                   </div>
                   <StatusPill label={st.label} tone={st.tone} />
@@ -213,26 +213,26 @@ export default function TargetsPage() {
                     onAchieved={(v) => handleUpdate(r.id, r.role, "simAchieved", v)} />
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-gray-100 flex justify-between items-center gap-2 text-xs">
-                  <span className="text-gray-500 shrink-0">Points</span>
-                  <span className="font-black text-gray-900 whitespace-nowrap min-w-0">{pts.toLocaleString()}</span>
+                <div className="pt-3 mt-3 border-t border-slate-100 flex justify-between items-center gap-2 text-xs">
+                  <span className="text-slate-500 shrink-0">Points</span>
+                  <span className="font-black text-slate-900 whitespace-nowrap min-w-0">{pts.toLocaleString()}</span>
                 </div>
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-5 py-3 text-gray-500 text-xs font-medium uppercase">Employee</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Role</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">Devices</th>
-                  <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase">SIMs</th>
-                  <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase">Points</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase">Status</th>
+                <tr className="border-b border-slate-100 bg-slate-50">
+                  <th className="text-left px-5 py-3 text-slate-500 text-xs font-medium uppercase">Employee</th>
+                  <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase">Role</th>
+                  <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase">Devices</th>
+                  <th className="text-left px-4 py-3 text-slate-500 text-xs font-medium uppercase">SIMs</th>
+                  <th className="text-right px-4 py-3 text-slate-500 text-xs font-medium uppercase">Points</th>
+                  <th className="text-center px-4 py-3 text-slate-500 text-xs font-medium uppercase">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -241,29 +241,29 @@ export default function TargetsPage() {
                   const st = statusOf(w);
                   const pts = (r.target.deviceAchieved ?? 0) * settings.deviceWeight + (r.target.simAchieved ?? 0) * settings.simWeight;
                   return (
-                    <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-3">
-                        <p className="text-gray-900 text-sm font-medium">{r.name}</p>
-                        <p className="text-gray-400 text-xs font-mono">{r.id}</p>
+                        <p className="text-slate-900 text-sm font-medium">{r.name}</p>
+                        <p className="text-slate-400 text-xs font-mono">{r.id}</p>
                       </td>
                       <td className="px-4 py-3"><span className={`px-2 py-1 rounded-lg text-xs font-medium ${r.role === "DSM" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{r.role}</span></td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <input type="number" value={r.target.deviceTarget ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "deviceTarget", Number(e.target.value))} className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900" />
-                          <span className="text-gray-400 text-xs">/</span>
-                          <input type="number" value={r.target.deviceAchieved ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "deviceAchieved", Number(e.target.value))} className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900" />
+                          <input type="number" value={r.target.deviceTarget ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "deviceTarget", Number(e.target.value))} className="w-16 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900" />
+                          <span className="text-slate-400 text-xs">/</span>
+                          <input type="number" value={r.target.deviceAchieved ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "deviceAchieved", Number(e.target.value))} className="w-16 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900" />
                           <span className={`text-xs font-bold w-10 text-right ${pct(r.target.deviceTarget ?? 0, r.target.deviceAchieved ?? 0) >= settings.warnHigh ? "text-green-600" : pct(r.target.deviceTarget ?? 0, r.target.deviceAchieved ?? 0) >= settings.warnLow ? "text-yellow-600" : "text-red-600"}`}>{pct(r.target.deviceTarget ?? 0, r.target.deviceAchieved ?? 0)}%</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <input type="number" value={r.target.simTarget ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "simTarget", Number(e.target.value))} className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900" />
-                          <span className="text-gray-400 text-xs">/</span>
-                          <input type="number" value={r.target.simAchieved ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "simAchieved", Number(e.target.value))} className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900" />
+                          <input type="number" value={r.target.simTarget ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "simTarget", Number(e.target.value))} className="w-16 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900" />
+                          <span className="text-slate-400 text-xs">/</span>
+                          <input type="number" value={r.target.simAchieved ?? 0} onChange={(e) => handleUpdate(r.id, r.role, "simAchieved", Number(e.target.value))} className="w-16 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900" />
                           <span className={`text-xs font-bold w-10 text-right ${pct(r.target.simTarget ?? 0, r.target.simAchieved ?? 0) >= settings.warnHigh ? "text-green-600" : pct(r.target.simTarget ?? 0, r.target.simAchieved ?? 0) >= settings.warnLow ? "text-yellow-600" : "text-red-600"}`}>{pct(r.target.simTarget ?? 0, r.target.simAchieved ?? 0)}%</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right font-black text-gray-900">{pts.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right font-black text-slate-900">{pts.toLocaleString()}</td>
                       <td className="px-4 py-3 text-center"><StatusPill label={st.label} tone={st.tone} /></td>
                     </tr>
                   );

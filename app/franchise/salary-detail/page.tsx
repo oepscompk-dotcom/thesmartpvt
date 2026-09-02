@@ -330,7 +330,7 @@ export default function SalaryDetailPage() {
             <Link href="/franchise/payroll" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
               <DollarSign size={14} /> Payroll
             </Link>
-            <Button className="bg-[#FFFB63] text-[#0A2647] hover:bg-[#F1B308]" onClick={handlePrint}>
+            <Button className="bg-brand-600 text-white hover:bg-brand-700" onClick={handlePrint}>
               <Printer size={14} /> Print
             </Button>
           </>
@@ -502,7 +502,7 @@ export default function SalaryDetailPage() {
                             <Card>
                               <CardContent className="pt-4">
                                 <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                                  <DollarSign size={14} className="text-[#F1B308]" /> Bonuses & Deductions
+                                   <DollarSign size={14} className="text-brand-600" /> Bonuses & Deductions
                                 </h4>
                                 <div className="space-y-2 text-xs">
                                   <div className="flex justify-between"><span className="text-muted-foreground">Target Bonus</span><span className="font-medium text-blue-600">PKR {(c.targetBonus).toLocaleString()}</span></div>

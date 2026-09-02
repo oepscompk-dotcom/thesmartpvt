@@ -392,50 +392,50 @@ export default function ReportsPage() {
         <div className="space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-5 border border-gray-200">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center"><Users size={20} className="text-blue-600" /></div>
                 <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full">HR</span>
               </div>
-              <p className="text-2xl font-black text-gray-900">{staffStatusCounts.active}</p>
-              <p className="text-gray-500 text-xs">Active Staff <span className="text-gray-400">/ {staffStatusCounts.total} total</span></p>
-              <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <p className="text-2xl font-black text-slate-900">{staffStatusCounts.active}</p>
+              <p className="text-slate-500 text-xs">Active Staff <span className="text-slate-400">/ {staffStatusCounts.total} total</span></p>
+              <div className="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full bg-blue-600 rounded-full" style={{ width: `${staffStatusCounts.total ? (staffStatusCounts.active / staffStatusCounts.total) * 100 : 0}%` }} />
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-5 border border-gray-200">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center"><TrendingUp size={20} className="text-green-600" /></div>
                 <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-full">Sales</span>
               </div>
-              <p className="text-2xl font-black text-gray-900">{dso.length + dsms.length}</p>
-              <p className="text-gray-500 text-xs">Total Sales Staff <span className="text-gray-400">(DSO + DSM)</span></p>
+              <p className="text-2xl font-black text-slate-900">{dso.length + dsms.length}</p>
+              <p className="text-slate-500 text-xs">Total Sales Staff <span className="text-slate-400">(DSO + DSM)</span></p>
             </div>
-            <div className="bg-white rounded-2xl p-5 border border-gray-200">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center"><Smartphone size={20} className="text-purple-600" /></div>
                 <span className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-full">Inventory</span>
               </div>
-              <p className="text-2xl font-black text-gray-900">{simStatusCounts.total}</p>
-              <p className="text-gray-500 text-xs">SIMs <span className="text-gray-400">/ {devices.length} Devices</span></p>
+              <p className="text-2xl font-black text-slate-900">{simStatusCounts.total}</p>
+              <p className="text-slate-500 text-xs">SIMs <span className="text-slate-400">/ {devices.length} Devices</span></p>
               <div className="flex gap-1 mt-3">
                 <div className="h-2 flex-1 bg-green-200 rounded-l-full" style={{ flex: simStatusCounts.inStock }} />
                 <div className="h-2 flex-1 bg-yellow-200" style={{ flex: simStatusCounts.issued }} />
                 <div className="h-2 flex-1 bg-blue-400 rounded-r-full" style={{ flex: simStatusCounts.activated }} />
               </div>
-              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+              <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                 <span>{simStatusCounts.inStock} Stock</span>
                 <span>{simStatusCounts.issued} Issued</span>
                 <span>{simStatusCounts.activated} Active</span>
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-5 border border-gray-200">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center"><DollarSign size={20} className="text-amber-600" /></div>
                 <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-1 rounded-full">Finance</span>
               </div>
-              <p className="text-2xl font-black text-gray-900">PKR {netCashFlow.net.toLocaleString()}</p>
-              <p className="text-gray-500 text-xs">Net Cash Flow <span className={netCashFlow.net >= 0 ? "text-green-600" : "text-red-600"}>({dateFrom} to {dateTo})</span></p>
+              <p className="text-2xl font-black text-slate-900">PKR {netCashFlow.net.toLocaleString()}</p>
+              <p className="text-slate-500 text-xs">Net Cash Flow <span className={netCashFlow.net >= 0 ? "text-green-600" : "text-red-600"}>({dateFrom} to {dateTo})</span></p>
               <div className="flex gap-3 mt-3 text-xs">
                 <span className="flex items-center gap-1 text-green-600"><TrendingUp size={12} /> PKR {netCashFlow.totalIncome.toLocaleString()}</span>
                 <span className="flex items-center gap-1 text-red-600"><TrendingDown size={12} /> PKR {netCashFlow.totalExpense.toLocaleString()}</span>
@@ -448,30 +448,30 @@ export default function ReportsPage() {
             {/* Staff Overview */}
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Users size={16} className="text-brand-600" /> Staff Overview</h3>
+                <h3 className="text-slate-900 font-bold text-sm flex items-center gap-2"><Users size={16} className="text-brand-600" /> Staff Overview</h3>
                 <button onClick={() => { setActiveTab("hr"); setSelectedReport("staff"); }} className="text-xs text-brand-600 font-medium hover:underline">View Details â†’</button>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="bg-blue-50 rounded-xl p-4 text-center">
                     <p className="text-2xl font-black text-blue-600">{dso.length}</p>
-                    <p className="text-gray-500 text-xs mt-1">DSOs</p>
+                    <p className="text-slate-500 text-xs mt-1">DSOs</p>
                   </div>
                   <div className="bg-indigo-50 rounded-xl p-4 text-center">
                     <p className="text-2xl font-black text-indigo-600">{dsms.length}</p>
-                    <p className="text-gray-500 text-xs mt-1">DSMs</p>
+                    <p className="text-slate-500 text-xs mt-1">DSMs</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   {allStaff.slice(0, 5).map((s) => (
-                    <div key={s.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div key={s.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full ${s.role === "DSO" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"} flex items-center justify-center text-xs font-bold`}>
                           {s.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{s.name}</p>
-                          <p className="text-xs text-gray-400">{s.id} Â· {s.role}</p>
+                          <p className="text-sm font-medium text-slate-900">{s.name}</p>
+                          <p className="text-xs text-slate-400">{s.id} Â· {s.role}</p>
                         </div>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.status === "Active" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
@@ -486,34 +486,34 @@ export default function ReportsPage() {
             {/* Recent Attendance */}
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><Clock size={16} className="text-brand-600" /> Today&apos;s Attendance</h3>
+                <h3 className="text-slate-900 font-bold text-sm flex items-center gap-2"><Clock size={16} className="text-brand-600" /> Today&apos;s Attendance</h3>
                 <button onClick={() => { setActiveTab("hr"); setSelectedReport("attendance"); }} className="text-xs text-brand-600 font-medium hover:underline">View All â†’</button>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-4 gap-3 mb-4">
                   <div className="bg-green-50 rounded-xl p-3 text-center">
                     <p className="text-lg font-black text-green-600">{attendance.filter((a) => a.status === "Present" && a.date === new Date().toISOString().slice(0, 10)).length}</p>
-                    <p className="text-gray-500 text-[10px]">Present</p>
+                    <p className="text-slate-500 text-[10px]">Present</p>
                   </div>
                   <div className="bg-red-50 rounded-xl p-3 text-center">
                     <p className="text-lg font-black text-red-600">{attendance.filter((a) => a.status === "Absent" && a.date === new Date().toISOString().slice(0, 10)).length}</p>
-                    <p className="text-gray-500 text-[10px]">Absent</p>
+                    <p className="text-slate-500 text-[10px]">Absent</p>
                   </div>
                   <div className="bg-yellow-50 rounded-xl p-3 text-center">
                     <p className="text-lg font-black text-yellow-600">{attendance.filter((a) => a.status === "Late" && a.date === new Date().toISOString().slice(0, 10)).length}</p>
-                    <p className="text-gray-500 text-[10px]">Late</p>
+                    <p className="text-slate-500 text-[10px]">Late</p>
                   </div>
                   <div className="bg-blue-50 rounded-xl p-3 text-center">
                     <p className="text-lg font-black text-blue-600">{attendance.filter((a) => a.status === "Leave" && a.date === new Date().toISOString().slice(0, 10)).length}</p>
-                    <p className="text-gray-500 text-[10px]">Leave</p>
+                    <p className="text-slate-500 text-[10px]">Leave</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   {attendance.filter((a) => a.date === new Date().toISOString().slice(0, 10)).slice(0, 4).map((a) => (
                     <div key={a.id} className="flex items-center justify-between py-1.5">
-                      <span className="text-sm text-gray-700">{a.employeeName}</span>
+                      <span className="text-sm text-slate-700">{a.employeeName}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">{a.checkIn || "â€”"} - {a.checkOut || "â€”"}</span>
+                        <span className="text-xs text-slate-400">{a.checkIn || "â€”"} - {a.checkOut || "â€”"}</span>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${a.status === "Present" ? "bg-green-50 text-green-700" : a.status === "Late" ? "bg-yellow-50 text-yellow-700" : a.status === "Leave" ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-700"}`}>
                           {a.status}
                         </span>
@@ -521,7 +521,7 @@ export default function ReportsPage() {
                     </div>
                   ))}
                   {attendance.filter((a) => a.date === new Date().toISOString().slice(0, 10)).length === 0 && (
-                    <p className="text-gray-400 text-sm text-center py-4">No attendance records for today</p>
+                    <p className="text-slate-400 text-sm text-center py-4">No attendance records for today</p>
                   )}
                 </div>
               </div>
@@ -531,7 +531,7 @@ export default function ReportsPage() {
           {/* Quick Access */}
           <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100">
-              <h3 className="text-gray-900 font-bold text-sm flex items-center gap-2"><BarChart3 size={16} className="text-brand-600" /> Quick Reports Access</h3>
+              <h3 className="text-slate-900 font-bold text-sm flex items-center gap-2"><BarChart3 size={16} className="text-brand-600" /> Quick Reports Access</h3>
             </div>
             <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
@@ -545,12 +545,12 @@ export default function ReportsPage() {
                 { label: "Cash Flow", tab: "finance" as TabId, id: "cashflow", icon: Wallet, bg: "bg-amber-50", tx: "text-amber-600", count: 0 },
               ].map((r) => (
                 <button key={r.label} onClick={() => { setActiveTab(r.tab); setSelectedReport(r.id); }}
-                  className="p-4 rounded-xl border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all text-left">
+                  className="p-4 rounded-xl border border-slate-100 hover:border-slate-300 hover:shadow-sm transition-all text-left">
                   <div className={`w-9 h-9 rounded-lg ${r.bg} flex items-center justify-center mb-2`}>
                     <r.icon size={18} className={r.tx} />
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{r.label}</p>
-                  <p className="text-xs text-gray-400">{r.count} records</p>
+                  <p className="text-sm font-semibold text-slate-900">{r.label}</p>
+                  <p className="text-xs text-slate-400">{r.count} records</p>
                 </button>
               ))}
             </div>
@@ -576,18 +576,18 @@ export default function ReportsPage() {
           </div>
 
           {/* Filters Bar */}
-          <div className="bg-white rounded-2xl p-4 border border-gray-200 flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 flex-1 min-w-[200px]">
-              <Search size={15} className="text-gray-400" />
-              <input placeholder="Search name, ID, mobile..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-0 p-0 text-sm focus:outline-none w-full text-gray-700 placeholder:text-gray-400" />
-              {search && <X size={14} className="text-gray-400 cursor-pointer" onClick={() => setSearch("")} />}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+              <Search size={15} className="text-slate-400" />
+              <input placeholder="Search name, ID, mobile..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-0 p-0 text-sm focus:outline-none w-full text-slate-700 placeholder:text-slate-400" />
+              {search && <X size={14} className="text-slate-400 cursor-pointer" onClick={() => setSearch("")} />}
             </div>
-            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-gray-700 focus:outline-none">
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 focus:outline-none">
               <option value="All">All Roles</option>
               <option value="DSO">DSO</option>
               <option value="DSM">DSM</option>
             </select>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-gray-700 focus:outline-none">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 focus:outline-none">
               <option value="All">All Status</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
@@ -602,8 +602,8 @@ export default function ReportsPage() {
           {selectedReport === "staff" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-gray-900 font-bold text-sm">Staff Directory</h3>
-                <span className="text-xs text-gray-400">{filteredStaff.length} records</span>
+                <h3 className="text-slate-900 font-bold text-sm">Staff Directory</h3>
+                <span className="text-xs text-slate-400">{filteredStaff.length} records</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -628,32 +628,32 @@ export default function ReportsPage() {
                               {s.name.charAt(0)}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">{s.name}</p>
-                              <p className="text-xs text-gray-400">{s.fatherName}</p>
+                              <p className="font-medium text-slate-900">{s.name}</p>
+                              <p className="text-xs text-slate-400">{s.fatherName}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs font-mono">{s.id}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs font-mono">{s.id}</td>
                         <td className="px-4 py-3">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{s.role}</span>
                         </td>
-                        <td className="px-4 py-3 text-gray-600">{s.mobile}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs font-mono">{s.cnic}</td>
-                        <td className="px-4 py-3 text-gray-500">{formatDateDDMMYYYY(s.joinDate)}</td>
-                        <td className="px-4 py-3 text-gray-900 font-medium">PKR {s.salary.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-slate-600">{s.mobile}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs font-mono">{s.cnic}</td>
+                        <td className="px-4 py-3 text-slate-500">{formatDateDDMMYYYY(s.joinDate)}</td>
+                        <td className="px-4 py-3 text-slate-900 font-medium">PKR {s.salary.toLocaleString()}</td>
                         <td className="px-4 py-3 text-center">
                           <StatusPill label={s.status} tone={toneForStatus(s.status)} />
                         </td>
                       </tr>
                     ))}
                     {filteredStaff.length === 0 && (
-                      <tr><td colSpan={8} className="text-center py-10 text-gray-400 text-sm">No staff records found</td></tr>
+                      <tr><td colSpan={8} className="text-center py-10 text-slate-400 text-sm">No staff records found</td></tr>
                     )}
                   </tbody>
                 </table>
               </div>
-              <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center">
-                <span className="text-xs text-gray-400">Showing {filteredStaff.length} of {allStaff.length} employees</span>
+              <div className="px-6 py-3 border-t border-slate-100 flex justify-between items-center">
+                <span className="text-xs text-slate-400">Showing {filteredStaff.length} of {allStaff.length} employees</span>
                 <button onClick={() => {
                   const rows = filteredStaff.map((s) => `<tr>
                     <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${s.name}</td>
@@ -676,7 +676,7 @@ export default function ReportsPage() {
                       <thead><tr><th>Name</th><th>ID</th><th>Role</th><th>Mobile</th><th>CNIC</th><th>Joining</th><th>Salary</th><th>Status</th></tr></thead>
                       <tbody>${rows}</tbody>
                     </table>`);
-                }} className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 transition-all">
+                }} className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-100 transition-all">
                   <Printer size={14} /> Print
                 </button>
               </div>
@@ -687,9 +687,9 @@ export default function ReportsPage() {
           {selectedReport === "attendance" && (
             <>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                  <p className="text-xl font-black text-gray-900">{attendanceStats.total}</p>
-                  <p className="text-gray-500 text-xs">Total Records</p>
+                <div className="bg-white rounded-xl p-4 border border-slate-200 text-center">
+                  <p className="text-xl font-black text-slate-900">{attendanceStats.total}</p>
+                  <p className="text-slate-500 text-xs">Total Records</p>
                 </div>
                 <div className="bg-green-50 rounded-xl p-4 border border-green-100 text-center">
                   <p className="text-xl font-black text-green-600">{attendanceStats.present}</p>
@@ -710,8 +710,8 @@ export default function ReportsPage() {
               </div>
               <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm">Attendance Records</h3>
-                  <span className="text-xs text-gray-400">{filteredAttendance.length} records</span>
+                  <h3 className="text-slate-900 font-bold text-sm">Attendance Records</h3>
+                  <span className="text-xs text-slate-400">{filteredAttendance.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -728,13 +728,13 @@ export default function ReportsPage() {
                     <tbody className="divide-y divide-slate-100">
                       {filteredAttendance.slice(0, 100).map((a) => (
                         <tr key={a.id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{a.employeeName}</td>
+                          <td className="px-4 py-3 font-medium text-slate-900">{a.employeeName}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${a.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{a.role}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500">{formatDateDDMMYYYY(a.date)}</td>
-                          <td className="px-4 py-3 text-gray-600 font-mono text-xs">{a.checkIn || "â€”"}</td>
-                          <td className="px-4 py-3 text-gray-600 font-mono text-xs">{a.checkOut || "â€”"}</td>
+                          <td className="px-4 py-3 text-slate-500">{formatDateDDMMYYYY(a.date)}</td>
+                          <td className="px-4 py-3 text-slate-600 font-mono text-xs">{a.checkIn || "â€”"}</td>
+                          <td className="px-4 py-3 text-slate-600 font-mono text-xs">{a.checkOut || "â€”"}</td>
                           <td className="px-4 py-3 text-center">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                               a.status === "Present" ? "bg-green-50 text-green-700" :
@@ -746,13 +746,13 @@ export default function ReportsPage() {
                         </tr>
                       ))}
                       {filteredAttendance.length === 0 && (
-                        <tr><td colSpan={6} className="text-center py-10 text-gray-400 text-sm">No attendance records found</td></tr>
+                        <tr><td colSpan={6} className="text-center py-10 text-slate-400 text-sm">No attendance records found</td></tr>
                       )}
                     </tbody>
                   </table>
                 </div>
-                <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center">
-                  <span className="text-xs text-gray-400">Showing {Math.min(filteredAttendance.length, 100)} of {filteredAttendance.length} records</span>
+                <div className="px-6 py-3 border-t border-slate-100 flex justify-between items-center">
+                  <span className="text-xs text-slate-400">Showing {Math.min(filteredAttendance.length, 100)} of {filteredAttendance.length} records</span>
                   <button onClick={() => {
                     const rows = filteredAttendance.map((a) => `<tr>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${a.employeeName}</td>
@@ -774,7 +774,7 @@ export default function ReportsPage() {
                         <thead><tr><th>Employee</th><th>Role</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th></tr></thead>
                         <tbody>${rows}</tbody>
                       </table>`);
-                  }} className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100">
+                  }} className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-100">
                     <Printer size={14} /> Print
                   </button>
                 </div>
@@ -786,9 +786,9 @@ export default function ReportsPage() {
           {selectedReport === "payroll" && (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                  <p className="text-xl font-black text-gray-900">{filteredPayroll.length}</p>
-                  <p className="text-gray-500 text-xs">Payroll Records</p>
+                <div className="bg-white rounded-xl p-4 border border-slate-200 text-center">
+                  <p className="text-xl font-black text-slate-900">{filteredPayroll.length}</p>
+                  <p className="text-slate-500 text-xs">Payroll Records</p>
                 </div>
                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 text-center">
                   <p className="text-xl font-black text-blue-600">PKR {payrollStats.totalNet.toLocaleString()}</p>
@@ -805,8 +805,8 @@ export default function ReportsPage() {
               </div>
               <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm">Payroll Records</h3>
-                  <span className="text-xs text-gray-400">{filteredPayroll.length} records</span>
+                  <h3 className="text-slate-900 font-bold text-sm">Payroll Records</h3>
+                  <span className="text-xs text-slate-400">{filteredPayroll.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -827,16 +827,16 @@ export default function ReportsPage() {
                       {filteredPayroll.map((p) => (
                         <>
                           <tr key={p.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => setExpandedRow(expandedRow === p.id ? null : p.id)}>
-                            <td className="px-4 py-3 font-medium text-gray-900">{p.employeeName || "â€”"}</td>
+                            <td className="px-4 py-3 font-medium text-slate-900">{p.employeeName || "â€”"}</td>
                             <td className="px-4 py-3">
                               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{p.role}</span>
                             </td>
-                            <td className="px-4 py-3 text-gray-500 text-xs">{p.month}</td>
-                            <td className="px-4 py-3 text-right text-gray-900 font-medium">PKR {(p.basicSalary || 0).toLocaleString()}</td>
-                            <td className="px-4 py-3 text-right text-gray-600">PKR {(p.totalAllowances || 0).toLocaleString()}</td>
+                            <td className="px-4 py-3 text-slate-500 text-xs">{p.month}</td>
+                            <td className="px-4 py-3 text-right text-slate-900 font-medium">PKR {(p.basicSalary || 0).toLocaleString()}</td>
+                            <td className="px-4 py-3 text-right text-slate-600">PKR {(p.totalAllowances || 0).toLocaleString()}</td>
                             <td className="px-4 py-3 text-right text-green-600 font-medium">PKR {(p.totalCommission || 0).toLocaleString()}</td>
                             <td className="px-4 py-3 text-right text-red-600">PKR {(p.totalDeductions || 0).toLocaleString()}</td>
-                            <td className="px-4 py-3 text-right text-gray-900 font-bold">PKR {(p.netPay || 0).toLocaleString()}</td>
+                            <td className="px-4 py-3 text-right text-slate-900 font-bold">PKR {(p.netPay || 0).toLocaleString()}</td>
                             <td className="px-4 py-3 text-center">
                               <span className={`text-xs px-2 py-1 rounded-full font-medium ${p.paid ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
                                 {p.paid ? "Paid" : "Unpaid"}
@@ -845,20 +845,20 @@ export default function ReportsPage() {
                           </tr>
                           {expandedRow === p.id && (
                             <tr key={`${p.id}-expanded`}>
-                              <td colSpan={9} className="px-6 py-4 bg-gray-50/50">
+                              <td colSpan={9} className="px-6 py-4 bg-slate-50/50">
                                 <div className="grid grid-cols-3 md:grid-cols-6 gap-4 text-xs">
-                                  <div><p className="text-gray-400 mb-1">Fuel Allowance</p><p className="font-medium">PKR {(p.fuelAllowance || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Mobile Allowance</p><p className="font-medium">PKR {(p.mobileAllowance || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Daily Allowance</p><p className="font-medium">PKR {(p.dailyAllowance || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Residence Allowance</p><p className="font-medium">PKR {(p.residenceAllowance || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Target Bonus</p><p className="font-medium">PKR {(p.targetBonus || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Perf. Bonus</p><p className="font-medium">PKR {(p.performanceBonus || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Advance Salary</p><p className="font-medium text-red-600">-PKR {(p.advanceSalary || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Loan Deduction</p><p className="font-medium text-red-600">-PKR {(p.loanDeduction || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Other Deduction</p><p className="font-medium text-red-600">-PKR {(p.otherDeduction || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">New SIM</p><p className="font-medium">{p.newSimCount || 0} Ã— PKR {(p.newSimRate || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">MNP</p><p className="font-medium">{p.mnpCount || 0} Ã— PKR {(p.mnpRate || 0).toLocaleString()}</p></div>
-                                  <div><p className="text-gray-400 mb-1">Replacement</p><p className="font-medium">{p.replacementCount || 0} Ã— PKR {(p.replacementRate || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Fuel Allowance</p><p className="font-medium">PKR {(p.fuelAllowance || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Mobile Allowance</p><p className="font-medium">PKR {(p.mobileAllowance || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Daily Allowance</p><p className="font-medium">PKR {(p.dailyAllowance || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Residence Allowance</p><p className="font-medium">PKR {(p.residenceAllowance || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Target Bonus</p><p className="font-medium">PKR {(p.targetBonus || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Perf. Bonus</p><p className="font-medium">PKR {(p.performanceBonus || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Advance Salary</p><p className="font-medium text-red-600">-PKR {(p.advanceSalary || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Loan Deduction</p><p className="font-medium text-red-600">-PKR {(p.loanDeduction || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Other Deduction</p><p className="font-medium text-red-600">-PKR {(p.otherDeduction || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">New SIM</p><p className="font-medium">{p.newSimCount || 0} Ã— PKR {(p.newSimRate || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">MNP</p><p className="font-medium">{p.mnpCount || 0} Ã— PKR {(p.mnpRate || 0).toLocaleString()}</p></div>
+                                  <div><p className="text-slate-400 mb-1">Replacement</p><p className="font-medium">{p.replacementCount || 0} Ã— PKR {(p.replacementRate || 0).toLocaleString()}</p></div>
                                 </div>
                               </td>
                             </tr>
@@ -866,24 +866,24 @@ export default function ReportsPage() {
                         </>
                       ))}
                       {filteredPayroll.length === 0 && (
-                        <tr><td colSpan={9} className="text-center py-10 text-gray-400 text-sm">No payroll records found</td></tr>
+                        <tr><td colSpan={9} className="text-center py-10 text-slate-400 text-sm">No payroll records found</td></tr>
                       )}
                     </tbody>
                     <tfoot>
-                      <tr className="bg-gray-50 font-semibold text-sm">
-                        <td colSpan={3} className="px-4 py-3 text-gray-700">Totals ({filteredPayroll.length})</td>
-                        <td className="px-4 py-3 text-right text-gray-900">PKR {filteredPayroll.reduce((s, p) => s + (p.basicSalary || 0), 0).toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-gray-900">PKR {filteredPayroll.reduce((s, p) => s + (p.totalAllowances || 0), 0).toLocaleString()}</td>
+                      <tr className="bg-slate-50 font-semibold text-sm">
+                        <td colSpan={3} className="px-4 py-3 text-slate-700">Totals ({filteredPayroll.length})</td>
+                        <td className="px-4 py-3 text-right text-slate-900">PKR {filteredPayroll.reduce((s, p) => s + (p.basicSalary || 0), 0).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right text-slate-900">PKR {filteredPayroll.reduce((s, p) => s + (p.totalAllowances || 0), 0).toLocaleString()}</td>
                         <td className="px-4 py-3 text-right text-green-700">PKR {filteredPayroll.reduce((s, p) => s + (p.totalCommission || 0), 0).toLocaleString()}</td>
                         <td className="px-4 py-3 text-right text-red-700">PKR {filteredPayroll.reduce((s, p) => s + (p.totalDeductions || 0), 0).toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-gray-900 font-bold">PKR {payrollStats.totalNet.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right text-slate-900 font-bold">PKR {payrollStats.totalNet.toLocaleString()}</td>
                         <td></td>
                       </tr>
                     </tfoot>
                   </table>
                 </div>
-                <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center">
-                  <span className="text-xs text-gray-400">Total Paid: PKR {payrollStats.totalPaid.toLocaleString()}</span>
+                <div className="px-6 py-3 border-t border-slate-100 flex justify-between items-center">
+                  <span className="text-xs text-slate-400">Total Paid: PKR {payrollStats.totalPaid.toLocaleString()}</span>
                   <button onClick={() => {
                     const rows = filteredPayroll.map((p) => `<tr>
                       <td style="padding:5px 8px;border:1px solid #d0d5dd;font-size:9px;">${p.employeeName || "â€”"}</td>
@@ -918,7 +918,7 @@ export default function ReportsPage() {
                           </tr>
                         </tfoot>
                       </table>`);
-                  }} className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100">
+                  }} className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-100">
                     <Printer size={14} /> Print
                   </button>
                 </div>
@@ -947,8 +947,8 @@ export default function ReportsPage() {
           {selectedReport === "activations" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
-                <h3 className="text-gray-900 font-bold text-sm">Activation Summary</h3>
-                <p className="text-gray-400 text-xs mt-1">Activations from DSO portal (across all months)</p>
+                <h3 className="text-slate-900 font-bold text-sm">Activation Summary</h3>
+                <p className="text-slate-400 text-xs mt-1">Activations from DSO portal (across all months)</p>
               </div>
               <div className="p-5">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -983,13 +983,13 @@ export default function ReportsPage() {
                     <tbody className="divide-y divide-slate-100">
                       {dso.filter((d) => !search || d.name.toLowerCase().includes(search.toLowerCase())).map((d) => (
                         <tr key={d.id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{d.name}</td>
-                          <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.id}</td>
+                          <td className="px-4 py-3 font-medium text-slate-900">{d.name}</td>
+                          <td className="px-4 py-3 text-slate-500 text-xs font-mono">{d.id}</td>
                           <td className="px-4 py-3 text-center">
                             <StatusPill label={d.status} tone={toneForStatus(d.status)} />
                           </td>
                           <td className="px-4 py-3 text-right text-green-600 font-medium">PKR {(d.commission || 0).toLocaleString()}</td>
-                          <td className="px-4 py-3 text-right text-gray-900 font-medium">PKR {(d.salary || 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right text-slate-900 font-medium">PKR {(d.salary || 0).toLocaleString()}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1002,26 +1002,26 @@ export default function ReportsPage() {
           {selectedReport === "performance" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
-                <h3 className="text-gray-900 font-bold text-sm">DSO Performance Ranking</h3>
-                <p className="text-gray-400 text-xs mt-1">Ranked by salary & commission data</p>
+                <h3 className="text-slate-900 font-bold text-sm">DSO Performance Ranking</h3>
+                <p className="text-slate-400 text-xs mt-1">Ranked by salary & commission data</p>
               </div>
               <div className="p-5">
                 <div className="space-y-2">
                   {dso.sort((a, b) => (b.salary + b.commission) - (a.salary + a.commission)).map((d, i) => (
-                    <div key={d.id} className="flex items-center justify-between py-3 px-4 rounded-xl hover:bg-gray-50 transition-all border border-gray-100">
+                    <div key={d.id} className="flex items-center justify-between py-3 px-4 rounded-xl hover:bg-slate-50 transition-all border border-slate-100">
                       <div className="flex items-center gap-4">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${i === 0 ? "bg-yellow-100 text-yellow-700" : i === 1 ? "bg-gray-200 text-gray-600" : i === 2 ? "bg-orange-100 text-orange-700" : "bg-gray-50 text-gray-500"}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${i === 0 ? "bg-yellow-100 text-yellow-700" : i === 1 ? "bg-slate-200 text-slate-600" : i === 2 ? "bg-orange-100 text-orange-700" : "bg-slate-50 text-slate-500"}`}>
                           #{i + 1}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{d.name}</p>
-                          <p className="text-xs text-gray-400">{d.id} Â· {d.assignedDSM ? `Reports to ${d.assignedDSM}` : "Unassigned"}</p>
+                          <p className="font-medium text-slate-900">{d.name}</p>
+                          <p className="text-xs text-slate-400">{d.id} Â· {d.assignedDSM ? `Reports to ${d.assignedDSM}` : "Unassigned"}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <p className="text-sm font-bold text-gray-900">PKR {(d.salary + d.commission).toLocaleString()}</p>
-                          <p className="text-xs text-gray-400">Total Compensation</p>
+                          <p className="text-sm font-bold text-slate-900">PKR {(d.salary + d.commission).toLocaleString()}</p>
+                          <p className="text-xs text-slate-400">Total Compensation</p>
                         </div>
                         <StatusPill label={d.status} tone={toneForStatus(d.status)} />
                       </div>
@@ -1035,8 +1035,8 @@ export default function ReportsPage() {
           {selectedReport === "targets" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
-                <h3 className="text-gray-900 font-bold text-sm">Targets Overview</h3>
-                <p className="text-gray-400 text-xs mt-1">{targets.length} target records</p>
+                <h3 className="text-slate-900 font-bold text-sm">Targets Overview</h3>
+                <p className="text-slate-400 text-xs mt-1">{targets.length} target records</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -1056,27 +1056,27 @@ export default function ReportsPage() {
                       const pct = t.monthlyTarget > 0 ? Math.round((t.achieved / t.monthlyTarget) * 100) : 0;
                       return (
                         <tr key={t.id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{t.employeeName}</td>
+                          <td className="px-4 py-3 font-medium text-slate-900">{t.employeeName}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${t.role === "DSO" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}>{t.role}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{t.period}</td>
-                          <td className="px-4 py-3 text-right text-gray-900 font-medium">{t.dailyTarget}</td>
-                          <td className="px-4 py-3 text-right text-gray-900 font-medium">{t.monthlyTarget}</td>
+                          <td className="px-4 py-3 text-slate-500 text-xs">{t.period}</td>
+                          <td className="px-4 py-3 text-right text-slate-900 font-medium">{t.dailyTarget}</td>
+                          <td className="px-4 py-3 text-right text-slate-900 font-medium">{t.monthlyTarget}</td>
                           <td className="px-4 py-3 text-right text-green-600 font-medium">{t.achieved}</td>
                           <td className="px-4 py-3 text-center">
                             <div className="flex items-center gap-2 justify-center">
-                              <div className="w-20 h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
                                 <div className={`h-full rounded-full ${pct >= 100 ? "bg-green-500" : pct >= 75 ? "bg-blue-500" : pct >= 50 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                               </div>
-                              <span className="text-xs font-medium text-gray-500">{pct}%</span>
+                              <span className="text-xs font-medium text-slate-500">{pct}%</span>
                             </div>
                           </td>
                         </tr>
                       );
                     })}
                     {targets.length === 0 && (
-                      <tr><td colSpan={7} className="text-center py-10 text-gray-400 text-sm">No target records found</td></tr>
+                      <tr><td colSpan={7} className="text-center py-10 text-slate-400 text-sm">No target records found</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -1102,13 +1102,13 @@ export default function ReportsPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 bg-white rounded-2xl p-4 border border-gray-200">
-            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 flex-1 min-w-[200px]">
-              <Search size={15} className="text-gray-400" />
-              <input placeholder="Search SIM number, network..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-0 p-0 text-sm focus:outline-none w-full text-gray-700 placeholder:text-gray-400" />
-              {search && <X size={14} className="text-gray-400 cursor-pointer" onClick={() => setSearch("")} />}
+          <div className="flex items-center gap-3 bg-white rounded-2xl p-4 border border-slate-200">
+            <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+              <Search size={15} className="text-slate-400" />
+              <input placeholder="Search SIM number, network..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-0 p-0 text-sm focus:outline-none w-full text-slate-700 placeholder:text-slate-400" />
+              {search && <X size={14} className="text-slate-400 cursor-pointer" onClick={() => setSearch("")} />}
             </div>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-gray-700 focus:outline-none">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 focus:outline-none">
               <option value="All">All Status</option>
               <option value="In Stock">In Stock</option>
               <option value="Issued">Issued</option>
@@ -1123,9 +1123,9 @@ export default function ReportsPage() {
           {selectedReport === "sims" && (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                  <p className="text-xl font-black text-gray-900">{simStatusCounts.total}</p>
-                  <p className="text-gray-500 text-xs">Total SIMs</p>
+                <div className="bg-white rounded-xl p-4 border border-slate-200 text-center">
+                  <p className="text-xl font-black text-slate-900">{simStatusCounts.total}</p>
+                  <p className="text-slate-500 text-xs">Total SIMs</p>
                 </div>
                 <div className="bg-green-50 rounded-xl p-4 border border-green-100 text-center">
                   <p className="text-xl font-black text-green-600">{simStatusCounts.inStock}</p>
@@ -1142,8 +1142,8 @@ export default function ReportsPage() {
               </div>
               <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm">SIM Inventory Report</h3>
-                  <span className="text-xs text-gray-400">{filteredSIMs.length} records</span>
+                  <h3 className="text-slate-900 font-bold text-sm">SIM Inventory Report</h3>
+                  <span className="text-xs text-slate-400">{filteredSIMs.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -1161,34 +1161,34 @@ export default function ReportsPage() {
                     <tbody className="divide-y divide-slate-100">
                       {filteredSIMs.map((s) => (
                         <tr key={s.id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 font-mono text-xs font-medium text-gray-900">{s.simNumber}</td>
+                          <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">{s.simNumber}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                               s.network === "Jazz" ? "bg-red-50 text-red-700" :
                               s.network === "Zong" ? "bg-green-50 text-green-700" :
                               s.network === "Ufone" ? "bg-green-100 text-green-800" :
                               s.network === "Telenor" ? "bg-blue-50 text-blue-700" :
-                              "bg-gray-50 text-gray-600"
+                              "bg-slate-50 text-slate-600"
                             }`}>{s.network}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs font-mono">{s.iccid || "â€”"}</td>
+                          <td className="px-4 py-3 text-slate-500 text-xs font-mono">{s.iccid || "â€”"}</td>
                           <td className="px-4 py-3">
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{s.type || "â€”"}</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{s.type || "â€”"}</span>
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                               s.status === "In Stock" || s.status === "Available" ? "bg-green-50 text-green-700" :
                               s.status === "Issued" ? "bg-yellow-50 text-yellow-700" :
                               s.status === "Activated" || s.status === "Active" ? "bg-blue-50 text-blue-700" :
-                              "bg-gray-50 text-gray-600"
+                              "bg-slate-50 text-slate-600"
                             }`}>{s.status}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{s.receiveDate ? formatDateDDMMYYYY(s.receiveDate) : "â€”"}</td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{s.issuedToName || "â€”"}</td>
+                          <td className="px-4 py-3 text-slate-500 text-xs">{s.receiveDate ? formatDateDDMMYYYY(s.receiveDate) : "â€”"}</td>
+                          <td className="px-4 py-3 text-slate-500 text-xs">{s.issuedToName || "â€”"}</td>
                         </tr>
                       ))}
                       {filteredSIMs.length === 0 && (
-                        <tr><td colSpan={7} className="text-center py-10 text-gray-400 text-sm">No SIM records found</td></tr>
+                        <tr><td colSpan={7} className="text-center py-10 text-slate-400 text-sm">No SIM records found</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -1200,13 +1200,13 @@ export default function ReportsPage() {
           {selectedReport === "devices" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
-                <h3 className="text-gray-900 font-bold text-sm">Device Inventory</h3>
-                <p className="text-gray-400 text-xs mt-1">{devices.length} total devices</p>
+                <h3 className="text-slate-900 font-bold text-sm">Device Inventory</h3>
+                <p className="text-slate-400 text-xs mt-1">{devices.length} total devices</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-5 border-b border-slate-100">
-                <div className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-lg font-black text-gray-900">{devices.filter((d) => d.status === "In Stock").length}</p>
-                  <p className="text-gray-500 text-xs">In Stock</p>
+                <div className="bg-slate-50 rounded-xl p-3 text-center">
+                  <p className="text-lg font-black text-slate-900">{devices.filter((d) => d.status === "In Stock").length}</p>
+                  <p className="text-slate-500 text-xs">In Stock</p>
                 </div>
                 <div className="bg-yellow-50 rounded-xl p-3 text-center">
                   <p className="text-lg font-black text-yellow-600">{devices.filter((d) => d.status === "Issued").length}</p>
@@ -1236,10 +1236,10 @@ export default function ReportsPage() {
                   <tbody className="divide-y divide-slate-100">
                     {devices.map((d) => (
                       <tr key={d.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 font-mono text-xs font-medium text-gray-900">{d.bvsNumber}</td>
-                        <td className="px-4 py-3 text-gray-700">{d.brand} {d.model}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.imei}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs font-mono">{d.retailerId || "â€”"}</td>
+                        <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">{d.bvsNumber}</td>
+                        <td className="px-4 py-3 text-slate-700">{d.brand} {d.model}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs font-mono">{d.imei}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs font-mono">{d.retailerId || "â€”"}</td>
                         <td className="px-4 py-3 text-center">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                             d.status === "In Stock" ? "bg-green-50 text-green-700" :
@@ -1248,7 +1248,7 @@ export default function ReportsPage() {
                             "bg-red-50 text-red-700"
                           }`}>{d.status}</span>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{d.assignedDSO || "â€”"}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs">{d.assignedDSO || "â€”"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1260,13 +1260,13 @@ export default function ReportsPage() {
           {selectedReport === "equipment" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
-                <h3 className="text-gray-900 font-bold text-sm">Equipment & Assets Report</h3>
-                <p className="text-gray-400 text-xs mt-1">{equipment.length} items Â· {equipmentIssueRecords.length} issue records</p>
+                <h3 className="text-slate-900 font-bold text-sm">Equipment & Assets Report</h3>
+                <p className="text-slate-400 text-xs mt-1">{equipment.length} items Â· {equipmentIssueRecords.length} issue records</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-5 border-b border-slate-100">
-                <div className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-lg font-black text-gray-900">{equipment.length}</p>
-                  <p className="text-gray-500 text-xs">Total Items</p>
+                <div className="bg-slate-50 rounded-xl p-3 text-center">
+                  <p className="text-lg font-black text-slate-900">{equipment.length}</p>
+                  <p className="text-slate-500 text-xs">Total Items</p>
                 </div>
                 <div className="bg-green-50 rounded-xl p-3 text-center">
                   <p className="text-lg font-black text-green-600">{equipment.filter((e) => e.status === "In Stock" || e.status === "Available").length}</p>
@@ -1291,15 +1291,15 @@ export default function ReportsPage() {
                   <tbody className="divide-y divide-slate-100">
                     {equipment.map((e) => (
                       <tr key={e.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 font-medium text-gray-900">{e.name}</td>
-                        <td className="px-4 py-3 text-right text-gray-900">PKR {(e.price || 0).toLocaleString()}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">
+                        <td className="px-4 py-3 font-medium text-slate-900">{e.name}</td>
+                        <td className="px-4 py-3 text-right text-slate-900">PKR {(e.price || 0).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs">
                           <span className={`text-xs px-2 py-0.5 rounded-full ${e.condition === "New" ? "bg-green-50 text-green-700" : e.condition === "Good" ? "bg-blue-50 text-blue-700" : "bg-yellow-50 text-yellow-700"}`}>{e.condition}</span>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${e.status === "In Stock" ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>{e.status}</span>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{e.assignedTo || "â€”"}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs">{e.assignedTo || "â€”"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1330,9 +1330,9 @@ export default function ReportsPage() {
           {selectedReport === "expenses" && (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                  <p className="text-xl font-black text-gray-900">{filteredExpenses.length}</p>
-                  <p className="text-gray-500 text-xs">Total Records</p>
+                <div className="bg-white rounded-xl p-4 border border-slate-200 text-center">
+                  <p className="text-xl font-black text-slate-900">{filteredExpenses.length}</p>
+                  <p className="text-slate-500 text-xs">Total Records</p>
                 </div>
                 <div className="bg-red-50 rounded-xl p-4 border border-red-100 text-center">
                   <p className="text-xl font-black text-red-600">PKR {expenseStats.total.toLocaleString()}</p>
@@ -1349,8 +1349,8 @@ export default function ReportsPage() {
               </div>
               <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-gray-900 font-bold text-sm">Expense Records</h3>
-                  <span className="text-xs text-gray-400">{filteredExpenses.length} records</span>
+                  <h3 className="text-slate-900 font-bold text-sm">Expense Records</h3>
+                  <span className="text-xs text-slate-400">{filteredExpenses.length} records</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -1366,22 +1366,22 @@ export default function ReportsPage() {
                     <tbody className="divide-y divide-slate-100">
                       {filteredExpenses.map((e) => (
                         <tr key={e.id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(e.date)}</td>
-                          <td className="px-4 py-3 text-gray-900 font-medium">{e.description || e.note || "â€”"}</td>
+                          <td className="px-4 py-3 text-slate-500 text-xs">{formatDateDDMMYYYY(e.date)}</td>
+                          <td className="px-4 py-3 text-slate-900 font-medium">{e.description || e.note || "â€”"}</td>
                           <td className="px-4 py-3">
                             <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{e.category || "Other"}</span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{e.type || "â€”"}</td>
+                          <td className="px-4 py-3 text-slate-500 text-xs">{e.type || "â€”"}</td>
                           <td className="px-4 py-3 text-right text-red-600 font-semibold">-PKR {e.amount.toLocaleString()}</td>
                         </tr>
                       ))}
                       {filteredExpenses.length === 0 && (
-                        <tr><td colSpan={5} className="text-center py-10 text-gray-400 text-sm">No expense records found</td></tr>
+                        <tr><td colSpan={5} className="text-center py-10 text-slate-400 text-sm">No expense records found</td></tr>
                       )}
                     </tbody>
                     <tfoot>
-                      <tr className="bg-gray-50 font-semibold text-sm">
-                        <td colSpan={4} className="px-4 py-3 text-gray-700">Total Expenses</td>
+                      <tr className="bg-slate-50 font-semibold text-sm">
+                        <td colSpan={4} className="px-4 py-3 text-slate-700">Total Expenses</td>
                         <td className="px-4 py-3 text-right text-red-700">-PKR {expenseStats.total.toLocaleString()}</td>
                       </tr>
                     </tfoot>
@@ -1415,8 +1415,8 @@ export default function ReportsPage() {
                 {/* Ledger Entries */}
                 <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                   <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="text-gray-900 font-bold text-sm">Account Ledger</h3>
-                    <span className="text-xs text-gray-400">{accounts.length} entries</span>
+                    <h3 className="text-slate-900 font-bold text-sm">Account Ledger</h3>
+                    <span className="text-xs text-slate-400">{accounts.length} entries</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -1431,8 +1431,8 @@ export default function ReportsPage() {
                       <tbody className="divide-y divide-slate-100">
                         {accounts.filter((a) => a.date >= dateFrom && a.date <= dateTo).map((a) => (
                           <tr key={a.id} className="hover:bg-slate-50">
-                            <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(a.date)}</td>
-                            <td className="px-4 py-3 text-gray-900 font-medium">{a.category}</td>
+                            <td className="px-4 py-3 text-slate-500 text-xs">{formatDateDDMMYYYY(a.date)}</td>
+                            <td className="px-4 py-3 text-slate-900 font-medium">{a.category}</td>
                             <td className={`px-4 py-3 text-right font-semibold ${a.type === "income" ? "text-green-600" : "text-red-600"}`}>
                               {a.type === "income" ? "+" : "-"}PKR {a.amount.toLocaleString()}
                             </td>
@@ -1442,7 +1442,7 @@ export default function ReportsPage() {
                           </tr>
                         ))}
                         {accounts.length === 0 && (
-                          <tr><td colSpan={4} className="text-center py-8 text-gray-400 text-sm">No ledger entries</td></tr>
+                          <tr><td colSpan={4} className="text-center py-8 text-slate-400 text-sm">No ledger entries</td></tr>
                         )}
                       </tbody>
                     </table>
@@ -1451,8 +1451,8 @@ export default function ReportsPage() {
                 {/* Wallet Transactions */}
                 <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                   <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="text-gray-900 font-bold text-sm">Wallet Activity</h3>
-                    <span className="text-xs text-gray-400">{wallet.length} transactions</span>
+                    <h3 className="text-slate-900 font-bold text-sm">Wallet Activity</h3>
+                    <span className="text-xs text-slate-400">{wallet.length} transactions</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -1467,8 +1467,8 @@ export default function ReportsPage() {
                       <tbody className="divide-y divide-slate-100">
                         {wallet.filter((w) => w.date >= dateFrom && w.date <= dateTo).map((w) => (
                           <tr key={w.id} className="hover:bg-slate-50">
-                            <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(w.date)}</td>
-                            <td className="px-4 py-3 text-gray-900 font-medium text-sm">{w.note || w.remarks || "â€”"}</td>
+                            <td className="px-4 py-3 text-slate-500 text-xs">{formatDateDDMMYYYY(w.date)}</td>
+                            <td className="px-4 py-3 text-slate-900 font-medium text-sm">{w.note || w.remarks || "â€”"}</td>
                             <td className={`px-4 py-3 text-right font-semibold ${w.type === "Deposit" || w.type === "Credit" ? "text-green-600" : "text-red-600"}`}>
                               {w.type === "Deposit" || w.type === "Credit" ? "+" : "-"}PKR {w.amount.toLocaleString()}
                             </td>
@@ -1478,7 +1478,7 @@ export default function ReportsPage() {
                           </tr>
                         ))}
                         {wallet.length === 0 && (
-                          <tr><td colSpan={4} className="text-center py-8 text-gray-400 text-sm">No wallet transactions</td></tr>
+                          <tr><td colSpan={4} className="text-center py-8 text-slate-400 text-sm">No wallet transactions</td></tr>
                         )}
                       </tbody>
                     </table>
@@ -1491,8 +1491,8 @@ export default function ReportsPage() {
           {selectedReport === "accounts" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
-                <h3 className="text-gray-900 font-bold text-sm">Full Account Ledger</h3>
-                <p className="text-gray-400 text-xs mt-1">All income & expense entries</p>
+                <h3 className="text-slate-900 font-bold text-sm">Full Account Ledger</h3>
+                <p className="text-slate-400 text-xs mt-1">All income & expense entries</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -1508,17 +1508,17 @@ export default function ReportsPage() {
                   <tbody className="divide-y divide-slate-100">
                     {accounts.filter((a) => a.date >= dateFrom && a.date <= dateTo).map((a) => (
                       <tr key={a.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 text-gray-500 text-xs">{formatDateDDMMYYYY(a.date)}</td>
-                        <td className="px-4 py-3 text-gray-900 font-medium">{a.description}</td>
+                        <td className="px-4 py-3 text-slate-500 text-xs">{formatDateDDMMYYYY(a.date)}</td>
+                        <td className="px-4 py-3 text-slate-900 font-medium">{a.description}</td>
                         <td className="px-4 py-3">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{a.category}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{a.category}</span>
                         </td>
                         <td className="px-4 py-3 text-right text-red-600 font-medium">{a.type === "expense" ? `PKR ${a.amount.toLocaleString()}` : "â€”"}</td>
                         <td className="px-4 py-3 text-right text-green-600 font-medium">{a.type === "income" ? `PKR ${a.amount.toLocaleString()}` : "â€”"}</td>
                       </tr>
                     ))}
                     {accounts.length === 0 && (
-                      <tr><td colSpan={5} className="text-center py-10 text-gray-400 text-sm">No ledger entries found</td></tr>
+                      <tr><td colSpan={5} className="text-center py-10 text-slate-400 text-sm">No ledger entries found</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -1529,8 +1529,8 @@ export default function ReportsPage() {
           {selectedReport === "bank" && (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
-                <h3 className="text-gray-900 font-bold text-sm">Bank Accounts</h3>
-                <p className="text-gray-400 text-xs mt-1">{bankAccounts.length} accounts</p>
+                <h3 className="text-slate-900 font-bold text-sm">Bank Accounts</h3>
+                <p className="text-slate-400 text-xs mt-1">{bankAccounts.length} accounts</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5">
                 {bankAccounts.map((b) => (
@@ -1540,19 +1540,19 @@ export default function ReportsPage() {
                         <CreditCard size={18} className="text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">{b.name}</p>
-                        <p className="text-xs text-gray-500">{b.type}</p>
+                        <p className="font-bold text-slate-900">{b.name}</p>
+                        <p className="text-xs text-slate-500">{b.type}</p>
                       </div>
                     </div>
-                    <p className="text-lg font-bold text-gray-900 mb-1">PKR {b.balance.toLocaleString()}</p>
-                    <p className="text-xs font-mono text-gray-500">{b.accountNumber}</p>
+                    <p className="text-lg font-bold text-slate-900 mb-1">PKR {b.balance.toLocaleString()}</p>
+                    <p className="text-xs font-mono text-slate-500">{b.accountNumber}</p>
                     <div className="mt-3">
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${b.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{b.status}</span>
                     </div>
                   </div>
                 ))}
                 {bankAccounts.length === 0 && (
-                  <div className="col-span-3 text-center py-10 text-gray-400 text-sm">No bank accounts configured</div>
+                  <div className="col-span-3 text-center py-10 text-slate-400 text-sm">No bank accounts configured</div>
                 )}
               </div>
             </div>

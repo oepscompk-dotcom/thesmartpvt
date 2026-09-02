@@ -203,7 +203,7 @@ export default function DSMCreatePage() {
       return (
         <div className="flex items-center justify-between py-2">
           <span className="text-slate-700 text-sm">{label}</span>
-          <button type="button" onClick={() => set(field, !val)} className={`w-11 h-6 rounded-full relative transition-colors ${val ? "bg-brand-600" : "bg-gray-300"}`}>
+          <button type="button" onClick={() => set(field, !val)} className={`w-11 h-6 rounded-full relative transition-colors ${val ? "bg-brand-600" : "bg-slate-300"}`}>
             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${val ? "left-6" : "left-1"}`} />
           </button>
         </div>
@@ -290,7 +290,7 @@ export default function DSMCreatePage() {
               {renderField("Nationality", "nationality", "text")}
             </div>
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-lg bg-slate-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+              <div className="w-20 h-20 rounded-lg bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
                 {form.photo ? <img src={form.photo} alt="Photo" className="w-full h-full object-cover" /> : <Camera size={24} className="text-slate-400" />}
               </div>
               <div>

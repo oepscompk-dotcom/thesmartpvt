@@ -109,7 +109,7 @@ export default function ExpensesPage() {
             <CardContent className="p-0 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-muted/50">
+                  <tr className="border-b border-slate-100 bg-slate-50">
                     <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase">Date</th>
                     <th className="px-6 py-4 text-left text-muted-foreground text-xs font-medium uppercase">Category</th>
                     <th className="px-6 py-4 text-right text-muted-foreground text-xs font-medium uppercase">Amount</th>

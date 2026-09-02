@@ -34,7 +34,7 @@ export default function FranchiseLayout({ children }: { children: React.ReactNod
 
   return (
     <FranchiseAuthGuard>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         <FranchiseSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} collapsed={collapsed} onToggleCollapse={toggleCollapse} />
         <div className={`transition-all duration-300 ${collapsed ? "lg:ml-[72px]" : "lg:ml-[240px]"}`}>
           <FranchiseHeader onMenuClick={() => setSidebarOpen(true)} />
