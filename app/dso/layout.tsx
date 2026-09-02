@@ -5,6 +5,7 @@ import DSOSidebar from "@/components/dso/dashboard/DSOSidebar";
 import DSOHeader from "@/components/dso/dashboard/DSOHeader";
 import DSOAuthGuard from "@/components/dso/dashboard/DSOAuthGuard";
 import BottomNav from "@/components/BottomNav";
+import FooterRightLogo from "@/components/ui/FooterRightLogo";
 import { LayoutDashboard, Plus, ClipboardCheck, Wallet, User } from "lucide-react";
 
 const bottomNavItems = [
@@ -24,6 +25,7 @@ export default function DSOLayout({ children }: { children: React.ReactNode }) {
         <div className="lg:ml-[240px]">
           <DSOHeader onMenuClick={() => setSidebarOpen(true)} />
           <main className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">{children}</main>
+          <FooterRightLogo />
         </div>
         <BottomNav items={bottomNavItems} color="#0A2647" />
       </div>

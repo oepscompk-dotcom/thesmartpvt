@@ -5,6 +5,7 @@ import Sidebar from "@/components/admin/Sidebar";
 import DashboardHeader from "@/components/admin/DashboardHeader";
 import AuthGuard from "@/components/admin/AuthGuard";
 import BottomNav from "@/components/BottomNav";
+import FooterRightLogo from "@/components/ui/FooterRightLogo";
 import { LayoutDashboard, Building2, Users, FileText, Settings } from "lucide-react";
 
 const bottomNavItems = [
@@ -41,6 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <main className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
             {children}
           </main>
+          <FooterRightLogo />
         </div>
         <BottomNav items={bottomNavItems} />
       </div>

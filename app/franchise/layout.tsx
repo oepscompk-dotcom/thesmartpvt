@@ -5,6 +5,7 @@ import FranchiseSidebar from "@/components/franchise/dashboard/FranchiseSidebar"
 import FranchiseHeader from "@/components/franchise/dashboard/FranchiseHeader";
 import FranchiseAuthGuard from "@/components/franchise/dashboard/FranchiseAuthGuard";
 import BottomNav from "@/components/BottomNav";
+import FooterRightLogo from "@/components/ui/FooterRightLogo";
 import { LayoutDashboard, UserCheck, Users, ClipboardCheck, Settings } from "lucide-react";
 
 const bottomNavItems = [
@@ -39,6 +40,7 @@ export default function FranchiseLayout({ children }: { children: React.ReactNod
         <div className={`transition-all duration-300 ${collapsed ? "lg:ml-[72px]" : "lg:ml-[240px]"}`}>
           <FranchiseHeader onMenuClick={() => setSidebarOpen(true)} />
           <main className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">{children}</main>
+          <FooterRightLogo />
         </div>
         <BottomNav items={bottomNavItems} />
       </div>

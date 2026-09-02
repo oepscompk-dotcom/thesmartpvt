@@ -132,12 +132,12 @@ export default function DSMSidebar({ open, onClose }: Props) {
           ))}
         </SidebarScroll>
 
-        <div className="px-3 py-4 border-t border-white/10 bg-black/10">
+        <div className="px-1 py-1.5 border-t border-white/10 bg-black/10">
           <button
             onClick={dsmLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 hover:text-red-300 hover:bg-red-500/10 text-sm font-medium transition-all duration-200 w-full"
+            className="flex items-center gap-2 justify-center mx-auto py-1.5 px-3 rounded-xl text-white/40 hover:text-red-300 hover:bg-red-500/10 text-sm font-medium transition-all duration-200"
           >
-            <LogOut size={18} />
+            <LogOut size={16} />
             <span>Logout</span>
           </button>
         </div>

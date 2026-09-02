@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/company/Sidebar";
 import CompanyHeader from "@/components/company/CompanyHeader";
 import CompanyAuthGuard from "@/components/company/CompanyAuthGuard";
+import FooterRightLogo from "@/components/ui/FooterRightLogo";
 import { LayoutDashboard, Building2, Users, FileText, Settings, BarChart3 } from "lucide-react";
 
 const bottomNavItems = [
@@ -39,6 +40,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
           <main className="p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
             {children}
           </main>
+          <FooterRightLogo />
         </div>
       </div>
     </CompanyAuthGuard>

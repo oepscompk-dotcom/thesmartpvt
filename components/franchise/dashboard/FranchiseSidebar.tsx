@@ -149,11 +149,11 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
         </SidebarScroll>
 
         {/* User Footer */}
-        <div className={`border-t border-gray-100 ${collapsed ? "p-1.5" : "p-2.5"}`}>
+        <div className={`border-t border-gray-100 ${collapsed ? "p-1" : "px-1 py-1.5"}`}>
           <button onClick={logout}
             title={collapsed ? "Logout" : undefined}
-            className={`flex items-center rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 text-sm font-medium transition-all w-full ${
-              collapsed ? "justify-center px-2 py-2" : "gap-2.5 px-3 py-2"
+            className={`flex items-center justify-center rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 text-sm font-medium transition-all ${
+              collapsed ? "w-full px-2 py-1.5" : "gap-2 mx-auto py-1.5"
             }`}>
             <LogOut size={16} />
             {!collapsed && <span>Logout</span>}
