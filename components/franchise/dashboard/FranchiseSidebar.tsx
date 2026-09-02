@@ -57,7 +57,7 @@ interface Props {
 
 export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCollapse }: Props) {
   const pathname = usePathname();
-  const { logout, settings, auth, notifications } = useFranchiseData();
+  const { logout, notifications } = useFranchiseData();
   const { logo, headerLogo } = useCompanyLogo();
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -150,24 +150,6 @@ export default function FranchiseSidebar({ open, onClose, collapsed, onToggleCol
 
         {/* User Footer */}
         <div className={`border-t border-gray-100 ${collapsed ? "p-1.5" : "p-2.5"}`}>
-          {!collapsed && (
-            <div className="flex items-center gap-2.5 px-3 py-1.5 mb-1.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0A2647] to-[#144272] flex items-center justify-center text-white text-sm font-bold shadow-md">
-                {(settings.ownerName || auth.franchiseName || "FA").charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-gray-900 text-sm font-bold truncate">{settings.ownerName || "Franchise Owner"}</p>
-                <p className="text-gray-400 text-xs truncate">{auth.franchiseId}</p>
-              </div>
-            </div>
-          )}
-          {collapsed && (
-            <div className="flex justify-center mb-1.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0A2647] to-[#144272] flex items-center justify-center text-white text-sm font-bold shadow-md">
-                {(settings.ownerName || auth.franchiseName || "FA").charAt(0).toUpperCase()}
-              </div>
-            </div>
-          )}
           <button onClick={logout}
             title={collapsed ? "Logout" : undefined}
             className={`flex items-center rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 text-sm font-medium transition-all w-full ${

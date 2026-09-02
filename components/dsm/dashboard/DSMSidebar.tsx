@@ -49,7 +49,7 @@ interface Props { open: boolean; onClose: () => void; }
 
 export default function DSMSidebar({ open, onClose }: Props) {
   const pathname = usePathname();
-  const { dsmLogout, auth, activations } = useDSMData();
+  const { dsmLogout, activations } = useDSMData();
   const { headerLogo } = useCompanyLogo();
 
   const badges = useMemo(() => ({
@@ -133,15 +133,6 @@ export default function DSMSidebar({ open, onClose }: Props) {
         </SidebarScroll>
 
         <div className="px-3 py-4 border-t border-white/10 bg-black/10">
-          <div className="flex items-center gap-3 px-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFFB63] to-[#F1B308] flex items-center justify-center text-[#0A2647] font-bold text-sm shadow-lg ring-2 ring-white/10">
-              {auth.dsmName?.charAt(0)?.toUpperCase() || "D"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold truncate">{auth.dsmName}</p>
-              <p className="text-white/40 text-xs truncate">{auth.dsmId}</p>
-            </div>
-          </div>
           <button
             onClick={dsmLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 hover:text-red-300 hover:bg-red-500/10 text-sm font-medium transition-all duration-200 w-full"
