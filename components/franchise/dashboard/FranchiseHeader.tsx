@@ -32,8 +32,13 @@ export default function FranchiseHeader({ onMenuClick }: Props) {
         <button onClick={onMenuClick} className="lg:hidden text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-xl transition-colors">
           <Menu size={20} />
         </button>
+        {/* Franchise Name + ID */}
+        <div className="hidden sm:flex flex-col leading-tight pr-3 mr-1 border-r border-gray-200 min-w-0">
+          <span className="text-sm font-bold text-slate-900 truncate">{settings.franchiseName || auth.franchiseName || "Franchise"}</span>
+          <span className="text-[11px] text-slate-500 truncate font-mono">{auth.franchiseId}</span>
+        </div>
         {/* Search Bar */}
-        <div className="hidden sm:flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 w-80 border border-gray-200 focus-within:border-[#0A2647]/30 focus-within:ring-2 focus-within:ring-[#0A2647]/10 transition-all">
+        <div className="hidden sm:flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 w-80 border border-gray-200 focus-within:border-brand-500/30 focus-within:ring-2 focus-within:ring-brand-500/10 transition-all">
           <Search size={16} className="text-gray-400" />
           <input type="text" placeholder="Search DSM, DSO, devices..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
         </div>
