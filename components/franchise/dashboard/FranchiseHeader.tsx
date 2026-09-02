@@ -1,16 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Search, Menu, ChevronDown, Calendar, Wifi } from "lucide-react";
+import { Bell, Search, Menu, Calendar, Wifi, Settings, User, LogOut, Bell as BellIcon } from "lucide-react";
 import { useFranchiseData } from "@/lib/FranchiseDataContext";
-import { useCompanyLogo } from "@/lib/useCompanyLogo";
 import { useState, useEffect } from "react";
+import UserMenu from "@/components/ui/UserMenu";
 
 interface Props { onMenuClick: () => void; }
 
 export default function FranchiseHeader({ onMenuClick }: Props) {
-  const { settings, auth, notifications } = useFranchiseData();
-  const { logo } = useCompanyLogo();
+  const { settings, auth, notifications, logout } = useFranchiseData();
   const unread = notifications.filter((n) => !n.read).length;
   const [currentTime, setCurrentTime] = useState("");
   const [mounted, setMounted] = useState(false);
@@ -26,30 +25,28 @@ export default function FranchiseHeader({ onMenuClick }: Props) {
     return () => clearInterval(interval);
   }, []);
 
+  const userName = settings.ownerName || auth.franchiseName || "Franchise Owner";
+  const userId = auth.franchiseId;
+
   return (
-    <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-4">
-        <button onClick={onMenuClick} className="lg:hidden text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <button onClick={onMenuClick} className="lg:hidden text-slate-500 hover:text-slate-700 p-2 hover:bg-slate-100 rounded-xl transition-colors">
           <Menu size={20} />
         </button>
-        {/* Franchise Name + ID */}
-        <div className="hidden sm:flex flex-col leading-tight pr-3 mr-1 border-r border-gray-200 min-w-0">
-          <span className="text-sm font-bold text-slate-900 truncate">{settings.franchiseName || auth.franchiseName || "Franchise"}</span>
-          <span className="text-[11px] text-slate-500 truncate font-mono">{auth.franchiseId}</span>
-        </div>
         {/* Search Bar */}
-        <div className="hidden sm:flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 w-80 border border-gray-200 focus-within:border-brand-500/30 focus-within:ring-2 focus-within:ring-brand-500/10 transition-all">
-          <Search size={16} className="text-gray-400" />
-          <input type="text" placeholder="Search DSM, DSO, devices..." className="bg-transparent text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none w-full" />
+        <div className="hidden sm:flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-2.5 w-80 border border-slate-200 focus-within:border-brand-500/30 focus-within:ring-2 focus-within:ring-brand-500/10 transition-all">
+          <Search size={16} className="text-slate-400" />
+          <input type="text" placeholder="Search DSM, DSO, devices..." className="bg-transparent text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none w-full" />
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         {/* Live Clock */}
         {mounted && (
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
-            <Calendar size={12} className="text-gray-400" />
-            <span className="text-gray-600 text-xs font-medium">{currentTime}</span>
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
+            <Calendar size={12} className="text-slate-400" />
+            <span className="text-slate-600 text-xs font-medium">{currentTime}</span>
           </div>
         )}
 
@@ -61,7 +58,7 @@ export default function FranchiseHeader({ onMenuClick }: Props) {
 
         {/* Notifications */}
         <Link href="/franchise/notifications"
-          className="relative p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
+          className="relative p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
           <Bell size={18} />
           {unread > 0 && (
             <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
@@ -70,18 +67,17 @@ export default function FranchiseHeader({ onMenuClick }: Props) {
           )}
         </Link>
 
-        {/* Profile */}
-        <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
-          {logo ? (
-            <div className="w-9 h-9 rounded-xl overflow-hidden ring-2 ring-[#FFFB63]/20 shadow-sm">
-              <img src={logo} alt="Logo" className="w-full h-full object-cover" />
-            </div>
-          ) : (
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0A2647] to-[#144272] flex items-center justify-center text-white font-bold text-xs shadow-md">
-              {(settings.ownerName || auth.franchiseName || "FA").charAt(0).toUpperCase()}
-            </div>
-          )}
-        </div>
+        {/* User Menu */}
+        <UserMenu
+          name={userName}
+          id={userId}
+          links={[
+            { label: "Settings", href: "/franchise/settings", icon: Settings },
+            { label: "Profile", href: "/franchise/profile", icon: User },
+            { label: "Notifications", href: "/franchise/notifications", icon: BellIcon, unread },
+            { label: "Sign out", icon: LogOut, danger: true, onClick: () => logout() },
+          ]}
+        />
       </div>
     </header>
   );
