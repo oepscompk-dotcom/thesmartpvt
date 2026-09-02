@@ -223,15 +223,19 @@ export default function DSODashboardPage() {
       />
 
       {/* â”€â”€â”€ Tab Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="flex gap-1 w-fit p-1 bg-slate-100 rounded-lg">
+      <div className="flex items-center gap-6 border-b border-slate-200">
         {[
           { key: "overview" as const, label: "Overview", icon: Home },
           { key: "performance" as const, label: "Performance", icon: Target },
           { key: "finance" as const, label: "Finance", icon: Wallet },
         ].map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${activeTab === tab.key ? "bg-white text-brand-700 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            <tab.icon size={14} /> {tab.label}
+            className={`-mb-px inline-flex items-center gap-1.5 border-b-2 pb-3 text-sm font-medium transition-colors ${
+              activeTab === tab.key
+                ? "border-brand-600 font-semibold text-brand-700"
+                : "border-transparent text-muted-foreground hover:border-slate-300 hover:text-foreground"
+            }`}>
+            <tab.icon size={15} /> {tab.label}
           </button>
         ))}
       </div>
@@ -262,7 +266,7 @@ export default function DSODashboardPage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between sm:items-center gap-3">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Zap size={16} className="text-amber-500" /> Quick Actions
+                <Zap size={16} className="text-brand-600" /> Quick Actions
               </h3>
               <div className="flex items-center gap-2">
                 <SearchInput
@@ -287,9 +291,11 @@ export default function DSODashboardPage() {
                   { label: "BYN", href: "/dso/byn", icon: Hash, color: "bg-teal-50 text-teal-600" },
                 ].map((a) => (
                   <Link key={a.label} href={a.href}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.color} hover:scale-105 transition-all`}>
-                    <a.icon size={20} />
-                    <span className="text-[11px] font-bold">{a.label}</span>
+                    className="group flex flex-col items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white p-4 transition-all hover:border-brand-300 hover:shadow-sm">
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${a.color}`}>
+                      <a.icon size={20} />
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700">{a.label}</span>
                   </Link>
                 ))}
               </div>
@@ -309,29 +315,33 @@ export default function DSODashboardPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
-                      { label: "BVS Pending", count: metrics.pendingBVS, color: "bg-amber-50 text-amber-700 border-amber-200", href: "/dso/pending-bvs" },
-                      { label: "FCA Pending", count: metrics.pendingFCA, color: "bg-blue-50 text-blue-700 border-blue-200", href: "/dso/pending-fca" },
-                      { label: "IFCA Pending", count: metrics.pendingIFCA, color: "bg-purple-50 text-purple-700 border-purple-200", href: "/dso/pending-ifca" },
-                      { label: "Completed Today", count: metrics.completedToday, color: "bg-green-50 text-green-700 border-green-200", href: "" },
+                      { label: "BVS Pending", count: metrics.pendingBVS, dot: "bg-amber-500", href: "/dso/pending-bvs" },
+                      { label: "FCA Pending", count: metrics.pendingFCA, dot: "bg-blue-500", href: "/dso/pending-fca" },
+                      { label: "IFCA Pending", count: metrics.pendingIFCA, dot: "bg-purple-500", href: "/dso/pending-ifca" },
+                      { label: "Completed Today", count: metrics.completedToday, dot: "bg-green-500", href: "" },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-2">
                         {step.href ? (
-                          <Link href={step.href} className={`flex-1 ${step.color} rounded-xl p-4 border hover:scale-[1.03] transition-all group`}>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-bold uppercase tracking-wider">{step.label}</span>
-                              <ChevronRight size={14} className="opacity-50 group-hover:translate-x-1 transition-transform" />
+                          <Link href={step.href} className="group flex-1 rounded-xl border border-slate-200/80 bg-white p-4 transition-all hover:border-brand-300 hover:shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                <span className={`h-2 w-2 rounded-full ${step.dot}`} /> {step.label}
+                              </span>
+                              <ChevronRight size={14} className="text-slate-300 transition-transform group-hover:translate-x-0.5" />
                             </div>
-                            <p className="text-gray-900 text-3xl font-black">{step.count}</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{step.count}</p>
                           </Link>
                         ) : (
-                          <div className={`flex-1 ${step.color} rounded-xl p-4 border`}>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-bold uppercase tracking-wider">{step.label}</span>
+                          <div className="flex-1 rounded-xl border border-slate-200/80 bg-white p-4">
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                <span className={`h-2 w-2 rounded-full ${step.dot}`} /> {step.label}
+                              </span>
                             </div>
-                            <p className="text-gray-900 text-3xl font-black">{step.count}</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{step.count}</p>
                           </div>
                         )}
-                        {i < 3 && <div className="hidden lg:flex items-center text-gray-300"><ArrowRight size={16} /></div>}
+                        {i < 3 && <div className="hidden lg:flex items-center text-slate-300"><ArrowRight size={16} /></div>}
                       </div>
                     ))}
                   </div>
@@ -374,18 +384,18 @@ export default function DSODashboardPage() {
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Type</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Customer</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden md:table-cell">SIM</th>
-                        <th className="px-4 py-3 text-center text-gray-500 text-xs font-medium uppercase">Progress</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-gray-500 text-xs font-medium uppercase hidden lg:table-cell">Date</th>
+                      <tr className="border-b border-slate-100 bg-slate-50">
+                        <th className="px-4 py-3 text-left text-slate-500 text-xs font-semibold uppercase tracking-wider">Type</th>
+                        <th className="px-4 py-3 text-left text-slate-500 text-xs font-semibold uppercase tracking-wider">Customer</th>
+                        <th className="px-4 py-3 text-left text-slate-500 text-xs font-semibold uppercase tracking-wider hidden md:table-cell">SIM</th>
+                        <th className="px-4 py-3 text-center text-slate-500 text-xs font-semibold uppercase tracking-wider">Progress</th>
+                        <th className="px-4 py-3 text-left text-slate-500 text-xs font-semibold uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-3 text-left text-slate-500 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Date</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredActivations.slice(0, 6).map((a) => (
-                        <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50">
+                        <tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50">
                           <td className="px-4 py-3"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getTypeBadge(a.type)}`}>{a.type}</span></td>
                           <td className="px-4 py-3 font-medium text-gray-900">{a.customerName}</td>
                           <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs font-mono">{a.simNumber}</td>
@@ -461,8 +471,8 @@ export default function DSODashboardPage() {
                         <div key={g.label} className="flex flex-col items-center">
                           <div className="relative w-20 h-20">
                             <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                              <circle cx="40" cy="40" r="36" fill="none" stroke="#f3f4f6" strokeWidth="6" />
-                              <circle cx="40" cy="40" r="36" fill="none" stroke={g.color} strokeWidth="6"
+                              <circle cx="40" cy="40" r="36" fill="none" stroke="#f1f5f9" strokeWidth="5" />
+                              <circle cx="40" cy="40" r="36" fill="none" stroke={g.color} strokeWidth="5"
                                 strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={off} className="transition-all duration-1000" />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -627,23 +637,23 @@ export default function DSODashboardPage() {
                     </h3>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="bg-gradient-to-r from-brand-700 to-brand-800 rounded-xl p-4 text-white">
+                    <div className="rounded-xl border border-slate-200/80 bg-white p-4">
                       <div className="flex items-center gap-3">
-                        <Smartphone size={20} className="text-amber-400" />
+                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><Smartphone size={18} /></span>
                         <div>
-                          <p className="font-bold text-sm">{device.brand} {device.model}</p>
-                          <p className="text-white/60 text-xs font-mono">{device.id}</p>
+                          <p className="text-sm font-semibold text-slate-900">{device.brand} {device.model}</p>
+                          <p className="text-xs font-mono text-muted-foreground">{device.id}</p>
                         </div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-gray-400 text-[10px] uppercase">IMEI</p>
-                        <p className="text-gray-900 font-mono">{device.imei}</p>
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-muted-foreground text-[10px] uppercase">IMEI</p>
+                        <p className="text-slate-900 font-mono">{device.imei}</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-gray-400 text-[10px] uppercase">BVS #</p>
-                        <p className="text-gray-900 font-mono">{device.bvsNumber}</p>
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-muted-foreground text-[10px] uppercase">BVS #</p>
+                        <p className="text-slate-900 font-mono">{device.bvsNumber}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -715,13 +725,13 @@ export default function DSODashboardPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">ID</th>
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Type</th>
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Customer</th>
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase hidden md:table-cell">Network</th>
-                      <th className="px-4 py-3 text-center text-muted-foreground text-xs font-medium uppercase">Progress</th>
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-medium uppercase hidden lg:table-cell">Date</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-semibold uppercase tracking-wider">ID</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-semibold uppercase tracking-wider">Type</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-semibold uppercase tracking-wider">Customer</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-semibold uppercase tracking-wider hidden md:table-cell">Network</th>
+                      <th className="px-4 py-3 text-center text-muted-foreground text-xs font-semibold uppercase tracking-wider">Progress</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-semibold uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-muted-foreground text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Date</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -767,18 +777,18 @@ export default function DSODashboardPage() {
 
           {/* Salary Detail Link */}
           <Link href="/dso/salary-detail"
-            className="block bg-gradient-to-r from-brand-700 to-brand-800 rounded-2xl p-5 text-white shadow-sm hover:shadow-lg transition-all group">
+            className="group block rounded-xl border border-slate-200/80 bg-white p-5 transition-all hover:border-brand-300 hover:shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <DollarSign size={22} className="text-amber-400" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-transform group-hover:scale-105">
+                  <DollarSign size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base">Salary Detail</h3>
-                  <p className="text-white/60 text-xs mt-0.5">View month-wise salary breakdown &amp; download payslips</p>
+                  <h3 className="text-sm font-semibold text-slate-900">Salary Detail</h3>
+                  <p className="text-xs text-muted-foreground">View month-wise salary breakdown &amp; download payslips</p>
                 </div>
               </div>
-              <ChevronRight size={20} className="text-white/40 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight size={18} className="text-slate-300 transition-transform group-hover:translate-x-0.5" />
             </div>
           </Link>
 
@@ -826,9 +836,9 @@ export default function DSODashboardPage() {
                         <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {mySalary.otherDeduction.toLocaleString()}</span></div>
                       </div>
                     </div>
-                    <div className="mt-4 p-3 bg-gradient-to-r from-brand-700 to-brand-800 rounded-xl text-white flex items-center justify-between gap-3">
-                      <span className="text-sm font-semibold">Net Payable</span>
-                      <span className="text-lg font-black whitespace-nowrap">PKR {salarySummary.netPay.toLocaleString()}</span>
+                    <div className="mt-4 p-3 rounded-xl border border-brand-100 bg-brand-50/60 flex items-center justify-between gap-3">
+                      <span className="text-sm font-semibold text-slate-700">Net Payable</span>
+                      <span className="text-lg font-bold whitespace-nowrap text-brand-700">PKR {salarySummary.netPay.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>

@@ -1,11 +1,11 @@
 import { HTMLAttributes } from "react";
 
 export function Card({ className = "", ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={`rounded-lg border border-slate-200 bg-white shadow-sm ${className}`} {...props} />;
+  return <div className={`rounded-xl border border-slate-200/80 bg-white shadow-sm ${className}`} {...props} />;
 }
 
 export function CardHeader({ className = "", ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={`flex flex-col gap-1 p-4 sm:p-6 ${className}`} {...props} />;
+  return <div className={`flex flex-col gap-1 px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4 ${className}`} {...props} />;
 }
 
 export function CardTitle({ className = "", ...props }: HTMLAttributes<HTMLHeadingElement>) {
@@ -21,5 +21,5 @@ export function CardContent({ className = "", ...props }: HTMLAttributes<HTMLDiv
 }
 
 export function CardFooter({ className = "", ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={`border-t border-slate-100 p-4 sm:px-6 ${className}`} {...props} />;
+  return <div className={`border-t border-slate-100 px-4 py-3 sm:px-6 ${className}`} {...props} />;
 }

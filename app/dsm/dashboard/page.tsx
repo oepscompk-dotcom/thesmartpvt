@@ -209,10 +209,9 @@ export default function DSMDashboardPage() {
         }
         actions={
           <>
-            <button onClick={() => setShowActivatePopup(true)}
-              className="flex items-center gap-2 rounded-lg bg-[#FFFB63] px-4 py-2 text-sm font-bold text-[#0A2647] shadow-sm transition-colors hover:bg-[#F1B308]">
+            <Button onClick={() => setShowActivatePopup(true)}>
               <Plus className="h-4 w-4" /> Activate
-            </button>
+            </Button>
             <Button variant="outline" onClick={() => router.push("/dsm/guideline")}>
               <BookOpen className="h-4 w-4" /> Guide
             </Button>
@@ -231,20 +230,22 @@ export default function DSMDashboardPage() {
         }
       />
 
-      <Card>
-        <div className="flex gap-1 p-1">
+      <div className="flex items-center gap-6 border-b border-slate-200">
           {[
             { key: "overview" as const, label: "Overview", icon: Home },
             { key: "performance" as const, label: "Performance", icon: Target },
             { key: "finance" as const, label: "Finance", icon: Wallet },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold transition-all ${activeTab === tab.key ? "bg-brand-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              <tab.icon className="h-3.5 w-3.5" /> {tab.label}
+              className={`-mb-px inline-flex items-center gap-1.5 border-b-2 pb-3 text-sm font-medium transition-colors ${
+                activeTab === tab.key
+                  ? "border-brand-600 font-semibold text-brand-700"
+                  : "border-transparent text-muted-foreground hover:border-slate-300 hover:text-foreground"
+              }`}>
+              <tab.icon className="h-[15px] w-[15px]" /> {tab.label}
             </button>
           ))}
         </div>
-      </Card>
 
       {activeTab === "overview" && (
         <>
@@ -264,7 +265,7 @@ export default function DSMDashboardPage() {
           <Card>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5">
               <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Zap className="h-4 w-4 text-[#F1B308]" /> Quick Actions
+                <Zap className="h-4 w-4 text-brand-600" /> Quick Actions
               </h3>
               <SearchInput placeholder="Search activations..." value={searchQuery} onSearch={setSearchQuery} className="max-w-xs" />
             </div>
@@ -276,9 +277,11 @@ export default function DSMDashboardPage() {
                 { label: "BYN", href: "/dsm/byn", icon: Hash, color: "bg-teal-50 text-teal-600" },
               ].map((a) => (
                 <Link key={a.label} href={a.href}
-                  className={`flex flex-col items-center gap-2 rounded-xl p-3 ${a.color} transition-transform hover:scale-105`}>
-                  <a.icon className="h-5 w-5" />
-                  <span className="text-[11px] font-bold">{a.label}</span>
+                  className="group flex flex-col items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white p-4 transition-all hover:border-brand-300 hover:shadow-sm">
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${a.color}`}>
+                    <a.icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700">{a.label}</span>
                 </Link>
               ))}
             </div>
@@ -295,26 +298,30 @@ export default function DSMDashboardPage() {
                 <div className="p-4">
                   <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     {[
-                      { label: "BVS Pending", count: metrics.pendingBVS, color: "bg-amber-50 text-amber-700 border-amber-200", href: "/dsm/pending-bvs" },
-                      { label: "FCA Pending", count: metrics.pendingFCA, color: "bg-blue-50 text-blue-700 border-blue-200", href: "/dsm/pending-fca" },
-                      { label: "IFCA Pending", count: metrics.pendingIFCA, color: "bg-purple-50 text-purple-700 border-purple-200", href: "/dsm/pending-ifca" },
-                      { label: "Completed Today", count: metrics.completedToday, color: "bg-green-50 text-green-700 border-green-200", href: "" },
+                      { label: "BVS Pending", count: metrics.pendingBVS, dot: "bg-amber-500", href: "/dsm/pending-bvs" },
+                      { label: "FCA Pending", count: metrics.pendingFCA, dot: "bg-blue-500", href: "/dsm/pending-fca" },
+                      { label: "IFCA Pending", count: metrics.pendingIFCA, dot: "bg-purple-500", href: "/dsm/pending-ifca" },
+                      { label: "Completed Today", count: metrics.completedToday, dot: "bg-green-500", href: "" },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-2">
                         {step.href ? (
-                          <Link href={step.href} className={`flex-1 ${step.color} rounded-xl border p-4 transition-all hover:scale-[1.03] group`}>
-                            <div className="mb-2 flex items-center justify-between">
-                              <span className="text-xs font-bold uppercase tracking-wider">{step.label}</span>
-                              <ChevronRight className="h-3.5 w-3.5 opacity-50 transition-transform group-hover:translate-x-1" />
+                          <Link href={step.href} className="group flex-1 rounded-xl border border-slate-200/80 bg-white p-4 transition-all hover:border-brand-300 hover:shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                <span className={`h-2 w-2 rounded-full ${step.dot}`} /> {step.label}
+                              </span>
+                              <ChevronRight className="h-3.5 w-3.5 text-slate-300 transition-transform group-hover:translate-x-0.5" />
                             </div>
-                            <p className="text-3xl font-black text-foreground">{step.count}</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{step.count}</p>
                           </Link>
                         ) : (
-                          <div className={`flex-1 ${step.color} rounded-xl border p-4`}>
-                            <div className="mb-2 flex items-center justify-between">
-                              <span className="text-xs font-bold uppercase tracking-wider">{step.label}</span>
+                          <div className="flex-1 rounded-xl border border-slate-200/80 bg-white p-4">
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                <span className={`h-2 w-2 rounded-full ${step.dot}`} /> {step.label}
+                              </span>
                             </div>
-                            <p className="text-3xl font-black text-foreground">{step.count}</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{step.count}</p>
                           </div>
                         )}
                         {i < 3 && <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-300 lg:flex" />}
@@ -441,8 +448,8 @@ export default function DSMDashboardPage() {
                         <div key={g.label} className="flex flex-col items-center">
                           <div className="relative h-20 w-20">
                             <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
-                              <circle cx="40" cy="40" r="36" fill="none" stroke="#f3f4f6" strokeWidth="6" />
-                              <circle cx="40" cy="40" r="36" fill="none" stroke={g.color} strokeWidth="6"
+                              <circle cx="40" cy="40" r="36" fill="none" stroke="#f1f5f9" strokeWidth="5" />
+                              <circle cx="40" cy="40" r="36" fill="none" stroke={g.color} strokeWidth="5"
                                 strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={off} className="transition-all duration-1000" />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -691,20 +698,20 @@ export default function DSMDashboardPage() {
           </div>
 
           <Link href="/dsm/salary-detail"
-            className="group block rounded-xl bg-gradient-to-r from-brand-600 to-[#241F95] p-5 text-white transition-all hover:shadow-xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 transition-transform group-hover:scale-110">
-                  <DollarSign className="h-6 w-6 text-[#F1B308]" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold">Salary Detail</h3>
-                  <p className="mt-0.5 text-xs text-white/60">View month-wise salary breakdown &amp; download payslips</p>
-                </div>
+          className="group block rounded-xl border border-slate-200/80 bg-white p-5 transition-all hover:border-brand-300 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-transform group-hover:scale-105">
+                <DollarSign className="h-5 w-5" />
               </div>
-              <ChevronRight className="h-5 w-5 text-white/40 transition-transform group-hover:translate-x-1" />
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">Salary Detail</h3>
+                <p className="text-xs text-muted-foreground">View month-wise salary breakdown &amp; download payslips</p>
+              </div>
             </div>
-          </Link>
+            <ChevronRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5" />
+          </div>
+        </Link>
 
           {salarySummary && (
             <Card className="overflow-hidden">
@@ -750,9 +757,9 @@ export default function DSMDashboardPage() {
                         <div className="flex justify-between text-red-500"><span>Other Deduction</span><span>-PKR {mySalary.otherDeduction.toLocaleString()}</span></div>
                       </div>
                     </div>
-                    <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-brand-600 to-[#241F95] p-3 text-white">
-                      <span className="text-sm font-semibold">Net Payable</span>
-                      <span className="whitespace-nowrap text-lg font-black">PKR {salarySummary.netPay.toLocaleString()}</span>
+                    <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50/60 p-3">
+                      <span className="text-sm font-semibold text-slate-700">Net Payable</span>
+                      <span className="whitespace-nowrap text-lg font-bold text-brand-700">PKR {salarySummary.netPay.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
