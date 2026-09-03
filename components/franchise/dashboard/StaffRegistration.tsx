@@ -52,6 +52,7 @@ const DOC_FIELDS = [
   { key: "cnicBack", label: "CNIC Back", required: true },
   { key: "educationalCert", label: "Educational Certificate", required: false },
   { key: "experienceCert", label: "Experience Certificate", required: false },
+  { key: "policeCharacterCertificate", label: "Police Character Certificate", required: false },
 ];
 
 interface StaffRegistrationProps {
@@ -802,6 +803,7 @@ function ReviewStep({ form, kind, onEdit }: { form: any; kind: string; onEdit: (
     { name: "Photo", ok: !!form.photo, step: 0 },
     { name: "Edu Cert", ok: !!form.documents?.educationalCert, step: 9 },
     { name: "Exp Cert", ok: !!form.documents?.experienceCert, step: 9 },
+    { name: "Police Character", ok: !!form.documents?.policeCharacterCertificate, step: 9 },
     { name: "Agreement", ok: !!(form.agreements as any)?.agreementPdf, step: 9 },
     { name: "Stamp Paper", ok: !!(form.agreements as any)?.stampPaperCopy, step: 9 },
     { name: "Guarantee Letter", ok: !!(form.guarantor as any)?.guaranteeLetter, step: 9 },
