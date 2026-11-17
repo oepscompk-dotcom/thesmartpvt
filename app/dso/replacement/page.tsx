@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { DateField } from "@/components/ui/DateField";
+import { createdAtForDate, todayLocalDate } from "@/lib/dateUtils";
 import { StatusPill, QuickChip } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
@@ -27,6 +29,7 @@ interface ReplacementForm {
   network: string;
   iccid: string;
   reason: string;
+  activationDate: string;
 }
 
 interface SIMStock {
@@ -54,6 +57,7 @@ const initialForm: ReplacementForm = {
   network: "",
   iccid: "",
   reason: "",
+  activationDate: todayLocalDate(),
 };
 
 export default function ReplacementPage() {
@@ -195,9 +199,10 @@ export default function ReplacementPage() {
       ifcaDate: "",
       ifcaNotes: "",
       progress: 0,
-      createdAt: new Date().toISOString(),
+      createdAt: createdAtForDate(form.activationDate),
       dsoId: auth.dsoId || "",
       franchiseId: auth.franchiseId || "",
+      reason: form.reason,
     });
     await updateFranchiseSIMStatus(simNum || "", "Activated");
     setSimStockList((prev) => prev.filter((s) => s.simNumber !== simNum));
@@ -263,7 +268,7 @@ export default function ReplacementPage() {
           title="SIM Replacement"
           description="Replace lost, damaged or stolen SIMs"
           actions={
-            <Button onClick={() => setShowModal(true)}>
+            <Button onClick={() => { setForm((p) => ({ ...p, activationDate: todayLocalDate() })); setShowModal(true); }}>
               <RefreshCw size={16} /> <span className="hidden sm:inline">New Replacement</span>
             </Button>
           }
@@ -518,6 +523,15 @@ export default function ReplacementPage() {
                     placeholder="03XX-XXXXXXX"
                   />
                 </div>
+
+                <hr className="border-slate-200" />
+
+                {/* Group 4: Activation Date */}
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Activation Date</p>
+                <DateField
+                  value={form.activationDate}
+                  onChange={(v) => setForm((p) => ({ ...p, activationDate: v }))}
+                />
               </div>
               <div className="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
                 <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setShowModal(false)}>Cancel</Button>

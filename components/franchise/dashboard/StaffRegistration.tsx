@@ -245,7 +245,14 @@ export default function StaffRegistration(props: StaffRegistrationProps) {
     if (missing.length > 0) { setStep(missing[0].step); setSidebarOpen(false); return; }
     setSaving(true);
     try {
-      await onSubmit(form, isEditMode, editId, listHref);
+      // assignedDSM / assignedFranchise are DSO-only columns — sending them to
+      // the DSM model makes Prisma reject the write ("Unknown argument").
+      const payload: any = { ...form };
+      if (kind === "DSM") {
+        delete payload.assignedDSM;
+        delete payload.assignedFranchise;
+      }
+      await onSubmit(payload, isEditMode, editId, listHref);
       setSaving(false);
       setSaved(true);
       clearDraft();

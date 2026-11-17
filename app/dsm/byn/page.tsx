@@ -12,6 +12,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { DateField } from "@/components/ui/DateField";
+import { createdAtForDate, todayLocalDate } from "@/lib/dateUtils";
 import { StatusPill, QuickChip } from "@/components/ui/Badge";
 
 interface BYNForm {
@@ -24,6 +26,7 @@ interface BYNForm {
   iccid: string;
   deviceId: string;
   retailerId: string;
+  activationDate: string;
 }
 
 interface SIMStock {
@@ -50,6 +53,7 @@ const initialForm: BYNForm = {
   iccid: "",
   deviceId: "",
   retailerId: "",
+  activationDate: todayLocalDate(),
 };
 
 export default function BYNPage() {
@@ -175,7 +179,6 @@ export default function BYNPage() {
       deviceId: form.deviceId,
       customerName,
       customerCNIC,
-      customerMobile,
       contactNumber: customerMobile,
       retailerId: form.retailerId,
       status: "Pending BVS",
@@ -189,11 +192,11 @@ export default function BYNPage() {
       ifcaDate: "",
       ifcaNotes: "",
       progress: 0,
-      createdAt: new Date().toISOString(),
+      createdAt: createdAtForDate(form.activationDate),
       dsmId: auth.dsmId,
       dsoId: auth.dsmId || "",
       franchiseId: auth.franchiseId,
-    } as any);
+    });
     await updateFranchiseSIMStatus(simNum || "", "Activated");
     setSimStockList((prev) => prev.filter((s) => s.simNumber !== simNum));
     setForm(initialForm);
@@ -274,7 +277,7 @@ export default function BYNPage() {
           title="Book Your Number (BYN)"
           description="Reserve specific mobile numbers for customers"
           actions={
-            <Button onClick={() => setShowModal(true)}>
+            <Button onClick={() => { setForm((p) => ({ ...p, activationDate: todayLocalDate() })); setShowModal(true); }}>
               <Hash className="h-4 w-4" /> <span className="hidden sm:inline">New BYN</span>
             </Button>
           }
@@ -530,6 +533,15 @@ export default function BYNPage() {
                   placeholder="03XX-XXXXXXX"
                 />
               </div>
+
+              <hr className="border-slate-200" />
+
+              {/* Group 4: Activation Date */}
+              <p className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">Activation Date</p>
+              <DateField
+                value={form.activationDate}
+                onChange={(v) => setForm((p) => ({ ...p, activationDate: v }))}
+              />
             </div>
             <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
               <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShowModal(false)}>

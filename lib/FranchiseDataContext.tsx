@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiLoad, apiLoadById, apiSave, apiSaveMany, apiUpdate, apiUpdateMany, apiDelete, apiDeleteMany } from "@/lib/api";
 import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
+import { genId, genUsername, genPassword, genRetailerId } from "@/lib/credentials";
 
 export interface DSM {
   id: string; name: string; fatherName: string; cnic: string; mobile: string; email: string;
@@ -298,8 +299,8 @@ interface FranchiseDataContextType {
   payroll: PayrollRecord[]; expenses: Expense[]; accounts: AccountEntry[]; bankAccounts: Account[];
   notifications: FranchiseNotification[]; settings: FranchiseSettings;
 
-  addDSM: (d: DSM) => Promise<void>; updateDSM: (id: string, d: DSM) => Promise<void>; deleteDSM: (id: string) => Promise<void>;
-  addDSO: (d: DSO) => Promise<void>; updateDSO: (id: string, d: DSO) => Promise<void>; deleteDSO: (id: string) => Promise<void>;
+  addDSM: (d: DSM) => Promise<void>; addDSMs: (list: DSM[]) => Promise<void>; updateDSM: (id: string, d: DSM) => Promise<void>; deleteDSM: (id: string) => Promise<void>;
+  addDSO: (d: DSO) => Promise<void>; addDSOs: (list: DSO[]) => Promise<void>; updateDSO: (id: string, d: DSO) => Promise<void>; deleteDSO: (id: string) => Promise<void>;
   addDevice: (d: Device) => Promise<void>; updateDevice: (id: string, d: Device) => Promise<void>; deleteDevice: (id: string) => Promise<void>;
   addSIM: (s: SIM) => Promise<void>; addSIMs: (sims: SIM[]) => Promise<void>; updateSIM: (id: string, s: SIM) => Promise<void>; deleteSIM: (id: string) => Promise<void>; deleteSIMs: (ids: string[]) => Promise<void>;
   addEquipment: (e: Equipment) => Promise<void>; updateEquipment: (id: string, e: Equipment) => Promise<void>; deleteEquipment: (id: string) => Promise<void>;
@@ -351,10 +352,6 @@ interface FranchiseDataContextType {
 
 const FranchiseDataContext = createContext<FranchiseDataContextType | undefined>(undefined);
 
-function genId(prefix: string, num: number) { return `${prefix}-${String(num).padStart(3, "0")}`; }
-function genUsername(name: string, num: number) { return name.toLowerCase().replace(/\s+/g, "").slice(0, 5) + String(num).padStart(3, "0"); }
-function genPassword() { const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@"; let p = "TS@"; for (let i = 0; i < 4; i++) p += chars[Math.floor(Math.random() * chars.length)]; return p; }
-function genRetailerId(mobile: string) { return mobile.replace(/[\s+\-()]/g, "").slice(-11); }
 function now() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}:${String(d.getSeconds()).padStart(2,"0")}`; }
 
 const emptySettings: FranchiseSettings = {
@@ -559,6 +556,14 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
   const addDSO = async (d: DSO) => {
     await apiSave("dso", d);
     setDSO((p) => [...p, d]);
+  };
+  const addDSOs = async (list: DSO[]) => {
+    await apiSaveMany("dso", list);
+    setDSO((p) => [...p, ...list]);
+  };
+  const addDSMs = async (list: DSM[]) => {
+    await apiSaveMany("dsm", list);
+    setDSMs((p) => [...p, ...list]);
   };
   const updateDSO = async (id: string, d: DSO) => {
     await apiUpdate("dso", id, d);
@@ -1287,7 +1292,7 @@ export function FranchiseDataProvider({ children }: { children: ReactNode }) {
       wallet, payroll, expenses, accounts, bankAccounts, notifications, settings,
       simRateCards, upsertSimRateCard, deleteSimRateCard,
       simSales, generateSIMMilestones, markSIMCollectionReceived,
-      addDSM, updateDSM, deleteDSM, addDSO, updateDSO, deleteDSO,
+      addDSM, addDSMs, updateDSM, deleteDSM, addDSO, addDSOs, updateDSO, deleteDSO,
       addDevice, updateDevice, deleteDevice, addSIM, addSIMs, updateSIM, deleteSIM, deleteSIMs,
       addEquipment, updateEquipment, deleteEquipment,
       addEquipmentItemName, deleteEquipmentItemName,

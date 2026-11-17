@@ -5,7 +5,7 @@ import {
   Plus, Edit, Trash2, Eye, X, Save, Users, ArrowRight,
   FileText, DollarSign,
   AlertTriangle, CheckCircle2, Calculator, TrendingUp, Wallet,
-  ChevronDown, ChevronUp, Download,
+  ChevronDown, ChevronUp, Download, Upload,
 } from "lucide-react";
 import { useFranchiseData, DSM, genId, genUsername, genPassword } from "@/lib/FranchiseDataContext";
 import { useDSOData } from "@/lib/DSODataContext";
@@ -21,6 +21,7 @@ import type { ToneValue } from "@/components/ui/Badge";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
+import StaffImportModal from "@/components/franchise/StaffImportModal";
 
 type Tab = "all" | "documents" | "salary" | "inactive";
 
@@ -78,7 +79,7 @@ const DOC_FIELDS: { key: string; label: string; path: (d: DSM) => string | undef
 ];
 
 export default function DSMPage() {
-  const { auth, dsms, addDSM, updateDSM, deleteDSM } = useFranchiseData();
+  const { auth, dsms, addDSM, addDSMs, updateDSM, deleteDSM } = useFranchiseData();
   const { activations, importVerifications } = useDSOData();
   const router = useRouter();
 
@@ -91,6 +92,7 @@ export default function DSMPage() {
 
   const [viewDSM, setViewDSM] = useState<DSM | null>(null);
   const [showDelete, setShowDelete] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   const [salaryEdits, setSalaryEdits] = useState<Record<string, Partial<DSM>>>({});
 
@@ -451,9 +453,14 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
         title="DSM Management"
         description="Manage Direct Sales Managers"
         actions={
-          <Link href="/franchise/dsm/create">
-            <Button><Plus className="h-4 w-4" /> Register DSM <ArrowRight className="h-4 w-4" /></Button>
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => setShowImport(true)}>
+              <Upload className="h-4 w-4" /> Import CSV
+            </Button>
+            <Link href="/franchise/dsm/create">
+              <Button><Plus className="h-4 w-4" /> Register DSM <ArrowRight className="h-4 w-4" /></Button>
+            </Link>
+          </div>
         }
       />
 
@@ -580,6 +587,16 @@ document.getElementById('amtWords').innerHTML = '<strong>Amount in Words:</stron
           id={showDelete}
           onConfirm={() => handleDelete(showDelete)}
           onCancel={() => setShowDelete(null)}
+        />
+      )}
+
+      {showImport && (
+        <StaffImportModal
+          kind="DSM"
+          existing={dsms}
+          franchiseId={auth.franchiseId}
+          onImport={addDSMs}
+          onClose={() => setShowImport(false)}
         />
       )}
     </div>

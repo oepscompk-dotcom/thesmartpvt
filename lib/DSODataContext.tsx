@@ -17,6 +17,7 @@ export interface Activation {
   fcaStatus: "Pending" | "Completed"; fcaDate: string; fcaNotes: string;
   ifcaStatus: "Pending" | "Completed"; ifcaDate: string; ifcaNotes: string;
   progress: number; createdAt: string; dsoId: string; franchiseId: string;
+  reason?: string;
 }
 
 export interface DSOAttendance {

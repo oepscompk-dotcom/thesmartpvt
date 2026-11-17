@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useCompanyData } from "@/lib/CompanyDataContext";
 import { Building2, User, Mail, Phone, MapPin, Lock, Save, RefreshCw, Image, Camera } from "lucide-react";
-import { apiLoad, apiSave } from "@/lib/api";
+import { apiLoad, apiUpdate } from "@/lib/api";
 import { uploadFile, deleteRemoteFile } from "@/lib/r2Client";
 
 export default function CompanySettingsPage() {
@@ -61,8 +61,10 @@ export default function CompanySettingsPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     try {
-      await apiSave("company", {
-        id: auth.companyId,
+      // apiUpdate (partial PUT), not apiSave: apiSave upserts, and Prisma
+      // validates the create branch — a partial payload would fail on
+      // "Argument `status` is missing" even when the row already exists.
+      await apiUpdate("company", auth.companyId, {
         name: profile.companyName,
         owner: profile.ownerName,
         email: profile.email,
@@ -72,11 +74,14 @@ export default function CompanySettingsPage() {
         province: profile.province,
         logo: profile.logo,
       });
-    } catch {}
-    
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e: any) {
+      // Never show "Saved" for a write the database rejected.
+      setSaving(false);
+      alert("Failed to save settings: " + (e?.message || "Unknown error"));
+    }
   };
 
   const handleSecuritySave = () => {

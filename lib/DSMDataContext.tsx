@@ -17,6 +17,8 @@ export interface DSMActivation {
   bvsDate?: string; bvsNotes?: string;
   fcaDate?: string; fcaNotes?: string;
   ifcaDate?: string; ifcaNotes?: string;
+  simId?: string; iccid?: string; deviceId?: string; retailerId?: string;
+  reason?: string;
 }
 
 export interface DSORecord {
@@ -281,7 +283,13 @@ export function DSMDataProvider({ children }: { children: ReactNode }) {
 
   const addActivation = async (a: DSMActivation) => {
     setActivations((p) => [a, ...p]);
-    try { await apiSave("dsmActivation", a); } catch {}
+    // Never swallow silently: a failed save means the row shown in the UI will
+    // vanish on reload (this is how DSM activations were lost to "Unknown argument").
+    try {
+      await apiSave("dsmActivation", a);
+    } catch (e) {
+      console.error("DSM activation was NOT persisted:", e);
+    }
   };
 
   const updateActivation = async (id: string, updates: Partial<DSMActivation>) => {

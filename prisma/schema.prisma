@@ -24,6 +24,7 @@ model Company {
   createdAt      String
   agreementStart String?
   agreementEnd   String?
+  logo           String?
 }
 
 model Franchise {
@@ -608,6 +609,7 @@ model DSOActivation {
   createdAt   String
   dsoId       String
   franchiseId String
+  reason      String?
 }
 
 model DSOAttendance {
@@ -705,6 +707,11 @@ model DSMActivation {
   fcaNotes      String?
   ifcaDate      String?
   ifcaNotes     String?
+  simId         String?
+  iccid         String?
+  deviceId      String?
+  retailerId    String?
+  reason        String?
 }
 
 model DSMTargetEntry {
