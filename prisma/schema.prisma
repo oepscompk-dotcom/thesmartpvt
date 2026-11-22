@@ -323,6 +323,7 @@ model Device {
   imei               String
   brand              String
   model              String
+  network            String?
   purchaseDate       String
   status             String
   assignedDSO        String

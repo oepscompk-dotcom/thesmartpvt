@@ -73,6 +73,7 @@ export interface Device {
   id: string; bvsNumber: string; imei: string; brand: string; model: string;
   purchaseDate: string; status: string; assignedDSO: string; retailerId: string;
   franchiseId: string; issueDate: string; returnDate: string; originalRetailerId: string;
+  network?: string;
 }
 
 export interface SIM {

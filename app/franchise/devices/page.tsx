@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Smartphone, Plus, Edit, Trash2, X, Save, Square, Eye, RotateCcw, Package, ArrowUpCircle, ArrowDownCircle, Calendar, ChevronDown, ChevronRight, Fingerprint, ShieldCheck, Send, UserCheck, History } from "lucide-react";
+import { Smartphone, Plus, Edit, Trash2, X, Save, Square, Eye, RotateCcw, Package, ArrowUpCircle, ArrowDownCircle, Calendar, ChevronDown, ChevronRight, Fingerprint, ShieldCheck, Send, UserCheck, History, AlertTriangle } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -21,6 +21,8 @@ type View = "list" | "details";
 interface SIMRecord { id: string; network: string; simNumber: string; iccid: string; deviceId: string; status: string; receiveDate: string; franchiseId: string; type: "new" | "hlr"; }
 
 async function loadSims(franchiseId: string): Promise<SIMRecord[]> { try { return (await apiLoad("sim", franchiseId)) || []; } catch { return []; } }
+
+const NETWORKS = ["Telenor", "Jazz", "Ufone", "Zong", "SCO", "Warid"];
 
 function getNextDeviceRecordSubId(records: DeviceIssueRecord[], baseRetailerId: string): string {
   const matching = records.filter((r) => r.baseRetailerId === baseRetailerId);
@@ -62,8 +64,9 @@ export default function DevicesPage() {
   useEffect(() => { setPage(1); setHistoryPage(1); }, [tab, search]);
   const PAGE_SIZE = 10;
 
-  const emptyForm: Device = { id: "", bvsNumber: "", imei: "", brand: "", model: "", purchaseDate: new Date().toISOString().split("T")[0], status: "Available", assignedDSO: "", retailerId: "", franchiseId: auth.franchiseId, issueDate: "", returnDate: "", originalRetailerId: "" };
+  const emptyForm: Device = { id: "", bvsNumber: "", imei: "", brand: "", model: "", network: "", purchaseDate: new Date().toISOString().split("T")[0], status: "Available", assignedDSO: "", retailerId: "", franchiseId: auth.franchiseId, issueDate: "", returnDate: "", originalRetailerId: "" };
   const [form, setForm] = useState<Device>(emptyForm);
+  const [formError, setFormError] = useState("");
 
   const [bvsSearch, setBvsSearch] = useState("");
   const [bvsResults, setBvsResults] = useState<{ id: string; name: string; mobile: string; retailerId: string; role: "DSO" | "DSM" }[]>([]);
@@ -80,6 +83,31 @@ export default function DevicesPage() {
   useEffect(() => {
     loadSims(auth.franchiseId).then(setAllSims);
   }, [auth.franchiseId]);
+
+  // The franchise's network scope, set in Admin > Franchises:
+  // "" = legacy (no segment in device IDs), "All" = all networks (pick per
+  // device), "Telenor" etc. = single-network franchise (fixed segment).
+  const [franchiseNetwork, setFranchiseNetwork] = useState("");
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await apiLoad("franchise");
+        const me = (list || []).find((f: any) => f.id === auth.franchiseId);
+        setFranchiseNetwork(me?.network || "");
+      } catch {}
+    })();
+  }, [auth.franchiseId]);
+
+  const franchiseNetworks = useMemo(() => {
+    const v = (franchiseNetwork || "").trim();
+    if (!v) return [];
+    if (v === "All") return NETWORKS;
+    return v.split(",").map((s) => s.trim()).filter(Boolean);
+  }, [franchiseNetwork]);
+
+  const [deviceNetwork, setDeviceNetwork] = useState("");
+  // Single-network franchise: fixed. All-networks: the user's pick. Legacy: "".
+  const selectedNetwork = franchiseNetworks.length === 1 ? franchiseNetworks[0] : deviceNetwork;
 
   const filtered = useMemo(() => {
     let list = devices;
@@ -102,11 +130,41 @@ export default function DevicesPage() {
   const getDSOName = (dsoId: string) => { const found = dso.find((d) => d.id === dsoId); return found ? found.name : dsoId || "â€”"; };
   const getDeviceSIMs = (deviceId: string) => allSims.filter((s) => s.deviceId === deviceId);
 
+  const normalizeIMEI = (v: string) => v.replace(/[\s-]/g, "");
+
+  /**
+   * Device ID for a new device, in priority order:
+   * 1. manual entry (letters and digits), e.g. NRWP-Jazz-7657A
+   * 2. last 5 digits of the IMEI, e.g. IMEI ...67890 -> NRWP-Jazz-67890
+   * 3. next free number in the classic 841 sequence — skipping IDs that are
+   *    already taken (devices.length + 841 used to collide after deletions,
+   *    which silently OVERWROTE the existing device via the upsert API).
+   * The network segment appears when the franchise has a network configured:
+   * single-network franchises get it fixed (NRWP-Telenor-1217), all-network
+   * franchises use the network selected when adding the device (NRWP-Jazz-7657).
+   */
+  const suggestDeviceId = (imei: string, manual: string, network: string): string => {
+    const prefix = network ? `${auth.franchiseId}-${network}` : auth.franchiseId;
+    const manualClean = manual.trim();
+    if (manualClean) return `${prefix}-${manualClean}`;
+    const tail = normalizeIMEI(imei).slice(-5);
+    if (tail.length === 5) {
+      const candidate = `${prefix}-${tail}`;
+      if (!devices.some((d) => d.id === candidate)) return candidate;
+    }
+    let n = devices.length + 841;
+    while (devices.some((d) => d.id === `${prefix}-${n}`)) n++;
+    return `${prefix}-${n}`;
+  };
+
+  const previewId = editing ? editing.id : suggestDeviceId(form.imei, deviceNum, selectedNetwork);
+
   const openAdd = () => {
     setEditing(null);
-    const num = devices.length + 841;
-    setDeviceNum(String(num));
-    setForm({ ...emptyForm, id: `${auth.franchiseId}-${num}` });
+    setDeviceNum("");
+    setDeviceNetwork("");
+    setForm({ ...emptyForm, franchiseId: auth.franchiseId });
+    setFormError("");
     setBvsSearch("");
     setBvsResults([]);
     setMatchedPerson(null);
@@ -148,13 +206,43 @@ export default function DevicesPage() {
   const verifyOTP = () => {
     if (otpValue === otpCode) { setOtpVerified(true); } else { alert("Invalid OTP. Please try again."); }
   };
-  const openEdit = (d: Device) => { setEditing(d); setForm({ ...d }); setShowForm(true); };
+  const openEdit = (d: Device) => { setEditing(d); setForm({ ...d }); setFormError(""); setShowForm(true); };
 
-  const handleSave = () => {
-    if (!form.brand || !form.model) return;
-    const deviceToSave = { ...form, issueDate: matchedPerson ? receiveDate : "", returnDate: "", originalRetailerId: matchedPerson ? form.retailerId : "" };
-    if (editing) updateDevice(editing.id, deviceToSave);
-    else addDevice(deviceToSave);
+  const handleSave = async () => {
+    const imei = normalizeIMEI(form.imei);
+    if (!form.brand || !form.model) { setFormError("Brand and model are required."); return; }
+    if (!imei) { setFormError("IMEI is required — it is the device's unique identity and is used to auto-generate the Device ID."); return; }
+
+    // All-network franchise: the picked network becomes part of the Device ID.
+    if (!editing && franchiseNetworks.length > 1 && !selectedNetwork) {
+      setFormError("Select a network for this device — it becomes part of the Device ID (e.g. NRWP-Jazz-7657).");
+      return;
+    }
+
+    // IMEI is the natural key: two devices can never share one.
+    const dupImei = devices.find((d) => d.id !== editing?.id && normalizeIMEI(d.imei) === imei);
+    if (dupImei) {
+      setFormError(`This IMEI is already registered to device ${dupImei.id}. Each device needs its own IMEI — this one was not saved.`);
+      return;
+    }
+
+    const finalId = editing ? editing.id : suggestDeviceId(imei, deviceNum, selectedNetwork);
+    // Without this check the API upsert would silently OVERWRITE the existing
+    // device with the same id (two devices "merging" into one).
+    if (!editing && devices.some((d) => d.id === finalId)) {
+      setFormError(`Device ID ${finalId} already exists. Change the manual ID, or clear it to auto-generate a free one.`);
+      return;
+    }
+
+    const deviceToSave: Device = { ...form, id: finalId, imei, network: editing ? (form.network ?? "") : selectedNetwork, issueDate: matchedPerson ? receiveDate : "", returnDate: "", originalRetailerId: matchedPerson ? form.retailerId : "" };
+    try {
+      if (editing) await updateDevice(editing.id, deviceToSave);
+      else await addDevice(deviceToSave);
+    } catch (e: any) {
+      setFormError("Failed to save device: " + (e?.message || "Unknown error"));
+      return;
+    }
+    setFormError("");
     if (matchedPerson) {
       const issueRecord: DeviceIssueRecord = {
         id: `DEI-${Date.now()}`,
@@ -312,7 +400,7 @@ export default function DevicesPage() {
               <CardTitle className="flex items-center gap-2"><Smartphone className="h-4 w-4 text-brand-600" /> Device Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              {[ ["Device ID", viewDevice.id], ["Brand", viewDevice.brand], ["Model", viewDevice.model], ["IMEI", viewDevice.imei], ["BVS Number", viewDevice.bvsNumber], ["Purchase Date", formatDateDDMMYYYY(viewDevice.purchaseDate)], ["Status", viewDevice.status], ["Assigned DSO", getDSOName(viewDevice.assignedDSO)], ["Retailer ID", (viewDevice.status === "Issued" || viewDevice.status === "Assigned") ? (getActiveDeviceIssue(deviceIssueRecords, viewDevice.id)?.retailerId || viewDevice.retailerId || "â€”") : (viewDevice.retailerId || "â€”")], ["Base Retailer ID", viewDevice.originalRetailerId || "â€”"], ["Issue Date", formatDateDDMMYYYY(viewDevice.issueDate)], ["Return Date", formatDateDDMMYYYY(viewDevice.returnDate)] ].map(([label, value]) => (
+              {[ ["Device ID", viewDevice.id], ["Brand", viewDevice.brand], ["Model", viewDevice.model], ["IMEI", viewDevice.imei], ["Network", viewDevice.network || "—"], ["BVS Number", viewDevice.bvsNumber], ["Purchase Date", formatDateDDMMYYYY(viewDevice.purchaseDate)], ["Status", viewDevice.status], ["Assigned DSO", getDSOName(viewDevice.assignedDSO)], ["Retailer ID", (viewDevice.status === "Issued" || viewDevice.status === "Assigned") ? (getActiveDeviceIssue(deviceIssueRecords, viewDevice.id)?.retailerId || viewDevice.retailerId || "â€”") : (viewDevice.retailerId || "â€”")], ["Base Retailer ID", viewDevice.originalRetailerId || "â€”"], ["Issue Date", formatDateDDMMYYYY(viewDevice.issueDate)], ["Return Date", formatDateDDMMYYYY(viewDevice.returnDate)] ].map(([label, value]) => (
                 <div key={label} className="flex items-center justify-between border-b border-slate-100 py-2 last:border-0">
                   <span className="text-xs text-muted-foreground">{label}</span>
                   <span className="text-sm font-medium text-foreground">{value}</span>
@@ -645,15 +733,58 @@ export default function DevicesPage() {
               <button onClick={() => setShowForm(false)} className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
             <div className="p-6 space-y-5">
-              {/* Device ID - Prefix + Manual Number */}
+              {/* Device ID - manual (letters+digits) or auto-generated */}
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Device ID</label>
-                <div className="flex items-center">
-                  <span className="inline-flex items-center rounded-l-lg border border-r-0 border-slate-200 bg-slate-100 px-4 text-sm font-mono font-bold text-muted-foreground">{auth.franchiseId}-</span>
-                  <input type="text" value={deviceNum} onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ""); setDeviceNum(v); setForm((p) => ({ ...p, id: `${auth.franchiseId}-${v}` })); }} className="flex-1 rounded-r-lg border border-slate-200 bg-background px-4 py-2.5 font-mono text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" placeholder="e.g. 841" />
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">Final ID: <span className="font-mono font-medium">{auth.franchiseId}-{deviceNum || "XXX"}</span></p>
+                {editing ? (
+                  <>
+                    <input type="text" value={editing.id} disabled className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 font-mono text-sm text-muted-foreground outline-none" />
+                    <p className="mt-1 text-xs text-muted-foreground">Fixed after creation — SIMs and issue records link to this ID.</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center rounded-l-lg border border-r-0 border-slate-200 bg-slate-100 px-4 text-sm font-mono font-bold text-muted-foreground">{auth.franchiseId}-</span>
+                      <input type="text" value={deviceNum} onChange={(e) => { const v = e.target.value.replace(/[^0-9A-Za-z]/g, ""); setDeviceNum(v); }} className="flex-1 rounded-r-lg border border-slate-200 bg-background px-4 py-2.5 font-mono text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" placeholder="e.g. 841 or 7657A" />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Final ID: <span className="font-mono font-medium">{previewId}</span>
+                      {!deviceNum.trim() && (
+                        <> — auto from IMEI (last 5 digits), next free number if taken</>
+                      )}
+                    </p>
+                  </>
+                )}
               </div>
+
+              {/* Network — part of the Device ID for all-network franchises */}
+              {!editing && franchiseNetworks.length > 1 && (
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Network *</label>
+                  <div className="flex flex-wrap gap-2">
+                    {franchiseNetworks.map((net) => (
+                      <button
+                        key={net}
+                        type="button"
+                        onClick={() => setDeviceNetwork(net)}
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${selectedNetwork === net ? "border-brand-600 bg-brand-600 text-white" : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"}`}
+                      >
+                        {net}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {selectedNetwork
+                      ? <>Becomes part of the Device ID: <span className="font-mono font-medium">{auth.franchiseId}-{selectedNetwork}-{deviceNum || "…"}</span></>
+                      : <>Pick a network — it becomes part of the Device ID (e.g. {auth.franchiseId}-Jazz-7657)</>}
+                  </p>
+                </div>
+              )}
+              {!editing && franchiseNetworks.length === 1 && (
+                <p className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-muted-foreground">
+                  Network: <span className="font-semibold text-foreground">{franchiseNetworks[0]}</span> — set by the franchise, part of every Device ID (<span className="font-mono">{auth.franchiseId}-{franchiseNetworks[0]}-1217</span>)
+                </p>
+              )}
 
               {/* BVS Number / Retailer ID - Live Searchable Dropdown */}
               <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
@@ -736,8 +867,9 @@ export default function DevicesPage() {
                   <input type="text" value={form.model} onChange={(e) => setField("model", e.target.value)} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" placeholder="Galaxy A14..." />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">IMEI</label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">IMEI *</label>
                   <input type="text" value={form.imei} onChange={(e) => setField("imei", e.target.value)} className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" placeholder="15-digit IMEI" />
+                  <p className="mt-1 text-xs text-muted-foreground">Unique per device — must not match an existing device.</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Date Received</label>
@@ -758,6 +890,12 @@ export default function DevicesPage() {
                 </div>
               )}
             </div>
+            {formError && (
+              <div className="mx-6 mb-1 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-medium text-red-600">
+                <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
             <div className="flex gap-3 border-t border-slate-100 px-6 py-4">
               <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
               <Button className="flex-1" onClick={handleSave} disabled={!!matchedPerson && !otpVerified}><Save className="h-4 w-4" /> {editing ? "Update" : "Add Device"}</Button>

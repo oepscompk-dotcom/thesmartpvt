@@ -15,6 +15,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 
 const PAGE_SIZE = 8;
 
+const NETWORKS = ["Telenor", "Jazz", "Ufone", "Zong", "SCO", "Warid"];
+
 export default function FranchisesPage() {
   const { franchises, companies, addFranchise, updateFranchise, deleteFranchise } = useData();
   const [search, setSearch] = useState("");
@@ -28,6 +30,7 @@ export default function FranchisesPage() {
 
   const emptyForm: Franchise = { id: "", name: "", owner: "", cnic: "", mobile: "", email: "", province: "", city: "", package: "Monthly", status: "Active", agreementStart: "", agreementEnd: "", dsm: 0, dso: 0, password: "", companyId: "", network: "" };
   const [form, setForm] = useState<Franchise>(emptyForm);
+  const [networkMode, setNetworkMode] = useState<"single" | "all" | "">("");
 
   const getCompanyName = (companyId: string) => {
     if (!companyId) return "";
@@ -45,12 +48,15 @@ export default function FranchisesPage() {
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const openAdd = () => { setEditingFranchise(null); setForm(emptyForm); setShowFormModal(true); };
-  const openEdit = (f: Franchise) => { setEditingFranchise(f); setForm({ ...emptyForm, ...f, network: f.network || "" }); setShowFormModal(true); };
+  const openAdd = () => { setEditingFranchise(null); setForm(emptyForm); setNetworkMode(""); setShowFormModal(true); };
+  const openEdit = (f: Franchise) => { setEditingFranchise(f); setForm({ ...emptyForm, ...f, network: f.network || "" }); setNetworkMode(f.network === "All" ? "all" : f.network ? "single" : ""); setShowFormModal(true); };
   const openView = (f: Franchise) => { setSelectedFranchise(f); setShowViewModal(true); };
 
   const handleSave = () => {
-    if (!form.id || !form.name || !form.owner) return;
+    if (!form.id || !form.name || !form.owner) { alert("Franchise ID, Name and Owner are required."); return; }
+    // Required on create; on edit only once a network option has been touched
+    // (legacy franchises with no network can still be edited for other fields).
+    if (!form.network && (!editingFranchise || networkMode !== "")) { alert("Choose a network option: Single Network (then pick one) or All Networks."); return; }
     const saveForm = { ...form, id: form.id.trim().toUpperCase(), name: form.name.trim() };
     if (editingFranchise) {
       updateFranchise(editingFranchise.id, saveForm);
@@ -141,6 +147,11 @@ export default function FranchisesPage() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-foreground">{f.name}</p>
                         <p className="truncate font-mono text-xs text-muted-foreground">{f.id}</p>
+                        {f.network && (
+                          <span className="mt-0.5 inline-block max-w-full truncate rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-bold text-brand-700">
+                            {f.network === "All" ? "All Networks" : f.network}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -242,7 +253,7 @@ export default function FranchisesPage() {
                 { label: "City", field: "city" as const, type: "text", required: false, colSpan: false },
                 { label: "Package", field: "package" as const, type: "select", options: ["Monthly", "Six Month", "Annual"], required: true, colSpan: false },
                 { label: "Status", field: "status" as const, type: "select", options: ["Active", "Pending", "Suspended"], required: true, colSpan: false },
-                { label: "Network", field: "network" as const, type: "network", required: false, colSpan: true },
+                { label: "Network", field: "network" as const, type: "network", required: true, colSpan: true },
                 { label: "Company", field: "companyId" as const, type: "select", options: companies.filter((c) => c.status === "Active").map((c) => c.id), required: false, colSpan: false },
                 { label: "Agreement Start", field: "agreementStart" as const, type: "date", required: false, colSpan: false },
                 { label: "Agreement End", field: "agreementEnd" as const, type: "date", required: false, colSpan: false },
@@ -256,23 +267,56 @@ export default function FranchisesPage() {
                     </Select>
                   ) : f.field === "network" ? (
                     <div>
-                      <div className="flex flex-wrap gap-2">
-                        {["Telenor", "Jazz", "Ufone", "Zong", "SCO", "Warid"].map((net) => {
-                          const selected = (form.network || "").split(",").includes(net);
-                          const allSelected = form.network === "All";
-                          return (
-                            <button key={net} type="button" onClick={() => {
-                              if (allSelected) { setField("network", net); return; }
-                              const current = form.network ? form.network.split(",") : [];
-                              const next = current.includes(net) ? current.filter((n) => n !== net) : [...current, net];
-                              setField("network", next.length === 6 ? "All" : next.join(","));
-                            }} className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${allSelected || selected ? "border-brand-600 bg-brand-600 text-white" : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"}`}>
-                              {net}
-                            </button>
-                          );
-                        })}
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => { setNetworkMode("single"); if (form.network === "All") setField("network", ""); }}
+                          className={`rounded-lg border px-3 py-2.5 text-left transition-all ${networkMode === "single" ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600" : "border-slate-200 bg-slate-50 hover:border-slate-300"}`}
+                        >
+                          <p className={`text-xs font-bold ${networkMode === "single" ? "text-brand-700" : "text-slate-700"}`}>1. Single Network</p>
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">Sells only one network&apos;s SIMs (e.g. Telenor only)</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setNetworkMode("all"); setField("network", "All"); }}
+                          className={`rounded-lg border px-3 py-2.5 text-left transition-all ${networkMode === "all" ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600" : "border-slate-200 bg-slate-50 hover:border-slate-300"}`}
+                        >
+                          <p className={`text-xs font-bold ${networkMode === "all" ? "text-brand-700" : "text-slate-700"}`}>2. All Networks</p>
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">Sells every network — device IDs get a network segment</p>
+                        </button>
                       </div>
-                      <p className="mt-1 text-[10px] text-muted-foreground">{form.network === "All" ? "All networks selected" : form.network || "No network selected"}</p>
+
+                      {networkMode === "single" && (
+                        <div className="mt-2">
+                          <div className="flex flex-wrap gap-2">
+                            {NETWORKS.map((net) => (
+                              <button
+                                key={net}
+                                type="button"
+                                onClick={() => setField("network", net)}
+                                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${form.network === net ? "border-brand-600 bg-brand-600 text-white" : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"}`}
+                              >
+                                {net}
+                              </button>
+                            ))}
+                          </div>
+                          <p className="mt-1 text-[10px] text-muted-foreground">
+                            {form.network && form.network !== "All"
+                              ? <>{form.network} franchise sells only {form.network} SIMs — device IDs: NRWP-{form.network}-1217</>
+                              : "Select the one network this franchise sells"}
+                          </p>
+                        </div>
+                      )}
+
+                      {networkMode === "all" && (
+                        <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[10px] text-muted-foreground">
+                          All networks — when adding a device you pick its network, and the Device ID includes it: NRWP-Jazz-7657, NRWP-Telenor-1217
+                        </p>
+                      )}
+
+                      {networkMode === "" && (
+                        <p className="mt-2 text-[10px] text-muted-foreground">Choose option 1 or 2 above</p>
+                      )}
                     </div>
                   ) : f.field === "companyId" ? (
                     <Select value={form.companyId} onChange={(e) => setField("companyId", e.target.value)}>
